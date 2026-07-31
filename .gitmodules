@@ -1,0 +1,15 @@
+[submodule "glfw"]
+	path = glfw
+	url = https://github.com/glfw/glfw
+[submodule "cglm"]
+	path = cglm
+	url = https://github.com/recp/cglm
+[submodule "glad"]
+	path = glad
+	url = https://github.com/printfdebugging/glad
+[submodule "unicode"]
+	path = unicode
+	url = https://github.com/printfdebugging/unicode
+[submodule "harfbuzz"]
+	path = harfbuzz
+	url = https://github.com/harfbuzz/harfbuzz
