@@ -1,0 +1,16 @@
+/.cache
+/.vscode
+/.clangd
+/build
+/install
+/graphviz
+/CMakeUserPresets.json
+
+/tags
+/outputfile
+/compile_commands.json
+/gdb.txt
+/gdb-output.txt
+/perf.data
+/perf.data.old
+/flamegraph.svg

@@ -1,0 +1,45 @@
+BasedOnStyle: Chromium
+AlignAfterOpenBracket: BlockIndent
+AlignConsecutiveAssignments: false
+AlignConsecutiveDeclarations: false
+AlignOperands: DontAlign
+AlignConsecutiveMacros: true
+AllowAllParametersOfDeclarationOnNextLine: true
+AllowShortFunctionsOnASingleLine: false
+AllowShortIfStatementsOnASingleLine: true
+AlwaysBreakAfterDefinitionReturnType: None
+AlwaysBreakAfterReturnType: None
+AlwaysBreakTemplateDeclarations: Yes
+BinPackArguments: false
+BinPackParameters: false
+BinPackLongBracedList: true
+BreakBeforeBraces: Attach
+ColumnLimit: 0
+ExperimentalAutoDetectBinPacking: false
+IndentCaseLabels: true
+PointerAlignment: Right
+TabWidth: 8
+IndentWidth: 8
+BracedInitializerIndentWidth: 8
+UseTab: Always
+IndentPPDirectives: None
+AlignArrayOfStructures: None
+AlwaysBreakBeforeMultilineStrings: false
+AllowShortLoopsOnASingleLine: true
+SortUsingDeclarations: true
+SortIncludes: Never
+SpaceAfterCStyleCast: true
+SpaceBeforeAssignmentOperators: true
+SpaceBeforeCpp11BracedList: true
+SpaceBeforeInheritanceColon: true
+SpaceBeforeParens: ControlStatements 
+AccessModifierOffset: -4
+Cpp11BracedListStyle: false
+# Cpp11BracedListStyle: FunctionCall
+BreakConstructorInitializersBeforeComma: true
+ConstructorInitializerAllOnOneLineOrOnePerLine: false
+WhitespaceSensitiveMacros: [
+        "ensure_not_null"
+]
+
+# DisableFormat: true
