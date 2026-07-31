@@ -13,7 +13,7 @@ AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false
 BinPackLongBracedList: true
-BreakBeforeBraces: Attach
+BreakBeforeBraces: Allman
 ColumnLimit: 0
 ExperimentalAutoDetectBinPacking: false
 IndentCaseLabels: true
