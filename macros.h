@@ -5,14 +5,14 @@
  *    macros   *
  ***************/
 
-#define color_rgb_hex(color)             \
+#define ColorRGBHex(color)               \
    (((color >> 16) & 0xFF) / 255.0f),    \
        (((color >> 8) & 0xFF) / 255.0f), \
        (((color) & 0xFF) / 255.0f)
 
-#define color_rgba_hex(color)         \
+#define ColorRGBAHex(color)           \
    (((color >> 24) & 0xFF) / 255.0f), \
-       color_rgb_hex(color)
+       ColorRGBHex(color)
 
 #define U64_MAX 18446744073709551615UL
 #define U32_MAX 4294967295U
@@ -43,5 +43,7 @@
 #define TEXEL_SIZE        8
 #define ATLAS_PAGE_SIZE   (TEXEL_SIZE * MB)
 #define MAX_TEXTURE_COUNT 16
+
+#define ArraySize(t) (sizeof(t) / sizeof(*t))
 
 #endif
