@@ -28,6 +28,7 @@ f32 timeDelta;
 static void mouseScroll(GLFWwindow *window, f64 x, f64 y);
 static void windowResize(GLFWwindow *window, i32 width, i32 height);
 static void mouseMove(GLFWwindow *window, f64 x, f64 y);
+static void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 /********************
  * Helper functions *
@@ -130,6 +131,7 @@ int main(int argc, char *argv[])
    glfwSetCursorPosCallback(window, mouseMove);
    glfwSetScrollCallback(window, mouseScroll);
    glfwSetFramebufferSizeCallback(window, windowResize);
+   glfwSetKeyCallback(window, keyPress);
 
    /* we have a window to draw stuff on */
 
@@ -460,23 +462,6 @@ int main(int argc, char *argv[])
       if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
          glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-      /**************************
-       * update cursor location *
-       *************************/
-      if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
-      {
-         cursorCol -= 1;
-         if (cursorCol < 0)
-            cursorCol = 0;
-      }
-
-      if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
-      {
-         cursorCol += 1;
-         if (cursorCol >= lineRunelen)
-            cursorCol = lineRunelen - 1;
-      }
-
       /***********************************
        * calculate transformation matrix *
        **********************************/
@@ -638,4 +623,24 @@ b8 shaderGetLinkStatus(u32 shaderProgram)
    glGetProgramInfoLog(shaderProgram, logLength, NULL, infoLog);
    fprintf(stderr, "failed to link shader program: %s\n", infoLog);
    return false;
+}
+
+void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
+{
+   /**************************
+    * update cursor location *
+    *************************/
+   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
+   {
+      cursorCol -= 1;
+      if (cursorCol < 0)
+         cursorCol = 0;
+   }
+
+   if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
+   {
+      cursorCol += 1;
+      if (cursorCol >= lineRunelen)
+         cursorCol = lineRunelen - 1;
+   }
 }
