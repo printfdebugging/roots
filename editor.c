@@ -49,6 +49,8 @@ u32 lineRunelen = 0;
 u8 lineUTF8[]   = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 rune *lineRunes = NULL;
 
+i32 cursorCol = 0;
+
 /********************
  * harfbuzz globals *
  *******************/
@@ -71,6 +73,7 @@ i32 hbShaderProgram_UniformLocation_gamma             = -1;
 i32 hbShaderProgram_UniformLocation_foreground        = -1;
 i32 hbShaderProgram_UniformLocation_debug             = -1;
 i32 hbShaderProgram_UniformLocation_stem_darkening    = -1;
+i32 hbShaderProgram_UniformLocation_runeIdx           = -1;
 
 mat4s hbUniform_matViewProjection = { GLM_MAT4_IDENTITY_INIT };
 i32 hbUniform_viewport[4]         = { 0 };
@@ -81,6 +84,7 @@ f32 hbUniform_gamma               = 0;
 vec4s hbUniform_foreground        = { ColorRGBAHex(0XD8DEE9FF) };
 b8 hbUniform_debug                = false;
 b8 hbUniform_stem_darkening       = false;
+i32 hbUniform_runeIdx             = 0;
 
 u32 atlasTexture             = 0;
 u32 atlasTextureUnit         = GL_TEXTURE0;
@@ -307,6 +311,7 @@ int main(int argc, char *argv[])
             .ny           = cy ? -1.f : 1.f,
             .emPerPos     = 1.0,
             .atlas_offset = glyphInfo.atlas_offset / TEXEL_SIZE,
+            .runeIdx      = glyphIdx,
          };
       }
 
@@ -415,6 +420,10 @@ int main(int argc, char *argv[])
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlas_offset));
 
+   attribLocation = glGetAttribLocation(hbShaderProgram, "a_runeIdx");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, runeIdx));
+
    glUseProgram(hbShaderProgram);
 
    /******************************************
@@ -430,6 +439,7 @@ int main(int argc, char *argv[])
    hbShaderProgram_UniformLocation_debug             = glGetUniformLocation(hbShaderProgram, "u_debug");
    hbShaderProgram_UniformLocation_stem_darkening    = glGetUniformLocation(hbShaderProgram, "u_stem_darkening");
    hbShaderProgram_UniformLocation_hb_gpu_atlas      = glGetUniformLocation(hbShaderProgram, "hb_gpu_atlas");
+   hbShaderProgram_UniformLocation_runeIdx           = glGetUniformLocation(hbShaderProgram, "u_runeIdx");
 
    /*****************
     * the main loop *
@@ -475,6 +485,7 @@ int main(int argc, char *argv[])
       hbUniform_gamma        = 1.0f;
       hbUniform_debug        = false;
       hbUniform_hb_gpu_atlas = atlasTextureUnit;
+      hbUniform_runeIdx      = cursorCol;
 
       /****************
        * set uniforms *
@@ -488,6 +499,7 @@ int main(int argc, char *argv[])
       glUniform2f(hbShaderProgram_UniformLocation_viewport, (f32) hbUniform_viewport[2], (f32) hbUniform_viewport[3]);
       glUniform1f(hbShaderProgram_UniformLocation_scale, (f32) hbUniform_scale);
       glUniform1f(hbShaderProgram_UniformLocation_stem_darkening, hbUniform_stem_darkening);
+      glUniform1f(hbShaderProgram_UniformLocation_runeIdx, hbUniform_runeIdx);
       glUniform1f(hbShaderProgram_UniformLocation_debug, hbUniform_debug);
       glUniform1f(hbShaderProgram_UniformLocation_gamma, hbUniform_gamma);
       glUniform1i(hbShaderProgram_UniformLocation_hb_gpu_atlas, (i32) hbUniform_hb_gpu_atlas);

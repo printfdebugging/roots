@@ -5,7 +5,7 @@
 
 /**********************************
  * user defined convenience types *
- **********************************/
+ *********************************/
 
 typedef uint_least8_t u8;
 typedef uint_least16_t u16;
@@ -32,6 +32,7 @@ struct GlyphVertex
    f32 ny;
    f32 emPerPos;
    u32 atlas_offset;
+   u32 runeIdx;
 };
 
 struct Extents

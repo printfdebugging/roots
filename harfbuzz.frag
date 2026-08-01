@@ -6,8 +6,10 @@ uniform float u_gamma;
 uniform float u_debug;
 uniform float u_stem_darkening;
 uniform vec4 u_foreground;
+uniform float u_runeIdx;
 
 in vec2 v_texcoord;
+in float v_runeIdx;
 flat in uint v_glyphLoc;
 
 out vec4 fragColor;
@@ -47,6 +49,9 @@ void main()
       fragColor    = vec4(r, g, c.a, max(max(r, g), c.a));
       return;
    }
+
+   if (c.a == 0 && v_runeIdx == u_runeIdx)
+      c = vec4(0.0f, 0.0f, 0.0f, 1.0);
 
    fragColor = c;
 }

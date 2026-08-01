@@ -13,8 +13,10 @@ in vec2 a_texcoord;
 in vec2 a_normal;
 in float a_emPerPos;
 in uint a_glyphLoc;
+in uint a_runeIdx;
 
 out vec2 v_texcoord;
+out float v_runeIdx;
 flat out uint v_glyphLoc;
 
 void main()
@@ -34,4 +36,5 @@ void main()
    gl_Position = u_matViewProjection * vec4(pos, 0.0, 1.0);
    v_texcoord  = tex;
    v_glyphLoc  = a_glyphLoc;
+   v_runeIdx   = a_runeIdx;
 }
