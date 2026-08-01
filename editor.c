@@ -249,10 +249,10 @@ int main(int argc, char *argv[])
           ****************************/
 
          glyphCache[glyphIndex] = (struct GlyphInfo) {
-            .extents.min_x = hbGlyphExtents.x_bearing,
-            .extents.max_x = hbGlyphExtents.x_bearing + hbGlyphExtents.width,
-            .extents.min_y = hbGlyphExtents.y_bearing,
-            .extents.max_y = hbGlyphExtents.y_bearing + hbGlyphExtents.height,
+            .extents.min_x = 0,
+            .extents.max_x = hb_font_get_glyph_h_advance(hbFont, glyphIndex),
+            .extents.min_y = hbDescent,
+            .extents.max_y = hbAscent,
             .advance       = hb_font_get_glyph_h_advance(hbFont, glyphIndex),
             .upem          = yScale,
             .empty         = (hbBlobLength == 0),
