@@ -463,6 +463,23 @@ int main(int argc, char *argv[])
       if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
          glfwSetWindowShouldClose(window, GLFW_TRUE);
 
+      /**************************
+       * update cursor location *
+       *************************/
+      if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS)
+      {
+         cursorCol -= 1;
+         if (cursorCol < 0)
+            cursorCol = 0;
+      }
+
+      if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS)
+      {
+         cursorCol += 1;
+         if (cursorCol >= lineRunelen)
+            cursorCol = lineRunelen - 1;
+      }
+
       /***********************************
        * calculate transformation matrix *
        **********************************/
