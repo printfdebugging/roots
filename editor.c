@@ -41,9 +41,6 @@ static b8 shaderGetLinkStatus(u32 shaderProgram);
  * line rendering globals *
  *************************/
 
-u32 lineVao     = 0;
-u32 lineVbo     = 0;
-u32 lineProgram = 0;
 u32 lineBytelen = 0;
 u32 lineRunelen = 0;
 u8 lineUTF8[]   = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
