@@ -6,12 +6,6 @@
 uniform mat4 u_matViewProjection;
 uniform vec2 u_viewport;
 uniform float u_scale;
-
-/** `a_position` is position relative to `u_position`. this allows us to
- * reuse the row quads on operations like scroll, zoom etc. For now this is
- * 0,y as we are just rendering rows initially, but later on it would get more
- * flexible -> todo: when we split the row into segments.
- */
 uniform vec2 u_position;
 
 in vec2 a_position;
