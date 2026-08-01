@@ -1,6 +1,6 @@
 BasedOnStyle: Chromium
 AlignAfterOpenBracket: BlockIndent
-AlignConsecutiveAssignments: false
+AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: false
 AlignOperands: DontAlign
 AlignConsecutiveMacros: true
@@ -18,10 +18,10 @@ ColumnLimit: 0
 ExperimentalAutoDetectBinPacking: false
 IndentCaseLabels: true
 PointerAlignment: Right
-TabWidth: 8
-IndentWidth: 8
-BracedInitializerIndentWidth: 8
-UseTab: Always
+TabWidth: 3
+IndentWidth: 3
+BracedInitializerIndentWidth: 3
+UseTab: Never
 IndentPPDirectives: None
 AlignArrayOfStructures: None
 AlwaysBreakBeforeMultilineStrings: false
