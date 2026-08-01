@@ -461,7 +461,7 @@ int main(int argc, char *argv[])
 
       hbUniform_position.y   = (windowHeight - fontSize) / 2;
       hbUniform_gamma        = 1.0f;
-      hbUniform_debug        = false,
+      hbUniform_debug        = false;
       hbUniform_hb_gpu_atlas = atlasTextureUnit;
 
       /****************
