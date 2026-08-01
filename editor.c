@@ -53,7 +53,7 @@ rune *lineRunes = NULL;
  * harfbuzz globals *
  *******************/
 
-f32 fontSize       = 18.0f;
+f32 fontSize       = 28.0f;
 f32 displayDPI     = 163.0f;
 char *fontFilePath = "/usr/share/fonts/TTF/IosevkaNerdFont-Regular.ttf";
 
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
 
-   window = glfwCreateWindow(800, 600, "GLFWWindow", NULL, NULL);
+   window = glfwCreateWindow(1600, 200, "GLFWWindow", NULL, NULL);
    glfwMakeContextCurrent(window);
    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -459,7 +459,7 @@ int main(int argc, char *argv[])
       hb_font_get_scale(hbFont, &xScale, &yScale);
       hbUniform_scale = fontSize / (f32) yScale;
 
-      hbUniform_position.y   = 200;
+      hbUniform_position.y   = (windowHeight - fontSize) / 2;
       hbUniform_gamma        = 1.0f;
       hbUniform_debug        = false,
       hbUniform_hb_gpu_atlas = atlasTextureUnit;
@@ -511,6 +511,7 @@ int main(int argc, char *argv[])
 
 void windowResize(GLFWwindow *window, i32 width, i32 height)
 {
+   glViewport(0, 0, width, height);
 }
 
 void mouseScroll(GLFWwindow *window, f64 x, f64 y)
