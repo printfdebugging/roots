@@ -29,3 +29,12 @@ cmake -B build
 cmake --build build
 ./build/editor
 ```
+
+## Philosophy
+
+- Less is more, don't create wrapper functions, modules, libraries or
+  source/header files if not critical. As things get complex, these
+  abstractions make it hard to pivot, or even understand what's going on.
+
+- Make progress on the actual project and don't spend time shining the build
+  system, or creating beautiful abstractions.
