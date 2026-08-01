@@ -19,6 +19,6 @@ set(CMAKE_C_STANDARD 23)
 add_compile_options(-std=gnu2x)
 
 add_executable(editor editor.c)
-target_compile_definitions(editor PRIVATE GLFW_INCLUDE_NONE ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}")
+target_compile_definitions(editor PRIVATE GLFW_INCLUDE_NONE ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/")
 target_include_directories(editor PUBLIC include)
 target_link_libraries(editor PRIVATE harfbuzz-gpu harfbuzz glfw glad cglm unicode)
