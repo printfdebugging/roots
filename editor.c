@@ -184,6 +184,18 @@ int main(int argc, char *argv[])
 
    glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
 
+   /*************************************
+    * harfbuzz: get glyph ascent/decent *
+    ************************************/
+
+   const hb_ot_metrics_tag_t ASCENT_HHEA  = HB_TAG('H', 'a', 's', 'c');
+   const hb_ot_metrics_tag_t DESCENT_HHEA = HB_TAG('H', 'd', 's', 'c');
+
+   hb_position_t hbAscent, hbDescent, hbMaxHeight;
+   hb_ot_metrics_get_position(hbFont, ASCENT_HHEA, &hbAscent);
+   hb_ot_metrics_get_position(hbFont, DESCENT_HHEA, &hbDescent);
+   hb_ot_metrics_get_position(hbFont, HB_OT_METRICS_TAG_CAP_HEIGHT, &hbMaxHeight);
+
    /********************************************************
     * harfbuzz: shape the glyphs and get the glyph indices *
     *******************************************************/
