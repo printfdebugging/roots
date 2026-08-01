@@ -15,7 +15,7 @@
 
 /******************
  * window globals *
- ******************/
+ *****************/
 
 GLFWwindow *window = NULL;
 f32 lastTime;
@@ -23,7 +23,7 @@ f32 timeDelta;
 
 /********************
  * window callbacks *
- ********************/
+ *******************/
 
 static void mouseScroll(GLFWwindow *window, f64 x, f64 y);
 static void windowResize(GLFWwindow *window, i32 width, i32 height);
@@ -31,7 +31,7 @@ static void mouseMove(GLFWwindow *window, f64 x, f64 y);
 
 /********************
  * Helper functions *
- ********************/
+ *******************/
 
 static char *readFileContents(const char *filPath);
 static b8 shaderGetCompileStatus(u32 shaderObject);
@@ -39,7 +39,7 @@ static b8 shaderGetLinkStatus(u32 shaderProgram);
 
 /**************************
  * line rendering globals *
- **************************/
+ *************************/
 
 u32 lineVao     = 0;
 u32 lineVbo     = 0;
@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
 
    /*****************************************
     * line rendering globals initialization *
-    *****************************************/
+    ****************************************/
 
    if (!(lineBytelen = strlen((char *) lineUTF8)) ||
        !(lineRunelen = uc_rune_count(lineUTF8, lineBytelen)) ||
@@ -148,7 +148,7 @@ int main(int argc, char *argv[])
 
    /*********************************************************
     * harfbuzz: font loading & shape encoder initialization *
-    *********************************************************/
+    ********************************************************/
 
    hb_blob_t *hbBlob = NULL;
    if (!(hbBlob = hb_blob_create_from_file(fontFilePath)) ||
@@ -163,9 +163,9 @@ int main(int argc, char *argv[])
    hb_font_set_scale(hbFont, (i32) displayDPI * 1, (i32) displayDPI * 1);
    hb_blob_destroy(hbBlob);
 
-   /**************************************************************
-    *   opengl: create an atlas texture to upload the glyph data *
-    **************************************************************/
+   /************************************************************
+    * opengl: create an atlas texture to upload the glyph data *
+    ***********************************************************/
 
    atlasCapacityBytes     = ATLAS_PAGE_SIZE;
    atlasCursorOffsetBytes = 0;
@@ -180,13 +180,13 @@ int main(int argc, char *argv[])
 
    /******************************
     * glyph cache initialization *
-    ******************************/
+    *****************************/
 
    glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
 
-   /***********************************************************
-    *    harfbuzz: shape the glyphs and get the glyph indices *
-    ***********************************************************/
+   /********************************************************
+    * harfbuzz: shape the glyphs and get the glyph indices *
+    *******************************************************/
 
    hb_buffer_t *buffer = hb_buffer_create();
    hb_buffer_add_codepoints(buffer, lineRunes, lineRunelen, 0, -1);
@@ -198,16 +198,16 @@ int main(int argc, char *argv[])
    hb_glyph_info_t *glyphInfos         = hb_buffer_get_glyph_infos(buffer, &glyphCount);
    hb_glyph_position_t *glyphPositions = hb_buffer_get_glyph_positions(buffer, &glyphCount);
 
-   /**************************************************
-    * harfbuzz: allocate space to store glyph quads  *
-    **************************************************/
+   /*************************************************
+    * harfbuzz: allocate space to store glyph quads *
+    ************************************************/
 
    glyphQuadVerticesCount = glyphCount * 6;
    glyphQuadVertices      = calloc(glyphQuadVerticesCount, sizeof(struct GlyphVertex));
 
    /******************************************
     * harfbuzz: load & cache font glyph data *
-    ******************************************/
+    *****************************************/
 
    struct Point glyphPosition = { .x = 0, .y = 0 };
    for (u32 glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
@@ -217,7 +217,7 @@ int main(int argc, char *argv[])
 
       /**************************************************************
        * harfbuzz: cache the glyph primitives if not cached already *
-       **************************************************************/
+       *************************************************************/
 
       if (!glyphCache[glyphIndex].cached)
       {
@@ -234,7 +234,7 @@ int main(int argc, char *argv[])
 
          /*****************************
           * cache the glyph quad info *
-          *****************************/
+          ****************************/
 
          glyphCache[glyphIndex] = (struct GlyphInfo) {
             .extents.min_x = hbGlyphExtents.x_bearing,
@@ -249,7 +249,7 @@ int main(int argc, char *argv[])
 
          /*********************************************************
           * upload glyph primitives to the gpu & store the offset *
-          *********************************************************/
+          ********************************************************/
 
          if (!glyphCache[glyphIndex].empty)
          {
@@ -266,13 +266,13 @@ int main(int argc, char *argv[])
 
       /**************************************
        * load `glyphInfo` from `glyphCache` *
-       **************************************/
+       *************************************/
 
       glyphInfo = glyphCache[glyphIndex];
 
       /**********************
        * create glyph quads *
-       **********************/
+       *********************/
       /* todo: later create with ascent/decent rather than just advances */
 
       glyphPosition.x += glyphPositions[glyphIdx].x_offset;
@@ -315,7 +315,7 @@ int main(int argc, char *argv[])
 
    /************************************
     * opengl: glyph quad upload to gpu *
-    ************************************/
+    ***********************************/
    glGenVertexArrays(1, &glyphQuadVerticesVAO);
    glGenBuffers(1, &glyphQuadVerticesVBO);
 
@@ -324,9 +324,9 @@ int main(int argc, char *argv[])
    glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * glyphQuadVerticesCount, glyphQuadVertices, GL_STATIC_DRAW);
    glyphQuadsUploaded = true;
 
-   /*******************************************************************
-    * opengl: create a shader `hbShaderProgram` for rendering glyphs  *
-    *******************************************************************/
+   /******************************************************************
+    * opengl: create a shader `hbShaderProgram` for rendering glyphs *
+    *****************************************************************/
 
    char *hbShaderVersion  = "#version 330 core\n";
    char *hbShaderPreamble = "#define HB_GPU_DEMO_DRAW\n";
@@ -378,7 +378,7 @@ int main(int argc, char *argv[])
 
    /**********************************************************
     * opengl: setup attribute locations in `hbShaderProgram` *
-    **********************************************************/
+    *********************************************************/
 
    i32 glyphQuadObjectStride = sizeof(struct GlyphVertex);
    i32 attribLocation        = -1;
@@ -407,7 +407,7 @@ int main(int argc, char *argv[])
 
    /******************************************
     * opengl: cache shader uniform locations *
-    ******************************************/
+    *****************************************/
 
    hbShaderProgram_UniformLocation_matViewProjection = glGetUniformLocation(hbShaderProgram, "u_matViewProjection");
    hbShaderProgram_UniformLocation_viewport          = glGetUniformLocation(hbShaderProgram, "u_viewport");
@@ -419,15 +419,15 @@ int main(int argc, char *argv[])
    hbShaderProgram_UniformLocation_stem_darkening    = glGetUniformLocation(hbShaderProgram, "u_stem_darkening");
    hbShaderProgram_UniformLocation_hb_gpu_atlas      = glGetUniformLocation(hbShaderProgram, "hb_gpu_atlas");
 
-   /**********************
-    *    the main loop   *
-    **********************/
+   /*****************
+    * the main loop *
+    ****************/
 
    while (!glfwWindowShouldClose(window))
    {
       /*********************
        * frame bookkeeping *
-       *********************/
+       ********************/
 
       f64 timeNow = glfwGetTime();
       timeDelta   = timeNow - lastTime;
@@ -435,7 +435,7 @@ int main(int argc, char *argv[])
 
       /*****************
        * event polling *
-       *****************/
+       ****************/
 
       glfwPollEvents();
       if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
@@ -443,7 +443,7 @@ int main(int argc, char *argv[])
 
       /***********************************
        * calculate transformation matrix *
-       ***********************************/
+       **********************************/
 
       i32 windowWidth, windowHeight;
       glfwGetWindowSize(window, &windowWidth, &windowHeight);
@@ -451,7 +451,7 @@ int main(int argc, char *argv[])
 
       /********************
        * update variables *
-       ********************/
+       *******************/
 
       glGetIntegerv(GL_VIEWPORT, hbUniform_viewport);
 
@@ -461,11 +461,12 @@ int main(int argc, char *argv[])
 
       hbUniform_position.y   = 200;
       hbUniform_gamma        = 1.0f;
+      hbUniform_debug        = false,
       hbUniform_hb_gpu_atlas = atlasTextureUnit;
 
       /****************
        * set uniforms *
-       ****************/
+       ***************/
 
       glBindVertexArray(glyphQuadVerticesVAO);
 
@@ -481,7 +482,7 @@ int main(int argc, char *argv[])
 
       /**********************
        * opengl: draw calls *
-       **********************/
+       *********************/
 
       glClearColor(ColorRGBAHex(0X282C34FF));
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -491,9 +492,9 @@ int main(int argc, char *argv[])
       glfwSwapBuffers(window);
    }
 
-   /**************
-    *   cleanup  *
-    **************/
+   /***********
+    * cleanup *
+    **********/
 
    hb_face_destroy(hbFace);
    hb_font_destroy(hbFont);
