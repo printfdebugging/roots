@@ -9,6 +9,12 @@ set(CMAKE_COLOR_DIAGNOSTICS ON)
 set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
 
+find_program(CCACHE_PROGRAM ccache)
+if(CCACHE_PROGRAM)
+   set(CMAKE_C_COMPILER_LAUNCHER "ccache")
+   set(CMAKE_CXX_COMPILER_LAUNCHER "ccache")
+endif()
+
 add_subdirectory(glfw)
 add_subdirectory(harfbuzz)
 add_subdirectory(unicode)
