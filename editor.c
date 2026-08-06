@@ -47,7 +47,9 @@ u32 lineRunelen = 0;
 u8 lineUTF8[]   = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 rune *lineRunes = NULL;
 
-i32 cursorCol = 0;
+i32 xScrollOffset = 0;
+i32 cursorCol     = 0;
+i32 cursorOffset  = 0;
 
 /********************
  * harfbuzz globals *
@@ -462,13 +464,30 @@ int main(int argc, char *argv[])
       if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
          glfwSetWindowShouldClose(window, GLFW_TRUE);
 
+      /**********************
+       * update window size *
+       *********************/
+      i32 windowWidth, windowHeight;
+      glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+      /******************************************
+       * calculate the horizontal scroll offset *
+       *****************************************/
+      u32 runeIdx       = glyphQuadVertices[cursorCol * 6].runeIdx;
+      u32 cursorLeftPx  = glyphQuadVertices[cursorCol * 6].x * hbUniform_scale;
+      u32 cursorWidthPx = glyphCache[runeIdx].extents.xMax * hbUniform_scale;
+      u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
+
+      if (xScrollOffset + windowWidth < cursorRightPx)
+         xScrollOffset = cursorRightPx - windowWidth;
+      if (cursorLeftPx < xScrollOffset)
+         xScrollOffset = cursorLeftPx;
+
       /***********************************
        * calculate transformation matrix *
        **********************************/
-
-      i32 windowWidth, windowHeight;
-      glfwGetWindowSize(window, &windowWidth, &windowHeight);
       hbUniform_matViewProjection = glms_ortho(0, windowWidth, 0, windowHeight, 0.0f, 100.0f);
+      hbUniform_matViewProjection = glms_translate(hbUniform_matViewProjection, (vec3s) { -xScrollOffset, 0.0f, 0.0f });
 
       /********************
        * update variables *
