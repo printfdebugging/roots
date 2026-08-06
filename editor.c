@@ -252,14 +252,14 @@ int main(int argc, char *argv[])
           ****************************/
 
          glyphCache[glyphIndex] = (struct GlyphInfo) {
-            .extents.min_x = 0,
-            .extents.max_x = hb_font_get_glyph_h_advance(hbFont, glyphIndex),
-            .extents.min_y = hbDescent,
-            .extents.max_y = hbAscent,
-            .advance       = hb_font_get_glyph_h_advance(hbFont, glyphIndex),
-            .upem          = yScale,
-            .empty         = (hbBlobLength == 0),
-            .cached        = true,
+            .extents.xMin = 0,
+            .extents.xMax = hb_font_get_glyph_h_advance(hbFont, glyphIndex),
+            .extents.yMin = hbDescent,
+            .extents.yMax = hbAscent,
+            .advance      = hb_font_get_glyph_h_advance(hbFont, glyphIndex),
+            .upem         = yScale,
+            .empty        = (hbBlobLength == 0),
+            .cached       = true,
          };
 
          /*********************************************************
@@ -272,7 +272,7 @@ int main(int argc, char *argv[])
             glBindBuffer(GL_TEXTURE_BUFFER, atlasTextureBufferObject);
             glBufferSubData(GL_TEXTURE_BUFFER, atlasCursorOffsetBytes, hbBlobLength, hbGlyphData);
 
-            glyphCache[glyphIndex].atlas_offset = atlasCursorOffsetBytes;
+            glyphCache[glyphIndex].atlasOffset = atlasCursorOffsetBytes;
             atlasCursorOffsetBytes += hbBlobLength;
 
             hb_gpu_draw_recycle_blob(hbDraw, hbBlob);
@@ -298,19 +298,19 @@ int main(int argc, char *argv[])
       {
          i32 cx = (cornerIdx >> 1) & 1;
          i32 cy = cornerIdx & 1;
-         f64 ex = (1 - cx) * glyphInfo.extents.min_x + cx * glyphInfo.extents.max_x;
-         f64 ey = (1 - cy) * glyphInfo.extents.min_y + cy * glyphInfo.extents.max_y;
+         f64 ex = (1 - cx) * glyphInfo.extents.xMin + cx * glyphInfo.extents.xMax;
+         f64 ey = (1 - cy) * glyphInfo.extents.yMin + cy * glyphInfo.extents.yMax;
 
          glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
-            .x            = (f32) glyphPosition.x,
-            .y            = (f32) glyphPosition.y,
-            .tx           = (f32) ex,
-            .ty           = (f32) ey,
-            .nx           = cx ? 1.f : -1.f,
-            .ny           = cy ? -1.f : 1.f,
-            .emPerPos     = 1.0,
-            .atlas_offset = glyphInfo.atlas_offset / TEXEL_SIZE,
-            .runeIdx      = glyphIdx,
+            .x           = (f32) glyphPosition.x,
+            .y           = (f32) glyphPosition.y,
+            .tx          = (f32) ex,
+            .ty          = (f32) ey,
+            .nx          = cx ? 1.f : -1.f,
+            .ny          = cy ? -1.f : 1.f,
+            .emPerPos    = 1.0,
+            .atlasOffset = glyphInfo.atlasOffset / TEXEL_SIZE,
+            .runeIdx     = glyphIdx,
          };
       }
 
@@ -417,7 +417,7 @@ int main(int argc, char *argv[])
 
    attribLocation = glGetAttribLocation(hbShaderProgram, "a_glyphLoc");
    glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlas_offset));
+   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlasOffset));
 
    attribLocation = glGetAttribLocation(hbShaderProgram, "a_runeIdx");
    glEnableVertexAttribArray((u32) attribLocation);
