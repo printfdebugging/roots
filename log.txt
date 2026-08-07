@@ -1,0 +1,14 @@
+*log.txt*
+
+--------------------------------------------------------------------------
+@printfdebugging                           Fri Aug  7 12:51:42 PM IST 2026
+
+- i should have a log file in the project itself. it does not make
+  sense to have it outside the project as then i have to juggle
+  between repositories and sync things in my head about what i did the
+  last time and what to do next.
+
+- with this here, i don't have to write a blog about things, devs can
+  just read this file and know what's going on.
+
+vim:ft=help
