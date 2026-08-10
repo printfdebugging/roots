@@ -37,7 +37,7 @@
 #define GB (1024 * 1024 * 1024)
 
 #define MM   (1.0f)
-#define CM   (10.0f MM)
+#define CM   (10.0f * MM)
 #define INCH (25.4f * MM)
 
 #define TEXEL_SIZE        8
