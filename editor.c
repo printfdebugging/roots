@@ -10,8 +10,8 @@
 #include "hb-gpu.h"
 #include "hb-ot.h"
 
-#include "./types.h"
-#include "./macros.h"
+#include "types.h"
+#include "macros.h"
 
 /******************
  * window globals *

@@ -1,9 +1,9 @@
 #ifndef MACROS_H
 #define MACROS_H
 
-/***************
- *    macros   *
- ***************/
+/**********
+ * macros *
+ *********/
 
 #define ColorRGBHex(color)               \
    (((color >> 16) & 0xFF) / 255.0f),    \
