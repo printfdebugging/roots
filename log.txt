@@ -1,6 +1,40 @@
 *log.txt*
 
 --------------------------------------------------------------------------
+@printfdebugging                           Wed Aug 12 01:03:05 PM IST 2026
+
+                        RENDERING MULTIPLE LINES ~
+- I need abstractions for that. For a renderer which just stores the
+  visible quads, I would need a reLayout function of some sort & that
+  means I need some abstractions around the harfbuzz code for
+  re-shaping the lines..
+
+- Created a `struct Editor` to store the editor state & a `struct Layout`
+  to store the layouting/relayouting/shaping logic, though most of
+  that is yet to be moved to `layout.c` functions.
+
+- I now face the same problem as before, `layout.c` functions need
+  access to the editor object and vice-versa & when we add the
+  renderer to the mix, everything accesses everything else. So I would
+  need some kind of wrapper object, but I wonder if that would lead me
+  down the abstraction hell (I just came out of).
+
+  |https://github.com/printfdebugging/editor|
+  |https://github.com/printfdebugging/engine|
+  |https://github.com/printfdebugging/external|
+
+- Thinking more about it, I realized that I was treating the file
+  boundaries (editor.c/layout.c) as a hard wall which the objects
+  cannot cross, but the `Layout` object doesn't exist in vacuum, it's
+  editor's layout. So it should be more like editorReLayout than
+  reLayout.. >c
+        void editorReLayout(struct Editor *editor); // good
+        void reLayout(struct Layout *layout);       // bad
+<
+- The file boundary might help decide how much of the state should be
+  accessed and in what way (readonly/read-write).
+
+--------------------------------------------------------------------------
 @printfdebugging                           Fri Aug  7 12:51:42 PM IST 2026
 
 - i should have a log file in the project itself. it does not make
