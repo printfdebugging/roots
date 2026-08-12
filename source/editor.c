@@ -14,6 +14,7 @@
 #include "macros.h"
 #include "shader.h"
 #include "filesystem.h"
+#include "editor.h"
 
 /******************
  * window globals *
@@ -32,31 +33,7 @@ static void windowResize(GLFWwindow *window, i32 width, i32 height);
 static void mouseMove(GLFWwindow *window, f64 x, f64 y);
 static void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-/**************************
- * line rendering globals *
- *************************/
-
-/*****************************************
- * editor - internal text representation *
- ****************************************/
-u32 lineBytelen = 0;
-u32 lineRunelen = 0;
-u8 lineUTF8[]   = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-rune *lineRunes = NULL;
-
-/***************************
- * editor - internal state *
- **************************/
-i32 xScrollOffset = 0;
-i32 cursorCol     = 0;
-i32 cursorOffset  = 0;
-
-/***********************
- * editor - core state *
- **********************/
-f32 fontSize       = 28.0f;
-f32 displayDPI     = 163.0f;
-char *fontFilePath = "/usr/share/fonts/TTF/IosevkaNerdFont-Regular.ttf";
+struct Editor *editor;
 
 /*******************************************
  * layout - objects which do the layouting *
@@ -119,6 +96,10 @@ b32 glyphQuadsUploaded   = false;
 
 int main(int argc, char *argv[])
 {
+   if (!(editor = calloc(1, sizeof(struct Editor))))
+      perror("failed to allocate struct Editor\n");
+   editorInit(editor);
+
    /*************************
     * window initialization *
     ************************/
@@ -154,18 +135,6 @@ int main(int argc, char *argv[])
 
    /* we have a window to draw stuff on */
 
-   /*****************************************
-    * line rendering globals initialization *
-    ****************************************/
-
-   if (!(lineBytelen = strlen((char *) lineUTF8)) ||
-       !(lineRunelen = uc_rune_count(lineUTF8, lineBytelen)) ||
-       !(lineRunes = calloc(lineRunelen, sizeof(rune))) ||
-       !(uc_utf8_decode_stream(lineUTF8, lineBytelen, lineRunes, lineRunelen)))
-   {
-      perror("failed to decode lineUTF8\n");
-   }
-
    /* we have a stream of unicode codepoints to draw */
 
    /*********************************************************
@@ -173,7 +142,7 @@ int main(int argc, char *argv[])
     ********************************************************/
 
    hb_blob_t *hbBlob = NULL;
-   if (!(hbBlob = hb_blob_create_from_file(fontFilePath)) ||
+   if (!(hbBlob = hb_blob_create_from_file(editor->fontFilePath)) ||
        !(hbFace = hb_face_create(hbBlob, 0)) ||
        !(hbFont = hb_font_create(hbFace)) ||
        !(hbDraw = hb_gpu_draw_create_or_fail()))
@@ -181,8 +150,8 @@ int main(int argc, char *argv[])
       perror("failed to initialize harfbuzz");
    }
 
-   hb_font_set_ptem(hbFont, (f32) displayDPI);
-   hb_font_set_scale(hbFont, (i32) displayDPI * 1, (i32) displayDPI * 1);
+   hb_font_set_ptem(hbFont, (f32) editor->displayDPI);
+   hb_font_set_scale(hbFont, (i32) editor->displayDPI * 1, (i32) editor->displayDPI * 1);
    hb_blob_destroy(hbBlob);
 
    /************************************************************
@@ -223,7 +192,7 @@ int main(int argc, char *argv[])
     *******************************************************/
 
    hb_buffer_t *buffer = hb_buffer_create();
-   hb_buffer_add_codepoints(buffer, lineRunes, lineRunelen, 0, -1);
+   hb_buffer_add_codepoints(buffer, editor->lineRunes, editor->lineRunelen, 0, -1);
    hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
    hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
    hb_shape(hbFont, buffer, NULL, 0);
@@ -490,21 +459,21 @@ int main(int argc, char *argv[])
       /******************************************
        * calculate the horizontal scroll offset *
        *****************************************/
-      u32 runeIdx       = glyphQuadVertices[cursorCol * 6].runeIdx;
-      u32 cursorLeftPx  = glyphQuadVertices[cursorCol * 6].x * hbUniform_scale;
+      u32 runeIdx       = glyphQuadVertices[editor->cursorCol * 6].runeIdx;
+      u32 cursorLeftPx  = glyphQuadVertices[editor->cursorCol * 6].x * hbUniform_scale;
       u32 cursorWidthPx = glyphCache[runeIdx].extents.xMax * hbUniform_scale;
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
-      if (xScrollOffset + windowWidth < cursorRightPx)
-         xScrollOffset = cursorRightPx - windowWidth;
-      if (cursorLeftPx < xScrollOffset)
-         xScrollOffset = cursorLeftPx;
+      if (editor->xScrollOffset + windowWidth < cursorRightPx)
+         editor->xScrollOffset = cursorRightPx - windowWidth;
+      if (cursorLeftPx < editor->xScrollOffset)
+         editor->xScrollOffset = cursorLeftPx;
 
       /***********************************
        * calculate transformation matrix *
        **********************************/
       hbUniform_matViewProjection = glms_ortho(0, windowWidth, 0, windowHeight, 0.0f, 100.0f);
-      hbUniform_matViewProjection = glms_translate(hbUniform_matViewProjection, (vec3s) { -xScrollOffset, 0.0f, 0.0f });
+      hbUniform_matViewProjection = glms_translate(hbUniform_matViewProjection, (vec3s) { -editor->xScrollOffset, 0.0f, 0.0f });
 
       /********************
        * update variables *
@@ -514,13 +483,13 @@ int main(int argc, char *argv[])
 
       i32 xScale, yScale;
       hb_font_get_scale(hbFont, &xScale, &yScale);
-      hbUniform_scale = fontSize / (f32) yScale;
+      hbUniform_scale = editor->fontSize / (f32) yScale;
 
-      hbUniform_position.y   = (windowHeight - fontSize) / 2;
+      hbUniform_position.y   = (windowHeight - editor->fontSize) / 2;
       hbUniform_gamma        = 1.0f;
       hbUniform_debug        = false;
       hbUniform_hb_gpu_atlas = atlasTextureUnit;
-      hbUniform_runeIdx      = cursorCol;
+      hbUniform_runeIdx      = editor->cursorCol;
 
       /****************
        * set uniforms *
@@ -559,7 +528,8 @@ int main(int argc, char *argv[])
    hb_font_destroy(hbFont);
    hb_gpu_draw_destroy(hbDraw);
 
-   free(lineRunes);
+   editorDeInit(editor);
+   free(editor);
    free(glyphQuadVertices);
 
    glfwDestroyWindow(window);
@@ -588,15 +558,45 @@ void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
     *************************/
    if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
    {
-      cursorCol -= 1;
-      if (cursorCol < 0)
-         cursorCol = 0;
+      editor->cursorCol -= 1;
+      if (editor->cursorCol < 0)
+         editor->cursorCol = 0;
    }
 
    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
    {
-      cursorCol += 1;
-      if (cursorCol >= lineRunelen)
-         cursorCol = lineRunelen - 1;
+      editor->cursorCol += 1;
+      if (editor->cursorCol >= editor->lineRunelen)
+         editor->cursorCol = editor->lineRunelen - 1;
    }
+}
+
+void editorInit(struct Editor *editor)
+{
+   u8 lineUTF8[]       = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+   char *fontFilePath  = "/usr/share/fonts/TTF/IosevkaNerdFont-Regular.ttf";
+   u32 fontFilePathLen = strlen(fontFilePath);
+
+   if (!(editor->lineBytelen = strlen((char *) lineUTF8)) ||
+       !(editor->lineRunelen = uc_rune_count(lineUTF8, editor->lineBytelen)) ||
+       !(editor->lineRunes = calloc(editor->lineRunelen, sizeof(rune))) ||
+       !(uc_utf8_decode_stream(lineUTF8, editor->lineBytelen, editor->lineRunes, editor->lineRunelen)))
+   {
+      perror("failed to decode lineUTF8\n");
+   }
+
+   editor->xScrollOffset = 0;
+   editor->cursorCol     = 0;
+   editor->cursorOffset  = 0;
+
+   editor->fontSize     = 28.0f;
+   editor->displayDPI   = 163.0f;
+   editor->fontFilePath = calloc(fontFilePathLen + 1, sizeof(char));
+   strcpy(editor->fontFilePath, fontFilePath);
+}
+
+void editorDeInit(struct Editor *editor)
+{
+   free(editor->lineRunes);
+   free(editor->fontFilePath);
 }
