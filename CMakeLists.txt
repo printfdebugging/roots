@@ -27,6 +27,7 @@ add_compile_options(-std=gnu2x)
 add_executable(editor
    source/editor.c
    source/shader.c
+   source/filesystem.c
 )
 
 target_compile_definitions(editor PRIVATE GLFW_INCLUDE_NONE ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/")

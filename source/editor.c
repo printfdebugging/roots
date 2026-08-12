@@ -13,6 +13,7 @@
 #include "types.h"
 #include "macros.h"
 #include "shader.h"
+#include "filesystem.h"
 
 /******************
  * window globals *
@@ -30,12 +31,6 @@ static void mouseScroll(GLFWwindow *window, f64 x, f64 y);
 static void windowResize(GLFWwindow *window, i32 width, i32 height);
 static void mouseMove(GLFWwindow *window, f64 x, f64 y);
 static void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
-
-/********************
- * Helper functions *
- *******************/
-
-static char *readFileContents(const char *filPath);
 
 /**************************
  * line rendering globals *
@@ -561,54 +556,6 @@ void mouseScroll(GLFWwindow *window, f64 x, f64 y)
 
 void mouseMove(GLFWwindow *window, f64 x, f64 y)
 {
-}
-
-char *readFileContents(const char *filPath)
-{
-   char *data = NULL;
-   FILE *file = fopen(filPath, "rb");
-   if (!file)
-   {
-      fprintf(stderr, "failed to read shader file: %s\n", filPath);
-      return NULL;
-   }
-
-   fseek(file, 0, SEEK_END);
-   i64 length = ftell(file);
-   fseek(file, 0, SEEK_SET);
-
-   if (length < 0)
-   {
-      fprintf(stderr, "failed to get the shader file's length: %s\n", filPath);
-      goto CLEANUP;
-   }
-
-   if (!(data = calloc(1, length + 1)))
-   {
-      fprintf(stderr, "failed to allocate memory for data to store file %s\n", filPath);
-      goto CLEANUP;
-   }
-
-   u64 read_count = fread(data, 1, length, file);
-   if (read_count < length || read_count == 0)
-   {
-      fprintf(stderr, "read returned %li which is either 0 or less than %li", read_count, length);
-      goto CLEANUP;
-   }
-
-   data[length] = '\0';
-   if (fclose(file))
-   {
-      fprintf(stderr, "fclose failed\n");
-      goto CLEANUP;
-   }
-
-   return data;
-
-CLEANUP:
-   fclose(file);
-   free(data);
-   return NULL;
 }
 
 void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
