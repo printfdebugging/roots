@@ -36,28 +36,39 @@ static void keyPress(GLFWwindow *window, int key, int scancode, int action, int 
  * line rendering globals *
  *************************/
 
+/*****************************************
+ * editor - internal text representation *
+ ****************************************/
 u32 lineBytelen = 0;
 u32 lineRunelen = 0;
 u8 lineUTF8[]   = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
 rune *lineRunes = NULL;
 
+/***************************
+ * editor - internal state *
+ **************************/
 i32 xScrollOffset = 0;
 i32 cursorCol     = 0;
 i32 cursorOffset  = 0;
 
-/********************
- * harfbuzz globals *
- *******************/
-
+/***********************
+ * editor - core state *
+ **********************/
 f32 fontSize       = 28.0f;
 f32 displayDPI     = 163.0f;
 char *fontFilePath = "/usr/share/fonts/TTF/IosevkaNerdFont-Regular.ttf";
 
+/*******************************************
+ * layout - objects which do the layouting *
+ ******************************************/
 hb_face_t *hbFace     = NULL;
 hb_font_t *hbFont     = NULL;
 hb_gpu_draw_t *hbDraw = NULL;
 u32 hbShaderProgram   = 0;
 
+/*************************************
+ * renderer - draw uniform locations *
+ ************************************/
 i32 hbShaderProgram_UniformLocation_matViewProjection = -1;
 i32 hbShaderProgram_UniformLocation_viewport          = -1;
 f32 hbShaderProgram_UniformLocation_scale             = -1;
@@ -69,6 +80,9 @@ i32 hbShaderProgram_UniformLocation_debug             = -1;
 i32 hbShaderProgram_UniformLocation_stem_darkening    = -1;
 i32 hbShaderProgram_UniformLocation_runeIdx           = -1;
 
+/**********************************
+ * renderer - draw uniform states *
+ *********************************/
 mat4s hbUniform_matViewProjection = { GLM_MAT4_IDENTITY_INIT };
 i32 hbUniform_viewport[4]         = { 0 };
 f32 hbUniform_scale               = 0;
@@ -80,19 +94,28 @@ b8 hbUniform_debug                = false;
 b8 hbUniform_stem_darkening       = false;
 i32 hbUniform_runeIdx             = 0;
 
+/*********************************
+ * renderer - object store/cache *
+ ********************************/
 u32 atlasTexture             = 0;
 u32 atlasTextureUnit         = GL_TEXTURE0;
 u32 atlasTextureBufferObject = 0;
 u32 atlasCapacityBytes       = 0;
 u32 atlasCursorOffsetBytes   = 0;
 
-struct GlyphInfo *glyphCache = NULL;
-
+/*********************************************************************************************
+ * layout data - internal copy - we relayout when it is invalidated & sync with the renderer *
+ ********************************************************************************************/
 struct GlyphVertex *glyphQuadVertices = NULL;
 u32 glyphQuadVerticesCount            = 0;
-u32 glyphQuadVerticesVAO              = 0;
-u32 glyphQuadVerticesVBO              = 0;
-b32 glyphQuadsUploaded                = false;
+struct GlyphInfo *glyphCache          = NULL;
+
+/**************************
+ * renderer - layout data *
+ *************************/
+u32 glyphQuadVerticesVAO = 0;
+u32 glyphQuadVerticesVBO = 0;
+b32 glyphQuadsUploaded   = false;
 
 int main(int argc, char *argv[])
 {
