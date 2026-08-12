@@ -28,3 +28,11 @@ add_executable(editor editor.c)
 target_compile_definitions(editor PRIVATE GLFW_INCLUDE_NONE ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/")
 target_include_directories(editor PUBLIC include)
 target_link_libraries(editor PRIVATE harfbuzz-gpu harfbuzz glfw glad cglm unicode)
+
+install(
+   TARGETS editor
+   EXPORT  editor
+   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
