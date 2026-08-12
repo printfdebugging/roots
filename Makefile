@@ -5,6 +5,7 @@ debug:
 	cmake \
 		-DCMAKE_BUILD_TYPE=Debug \
 		-DCMAKE_INSTALL_PREFIX=install \
+	   -DTEXT_LINE_IMPLEMENTATION=ON \
 		-B build && cmake --build build
 
 release:
@@ -34,4 +35,3 @@ clean:
 
 update:
 	git submodule update --remote --merge
-

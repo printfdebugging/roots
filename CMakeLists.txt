@@ -28,7 +28,12 @@ add_executable(editor
    source/editor.c
    source/shader.c
    source/filesystem.c
+   source/text.c
 )
+
+if (TEXT_LINE_IMPLEMENTATION)
+   add_definitions(-DTEXT_LINE_IMPLEMENTATION=1)
+endif()
 
 target_compile_definitions(editor PRIVATE GLFW_INCLUDE_NONE ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/")
 target_include_directories(editor PUBLIC include)
