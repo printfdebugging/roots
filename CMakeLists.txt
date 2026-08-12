@@ -29,6 +29,7 @@ add_executable(editor
    source/shader.c
    source/filesystem.c
    source/text.c
+   source/layout.c
 )
 
 if (TEXT_LINE_IMPLEMENTATION)
