@@ -1,16 +1,20 @@
-/.cache
-/.vscode
-/.clangd
-/build
-/install
-/graphviz
-/CMakeUserPresets.json
+# Tooling
+.cache
+.vscode
+.clangd
 
-/tags
-/outputfile
-/compile_commands.json
-/gdb.txt
-/gdb-output.txt
-/perf.data
-/perf.data.old
-/flamegraph.svg
+# CMake
+build
+install
+compile_commands.json
+
+# Misc
+gdb.txt
+gdb-output.txt
+tags
+
+# Output Artifacs
+*.data
+*.data.old
+*.tar.gz
+*.svg
