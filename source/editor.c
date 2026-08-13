@@ -30,21 +30,6 @@ int main(int argc, char *argv[])
 
    /* we have a stream of unicode codepoints to draw */
 
-   /*********************************************************
-    * harfbuzz: font loading & shape encoder initialization *
-    ********************************************************/
-
-   hb_blob_t *hbBlob = NULL;
-   if (!(hbBlob = hb_blob_create_from_file(editor->fontFilePath)) ||
-       !(layout->hbFace = hb_face_create(hbBlob, 0)) ||
-       !(layout->hbFont = hb_font_create(layout->hbFace)) ||
-       !(layout->hbDraw = hb_gpu_draw_create_or_fail()))
-   {
-      perror("failed to initialize harfbuzz");
-   }
-
-   hb_blob_destroy(hbBlob);
-
    /******************************
     * glyph cache initialization *
     *****************************/

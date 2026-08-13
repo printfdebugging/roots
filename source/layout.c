@@ -3,6 +3,24 @@
 
 #include "editor.h"
 
+void _layoutInitHarfbuzz(struct Layout *layout)
+{
+   /*********************************************************
+    * harfbuzz: font loading & shape encoder initialization *
+    ********************************************************/
+
+   hb_blob_t *hbBlob = NULL;
+   if (!(hbBlob = hb_blob_create_from_file(layout->fontPath)) ||
+       !(layout->hbFace = hb_face_create(hbBlob, 0)) ||
+       !(layout->hbFont = hb_font_create(layout->hbFace)) ||
+       !(layout->hbDraw = hb_gpu_draw_create_or_fail()))
+   {
+      perror("failed to initialize harfbuzz");
+   }
+
+   hb_blob_destroy(hbBlob);
+}
+
 void layoutInit(struct Layout *layout, const char *fontPath)
 {
    /*******************************************
@@ -23,6 +41,8 @@ void layoutInit(struct Layout *layout, const char *fontPath)
    layout->glyphQuadVertices      = NULL;
    layout->glyphQuadVerticesCount = 0;
    layout->glyphCache             = NULL;
+
+   _layoutInitHarfbuzz(layout);
 }
 
 void layoutDeInit(struct Layout *layout)
