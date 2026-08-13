@@ -2,6 +2,24 @@
 
 #include "glad/glad.h"
 
+void _rendererInitGlyphAtlas(struct Renderer *renderer)
+{
+   /************************************************************
+    * opengl: create an atlas texture to upload the glyph data *
+    ***********************************************************/
+
+   renderer->atlasCapacityBytes     = ATLAS_PAGE_SIZE;
+   renderer->atlasCursorOffsetBytes = 0;
+   glGenBuffers(1, &renderer->atlasTextureBufferObject);
+   glBindBuffer(GL_TEXTURE_BUFFER, renderer->atlasTextureBufferObject);
+   glBufferData(GL_TEXTURE_BUFFER, renderer->atlasCapacityBytes, NULL, GL_STATIC_DRAW);
+
+   glActiveTexture(renderer->atlasTextureUnit);
+   glGenTextures(1, &renderer->atlasTexture);
+   glBindTexture(GL_TEXTURE_BUFFER, renderer->atlasTexture);
+   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, renderer->atlasTextureBufferObject);
+}
+
 void rendererInit(struct Renderer *renderer)
 {
    renderer->hbShaderProgram      = 0;
@@ -45,6 +63,8 @@ void rendererInit(struct Renderer *renderer)
    renderer->glyphQuadVerticesVAO = 0;
    renderer->glyphQuadVerticesVBO = 0;
    renderer->glyphQuadsUploaded   = false;
+
+   _rendererInitGlyphAtlas(renderer);
 }
 
 void rendererDeInit(struct Renderer *renderer)

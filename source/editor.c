@@ -21,10 +21,10 @@ int main(int argc, char *argv[])
    struct Layout *layout     = editor->layout;
    struct Renderer *renderer = editor->renderer;
 
+   windowInit(editor);
    editorInit(editor);
    layoutInit(layout);
    rendererInit(renderer);
-   windowInit(editor);
 
    /* we have a window to draw stuff on */
 
@@ -44,21 +44,6 @@ int main(int argc, char *argv[])
    }
 
    hb_blob_destroy(hbBlob);
-
-   /************************************************************
-    * opengl: create an atlas texture to upload the glyph data *
-    ***********************************************************/
-
-   renderer->atlasCapacityBytes     = ATLAS_PAGE_SIZE;
-   renderer->atlasCursorOffsetBytes = 0;
-   glGenBuffers(1, &renderer->atlasTextureBufferObject);
-   glBindBuffer(GL_TEXTURE_BUFFER, renderer->atlasTextureBufferObject);
-   glBufferData(GL_TEXTURE_BUFFER, renderer->atlasCapacityBytes, NULL, GL_STATIC_DRAW);
-
-   glActiveTexture(renderer->atlasTextureUnit);
-   glGenTextures(1, &renderer->atlasTexture);
-   glBindTexture(GL_TEXTURE_BUFFER, renderer->atlasTexture);
-   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, renderer->atlasTextureBufferObject);
 
    /******************************
     * glyph cache initialization *
