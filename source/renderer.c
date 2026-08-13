@@ -72,9 +72,9 @@ void fontRendererInit(struct FontRenderer *renderer)
    /**************************
     * renderer - layout data *
     *************************/
-   renderer->glyphQuadVerticesVAO = 0;
-   renderer->glyphQuadVerticesVBO = 0;
-   renderer->glyphQuadsUploaded   = false;
+   glGenVertexArrays(1, &renderer->glyphQuadVerticesVAO);
+   glGenBuffers(1, &renderer->glyphQuadVerticesVBO);
+   renderer->glyphQuadsUploaded = false;
 
    _fontRendererInitGlyphAtlas(renderer);
 }
@@ -117,4 +117,92 @@ void fontRendererUploadUniforms(struct FontRenderer *renderer)
    glUniform1f(renderer->debugLoc, renderer->debug);
    glUniform1f(renderer->gammaLoc, renderer->gamma);
    glUniform1i(renderer->hbGpuAtlasLoc, (i32) renderer->hbGpuAtlas);
+}
+
+void fontRendererCreateShader(struct FontRenderer *renderer)
+{
+   /******************************************************************
+    * opengl: create a shader `hbShaderProgram` for rendering glyphs *
+    *****************************************************************/
+
+   char *hbShaderVersion  = "#version 330 core\n";
+   char *hbShaderPreamble = "#define HB_GPU_DEMO_DRAW\n";
+   char *hbVertexMain     = readFileContents(ASSETS_DIR "harfbuzz.vert");
+   char *hbFragmentMain   = readFileContents(ASSETS_DIR "harfbuzz.frag");
+
+   u32 hbVertexShader;
+   u32 hbFragmentShader;
+
+   const char *hbVertexShaderSources[] = {
+      hbShaderVersion,
+      hbShaderPreamble,
+      hb_gpu_shader_source(HB_GPU_SHADER_STAGE_VERTEX, HB_GPU_SHADER_LANG_GLSL),
+      hb_gpu_draw_shader_source(HB_GPU_SHADER_STAGE_VERTEX, HB_GPU_SHADER_LANG_GLSL),
+      hbVertexMain,
+   };
+
+   const char *hbFragmentShaderSources[] = {
+      hbShaderVersion,
+      hbShaderPreamble,
+      hb_gpu_shader_source(HB_GPU_SHADER_STAGE_FRAGMENT, HB_GPU_SHADER_LANG_GLSL),
+      hb_gpu_draw_shader_source(HB_GPU_SHADER_STAGE_FRAGMENT, HB_GPU_SHADER_LANG_GLSL),
+      hbFragmentMain,
+   };
+
+   hbVertexShader = glCreateShader(GL_VERTEX_SHADER);
+   glShaderSource(hbVertexShader, ArraySize(hbVertexShaderSources), hbVertexShaderSources, NULL);
+   glCompileShader(hbVertexShader);
+   if (!shaderGetCompileStatus(hbVertexShader))
+      perror("vertex shader compilation failed");
+
+   hbFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+   glShaderSource(hbFragmentShader, ArraySize(hbFragmentShaderSources), hbFragmentShaderSources, NULL);
+   glCompileShader(hbFragmentShader);
+   if (!shaderGetCompileStatus(hbFragmentShader))
+      perror("fragment shader compilation failed");
+
+   renderer->hbShaderProgram = glCreateProgram();
+   glAttachShader(renderer->hbShaderProgram, hbVertexShader);
+   glAttachShader(renderer->hbShaderProgram, hbFragmentShader);
+   glLinkProgram(renderer->hbShaderProgram);
+   if (!shaderGetLinkStatus(renderer->hbShaderProgram))
+      perror("failed to link shader program");
+
+   glDeleteShader(hbVertexShader);
+   glDeleteShader(hbFragmentShader);
+   free(hbVertexMain);
+   free(hbFragmentMain);
+}
+
+void fontRendererSetupAttribLocations(struct FontRenderer *renderer)
+{
+   /**********************************************************
+    * opengl: setup attribute locations in `hbShaderProgram` *
+    *********************************************************/
+   i32 glyphQuadObjectStride = sizeof(struct GlyphVertex);
+   i32 attribLocation        = -1;
+
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_position");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, x));
+
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_texcoord");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, tx));
+
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_normal");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, nx));
+
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_emPerPos");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribPointer((u32) attribLocation, 1, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, emPerPos));
+
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_glyphLoc");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlasOffset));
+
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_runeIdx");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, runeIdx));
 }

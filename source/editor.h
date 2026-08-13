@@ -251,6 +251,8 @@ void fontRendererInit(struct FontRenderer *renderer);
 void fontRendererDeInit(struct FontRenderer *renderer);
 void fontRendererCacheUniformLoc(struct FontRenderer *renderer);
 void fontRendererUploadUniforms(struct FontRenderer *renderer);
+void fontRendererCreateShader(struct FontRenderer *renderer);
+void fontRendererSetupAttribLocations(struct FontRenderer *renderer);
 
 /**********
  * text.c *
