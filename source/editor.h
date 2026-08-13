@@ -5,6 +5,7 @@
 
 #include "hb.h"
 #include "hb-gpu.h"
+#include "GLFW/glfw3.h"
 #include "cglm/struct.h"
 #include "unicode/unicode.h"
 
@@ -139,6 +140,13 @@ struct Editor
    f32 displayDPI;
    char *fontFilePath;
 
+   /******************
+    * window globals *
+    *****************/
+   GLFWwindow *window;
+   f32 lastTime;
+   f32 timeDelta;
+
    struct Layout *layout;
    struct Renderer *renderer;
 };
@@ -251,5 +259,16 @@ char *readFileContents(const char *filPath);
 
 b8 shaderGetCompileStatus(u32 shaderObject);
 b8 shaderGetLinkStatus(u32 shaderProgram);
+
+/************
+ * window.c *
+ ***********/
+
+void windowInit(struct Editor *editor);
+void windowDeInit(struct Editor *editor);
+void mouseScroll(GLFWwindow *window, f64 x, f64 y);
+void windowResize(GLFWwindow *window, i32 width, i32 height);
+void mouseMove(GLFWwindow *window, f64 x, f64 y);
+void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 #endif

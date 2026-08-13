@@ -2,28 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "GLFW/glfw3.h"
 #include "glad/glad.h"
 #include "hb-ot.h"
 
 #include "editor.h"
-
-/******************
- * window globals *
- *****************/
-
-GLFWwindow *window = NULL;
-f32 lastTime;
-f32 timeDelta;
-
-/********************
- * window callbacks *
- *******************/
-
-static void mouseScroll(GLFWwindow *window, f64 x, f64 y);
-static void windowResize(GLFWwindow *window, i32 width, i32 height);
-static void mouseMove(GLFWwindow *window, f64 x, f64 y);
-static void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 struct Editor *editor;
 
@@ -42,39 +24,7 @@ int main(int argc, char *argv[])
    editorInit(editor);
    layoutInit(layout);
    rendererInit(renderer);
-
-   /*************************
-    * window initialization *
-    ************************/
-
-   glfwInit();
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-   glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
-   glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-   glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
-   glfwWindowHint(GLFW_SAMPLES, 4);
-#ifdef __APPLE__
-   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-#endif
-
-   window = glfwCreateWindow(1600, 200, "GLFWWindow", NULL, NULL);
-   glfwMakeContextCurrent(window);
-   gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-   glfwSwapInterval(1);
-
-   glEnable(GL_DEPTH_TEST);
-   glEnable(GL_MULTISAMPLE);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-   glLineWidth(2);
-
-   glfwSetCursorPosCallback(window, mouseMove);
-   glfwSetScrollCallback(window, mouseScroll);
-   glfwSetFramebufferSizeCallback(window, windowResize);
-   glfwSetKeyCallback(window, keyPress);
+   windowInit(editor);
 
    /* we have a window to draw stuff on */
 
@@ -375,29 +325,29 @@ int main(int argc, char *argv[])
     * the main loop *
     ****************/
 
-   while (!glfwWindowShouldClose(window))
+   while (!glfwWindowShouldClose(editor->window))
    {
       /*********************
        * frame bookkeeping *
        ********************/
 
-      f64 timeNow = glfwGetTime();
-      timeDelta   = timeNow - lastTime;
-      lastTime    = timeNow;
+      f64 timeNow       = glfwGetTime();
+      editor->timeDelta = timeNow - editor->lastTime;
+      editor->lastTime  = timeNow;
 
       /*****************
        * event polling *
        ****************/
 
       glfwPollEvents();
-      if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
-         glfwSetWindowShouldClose(window, GLFW_TRUE);
+      if (glfwGetKey(editor->window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
+         glfwSetWindowShouldClose(editor->window, GLFW_TRUE);
 
       /**********************
        * update window size *
        *********************/
       i32 windowWidth, windowHeight;
-      glfwGetWindowSize(window, &windowWidth, &windowHeight);
+      glfwGetWindowSize(editor->window, &windowWidth, &windowHeight);
 
       /******************************************
        * calculate the horizontal scroll offset *
@@ -460,7 +410,7 @@ int main(int argc, char *argv[])
 
       glDrawArrays(GL_TRIANGLES, 0, (i32) layout->glyphQuadVerticesCount);
 
-      glfwSwapBuffers(window);
+      glfwSwapBuffers(editor->window);
    }
 
    /***********
@@ -470,48 +420,13 @@ int main(int argc, char *argv[])
    rendererDeInit(renderer);
    editorDeInit(editor);
    layoutDeInit(layout);
+   windowDeInit(editor);
 
    free(layout);
    free(renderer);
    free(editor);
 
-   glfwDestroyWindow(window);
-   glfwTerminate();
-
    return EXIT_SUCCESS;
-}
-
-void windowResize(GLFWwindow *window, i32 width, i32 height)
-{
-   glViewport(0, 0, width, height);
-}
-
-void mouseScroll(GLFWwindow *window, f64 x, f64 y)
-{
-}
-
-void mouseMove(GLFWwindow *window, f64 x, f64 y)
-{
-}
-
-void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
-{
-   /**************************
-    * update cursor location *
-    *************************/
-   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-   {
-      editor->cursorCol -= 1;
-      if (editor->cursorCol < 0)
-         editor->cursorCol = 0;
-   }
-
-   if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-   {
-      editor->cursorCol += 1;
-      if (editor->cursorCol >= editor->lineRunelen)
-         editor->cursorCol = editor->lineRunelen - 1;
-   }
 }
 
 void editorInit(struct Editor *editor)
