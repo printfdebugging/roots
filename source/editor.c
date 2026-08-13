@@ -12,18 +12,18 @@ int main(int argc, char *argv[])
 {
    if (!(editor = calloc(1, sizeof(struct Editor))) ||
        !(editor->layout = calloc(1, sizeof(struct Layout))) ||
-       !(editor->renderer = calloc(1, sizeof(struct Renderer))))
+       !(editor->fontRenderer = calloc(1, sizeof(struct FontRenderer))))
    {
       perror("failed to allocate structs\n");
    }
 
-   struct Layout *layout     = editor->layout;
-   struct Renderer *renderer = editor->renderer;
+   struct Layout *layout             = editor->layout;
+   struct FontRenderer *fontRenderer = editor->fontRenderer;
 
    windowInit(editor);
    editorInit(editor);
    layoutInit(layout, editor->fontFilePath);
-   rendererInit(renderer);
+   fontRendererInit(fontRenderer);
 
    /********************************************************
     * harfbuzz: shape the glyphs and get the glyph indices *
@@ -95,11 +95,11 @@ int main(int argc, char *argv[])
          if (!layout->glyphCache[glyphIndex].empty)
          {
             const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
-            glBindBuffer(GL_TEXTURE_BUFFER, renderer->atlasTextureBufferObject);
-            glBufferSubData(GL_TEXTURE_BUFFER, renderer->atlasCursorOffsetBytes, hbBlobLength, hbGlyphData);
+            glBindBuffer(GL_TEXTURE_BUFFER, fontRenderer->atlasTextureBufferObject);
+            glBufferSubData(GL_TEXTURE_BUFFER, fontRenderer->atlasCursorOffsetBytes, hbBlobLength, hbGlyphData);
 
-            layout->glyphCache[glyphIndex].atlasOffset = renderer->atlasCursorOffsetBytes;
-            renderer->atlasCursorOffsetBytes += hbBlobLength;
+            layout->glyphCache[glyphIndex].atlasOffset = fontRenderer->atlasCursorOffsetBytes;
+            fontRenderer->atlasCursorOffsetBytes += hbBlobLength;
 
             hb_gpu_draw_recycle_blob(layout->hbDraw, hbBlob);
          }
@@ -158,13 +158,16 @@ int main(int argc, char *argv[])
    /************************************
     * opengl: glyph quad upload to gpu *
     ***********************************/
-   glGenVertexArrays(1, &renderer->glyphQuadVerticesVAO);
-   glGenBuffers(1, &renderer->glyphQuadVerticesVBO);
+   glGenVertexArrays(1, &fontRenderer->glyphQuadVerticesVAO);
+   glGenBuffers(1, &fontRenderer->glyphQuadVerticesVBO);
 
-   glBindVertexArray(renderer->glyphQuadVerticesVAO);
-   glBindBuffer(GL_ARRAY_BUFFER, renderer->glyphQuadVerticesVBO);
+   /**************************************************************************
+    * layouting/relayouting, shared glue code between renderer and layouting *
+    *************************************************************************/
+   glBindVertexArray(fontRenderer->glyphQuadVerticesVAO);
+   glBindBuffer(GL_ARRAY_BUFFER, fontRenderer->glyphQuadVerticesVBO);
    glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
-   renderer->glyphQuadsUploaded = true;
+   fontRenderer->glyphQuadsUploaded = true;
 
    /******************************************************************
     * opengl: create a shader `hbShaderProgram` for rendering glyphs *
@@ -206,11 +209,11 @@ int main(int argc, char *argv[])
    if (!shaderGetCompileStatus(hbFragmentShader))
       perror("fragment shader compilation failed");
 
-   renderer->hbShaderProgram = glCreateProgram();
-   glAttachShader(renderer->hbShaderProgram, hbVertexShader);
-   glAttachShader(renderer->hbShaderProgram, hbFragmentShader);
-   glLinkProgram(renderer->hbShaderProgram);
-   if (!shaderGetLinkStatus(renderer->hbShaderProgram))
+   fontRenderer->hbShaderProgram = glCreateProgram();
+   glAttachShader(fontRenderer->hbShaderProgram, hbVertexShader);
+   glAttachShader(fontRenderer->hbShaderProgram, hbFragmentShader);
+   glLinkProgram(fontRenderer->hbShaderProgram);
+   if (!shaderGetLinkStatus(fontRenderer->hbShaderProgram))
       perror("failed to link shader program");
 
    glDeleteShader(hbVertexShader);
@@ -225,33 +228,33 @@ int main(int argc, char *argv[])
    i32 glyphQuadObjectStride = sizeof(struct GlyphVertex);
    i32 attribLocation        = -1;
 
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_position");
+   attribLocation = glGetAttribLocation(fontRenderer->hbShaderProgram, "a_position");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, x));
 
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_texcoord");
+   attribLocation = glGetAttribLocation(fontRenderer->hbShaderProgram, "a_texcoord");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, tx));
 
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_normal");
+   attribLocation = glGetAttribLocation(fontRenderer->hbShaderProgram, "a_normal");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, nx));
 
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_emPerPos");
+   attribLocation = glGetAttribLocation(fontRenderer->hbShaderProgram, "a_emPerPos");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribPointer((u32) attribLocation, 1, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, emPerPos));
 
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_glyphLoc");
+   attribLocation = glGetAttribLocation(fontRenderer->hbShaderProgram, "a_glyphLoc");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlasOffset));
 
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_runeIdx");
+   attribLocation = glGetAttribLocation(fontRenderer->hbShaderProgram, "a_runeIdx");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, runeIdx));
 
-   glUseProgram(renderer->hbShaderProgram);
+   glUseProgram(fontRenderer->hbShaderProgram);
 
-   rendererCacheUniformLocations(renderer);
+   fontRendererCacheUniformLoc(fontRenderer);
 
    /*****************
     * the main loop *
@@ -279,8 +282,8 @@ int main(int argc, char *argv[])
        * calculate the horizontal scroll offset *
        *****************************************/
       u32 runeIdx       = layout->glyphQuadVertices[editor->cursorCol * 6].runeIdx;
-      u32 cursorLeftPx  = layout->glyphQuadVertices[editor->cursorCol * 6].x * renderer->scale;
-      u32 cursorWidthPx = layout->glyphCache[runeIdx].extents.xMax * renderer->scale;
+      u32 cursorLeftPx  = layout->glyphQuadVertices[editor->cursorCol * 6].x * fontRenderer->scale;
+      u32 cursorWidthPx = layout->glyphCache[runeIdx].extents.xMax * fontRenderer->scale;
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
       if (editor->xScrollOffset + editor->windowWidth < cursorRightPx)
@@ -291,32 +294,32 @@ int main(int argc, char *argv[])
       /***********************************
        * calculate transformation matrix *
        **********************************/
-      renderer->matViewProjection = glms_ortho(0, editor->windowWidth, 0, editor->windowHeight, 0.0f, 100.0f);
-      renderer->matViewProjection = glms_translate(renderer->matViewProjection, (vec3s) { -editor->xScrollOffset, 0.0f, 0.0f });
+      fontRenderer->matViewProjection = glms_ortho(0, editor->windowWidth, 0, editor->windowHeight, 0.0f, 100.0f);
+      fontRenderer->matViewProjection = glms_translate(fontRenderer->matViewProjection, (vec3s) { -editor->xScrollOffset, 0.0f, 0.0f });
 
       /********************
        * update variables *
        *******************/
 
-      glGetIntegerv(GL_VIEWPORT, renderer->viewport.raw);
+      glGetIntegerv(GL_VIEWPORT, fontRenderer->viewport.raw);
 
       i32 xScale, yScale;
       hb_font_get_scale(layout->hbFont, &xScale, &yScale);
-      renderer->scale = editor->fontSize / (f32) yScale;
+      fontRenderer->scale = editor->fontSize / (f32) yScale;
 
-      renderer->position.y = (editor->windowHeight - editor->fontSize) / 2;
-      renderer->gamma      = 1.0f;
-      renderer->debug      = false;
-      renderer->hbGpuAtlas = renderer->atlasTextureUnit;
-      renderer->runeIdx    = editor->cursorCol;
+      fontRenderer->position.y = (editor->windowHeight - editor->fontSize) / 2;
+      fontRenderer->gamma      = 1.0f;
+      fontRenderer->debug      = false;
+      fontRenderer->hbGpuAtlas = fontRenderer->atlasTextureUnit;
+      fontRenderer->runeIdx    = editor->cursorCol;
 
       /****************
        * set uniforms *
        ***************/
 
-      glBindVertexArray(renderer->glyphQuadVerticesVAO);
+      glBindVertexArray(fontRenderer->glyphQuadVerticesVAO);
 
-      rendererUploadUniforms(renderer);
+      fontRendererUploadUniforms(fontRenderer);
 
       /**********************
        * opengl: draw calls *
@@ -325,8 +328,8 @@ int main(int argc, char *argv[])
       glClearColor(ColorRGBAHex(0X282C33FF));
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+      /* note: this info, the renderer should have already i think */
       glDrawArrays(GL_TRIANGLES, 0, (i32) layout->glyphQuadVerticesCount);
-
       glfwSwapBuffers(editor->window);
    }
 
@@ -334,13 +337,13 @@ int main(int argc, char *argv[])
     * cleanup *
     **********/
 
-   rendererDeInit(renderer);
+   fontRendererDeInit(fontRenderer);
    editorDeInit(editor);
    layoutDeInit(layout);
    windowDeInit(editor);
 
    free(layout);
-   free(renderer);
+   free(fontRenderer);
    free(editor);
 
    return EXIT_SUCCESS;

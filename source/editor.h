@@ -150,7 +150,7 @@ struct Editor
    f32 timeDelta;
 
    struct Layout *layout;
-   struct Renderer *renderer;
+   struct FontRenderer *fontRenderer;
 };
 
 struct Layout
@@ -181,7 +181,7 @@ struct Layout
    struct GlyphInfo *glyphCache;
 };
 
-struct Renderer
+struct FontRenderer
 {
    /*************************************
     * renderer - draw uniform locations *
@@ -247,10 +247,10 @@ void layoutDeInit(struct Layout *layout);
  * renderer.c *
  *************/
 
-void rendererInit(struct Renderer *renderer);
-void rendererDeInit(struct Renderer *renderer);
-void rendererCacheUniformLocations(struct Renderer *renderer);
-void rendererUploadUniforms(struct Renderer *renderer);
+void fontRendererInit(struct FontRenderer *renderer);
+void fontRendererDeInit(struct FontRenderer *renderer);
+void fontRendererCacheUniformLoc(struct FontRenderer *renderer);
+void fontRendererUploadUniforms(struct FontRenderer *renderer);
 
 /**********
  * text.c *

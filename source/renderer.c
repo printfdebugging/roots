@@ -4,7 +4,7 @@
 
 static i32 CURRENT_SHADER_PROGRAM = 0;
 
-static void _rendererUseShaderProgram(struct Renderer *renderer)
+static void _rendererUseShaderProgram(struct FontRenderer *renderer)
 {
    assert(renderer->hbShaderProgram != 0);
    if (renderer->hbShaderProgram != CURRENT_SHADER_PROGRAM)
@@ -14,7 +14,7 @@ static void _rendererUseShaderProgram(struct Renderer *renderer)
    }
 }
 
-void _rendererInitGlyphAtlas(struct Renderer *renderer)
+void _fontRendererInitGlyphAtlas(struct FontRenderer *renderer)
 {
    /************************************************************
     * opengl: create an atlas texture to upload the glyph data *
@@ -32,7 +32,7 @@ void _rendererInitGlyphAtlas(struct Renderer *renderer)
    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, renderer->atlasTextureBufferObject);
 }
 
-void rendererInit(struct Renderer *renderer)
+void fontRendererInit(struct FontRenderer *renderer)
 {
    renderer->hbShaderProgram      = 0;
    renderer->matViewProjectionLoc = -1;
@@ -76,17 +76,17 @@ void rendererInit(struct Renderer *renderer)
    renderer->glyphQuadVerticesVBO = 0;
    renderer->glyphQuadsUploaded   = false;
 
-   _rendererInitGlyphAtlas(renderer);
+   _fontRendererInitGlyphAtlas(renderer);
 }
 
-void rendererDeInit(struct Renderer *renderer)
+void fontRendererDeInit(struct FontRenderer *renderer)
 {
    glDeleteBuffers(1, &renderer->glyphQuadVerticesVBO);
    glDeleteVertexArrays(1, &renderer->glyphQuadVerticesVAO);
    glDeleteProgram(renderer->hbShaderProgram);
 }
 
-void rendererCacheUniformLocations(struct Renderer *renderer)
+void fontRendererCacheUniformLoc(struct FontRenderer *renderer)
 {
    /******************************************
     * opengl: cache shader uniform locations *
@@ -104,7 +104,7 @@ void rendererCacheUniformLocations(struct Renderer *renderer)
    renderer->runeIdxLoc           = glGetUniformLocation(renderer->hbShaderProgram, "u_runeIdx");
 }
 
-void rendererUploadUniforms(struct Renderer *renderer)
+void fontRendererUploadUniforms(struct FontRenderer *renderer)
 {
    _rendererUseShaderProgram(renderer);
    glUniformMatrix4fv(renderer->matViewProjectionLoc, 1, GL_FALSE, renderer->matViewProjection.col[0].raw);
