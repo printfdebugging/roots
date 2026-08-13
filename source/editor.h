@@ -153,9 +153,12 @@ struct Editor
 
 struct Layout
 {
-   /*******************************************
-    * layout - objects which do the layouting *
-    ******************************************/
+   /***********************************************************************
+    * layout - objects which do the layouting                             *
+    * note: we might want to abstract these out on a per font basis,      *
+    * since we can reuse all of these, the face, the font and the encoder *
+    * todo: something to do when we have a font manager                   *
+    **********************************************************************/
    hb_face_t *hbFace;
    hb_font_t *hbFont;
    hb_gpu_draw_t *hbDraw;
@@ -174,30 +177,30 @@ struct Renderer
     * renderer - draw uniform locations *
     ************************************/
    u32 hbShaderProgram;
-   i32 hbShaderProgram_UniformLocation_matViewProjection;
-   i32 hbShaderProgram_UniformLocation_viewport;
-   f32 hbShaderProgram_UniformLocation_scale;
-   i32 hbShaderProgram_UniformLocation_position;
-   i32 hbShaderProgram_UniformLocation_hb_gpu_atlas;
-   i32 hbShaderProgram_UniformLocation_gamma;
-   i32 hbShaderProgram_UniformLocation_foreground;
-   i32 hbShaderProgram_UniformLocation_debug;
-   i32 hbShaderProgram_UniformLocation_stem_darkening;
-   i32 hbShaderProgram_UniformLocation_runeIdx;
+   i32 matViewProjectionLoc;
+   i32 viewportLoc;
+   f32 scaleLoc;
+   i32 positionLoc;
+   i32 hbGpuAtlasLoc;
+   i32 gammaLoc;
+   i32 foregroundLoc;
+   i32 debugLoc;
+   i32 stemDarkeningLoc;
+   i32 runeIdxLoc;
 
    /**********************************
     * renderer - draw uniform states *
     *********************************/
-   mat4s hbUniform_matViewProjection;
-   ivec4s hbUniform_viewport;
-   f32 hbUniform_scale;
-   vec2s hbUniform_position;
-   i32 hbUniform_hb_gpu_atlas;
-   f32 hbUniform_gamma;
-   vec4s hbUniform_foreground;
-   b8 hbUniform_debug;
-   b8 hbUniform_stem_darkening;
-   i32 hbUniform_runeIdx;
+   mat4s matViewProjection;
+   ivec4s viewport;
+   f32 scale;
+   vec2s position;
+   i32 hbGpuAtlas;
+   f32 gamma;
+   vec4s foreground;
+   b8 debug;
+   b8 stemDarkening;
+   i32 runeIdx;
 
    /*********************************
     * renderer - object store/cache *

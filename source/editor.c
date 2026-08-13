@@ -310,16 +310,16 @@ int main(int argc, char *argv[])
     * opengl: cache shader uniform locations *
     *****************************************/
 
-   renderer->hbShaderProgram_UniformLocation_matViewProjection = glGetUniformLocation(renderer->hbShaderProgram, "u_matViewProjection");
-   renderer->hbShaderProgram_UniformLocation_viewport          = glGetUniformLocation(renderer->hbShaderProgram, "u_viewport");
-   renderer->hbShaderProgram_UniformLocation_scale             = glGetUniformLocation(renderer->hbShaderProgram, "u_scale");
-   renderer->hbShaderProgram_UniformLocation_position          = glGetUniformLocation(renderer->hbShaderProgram, "u_position");
-   renderer->hbShaderProgram_UniformLocation_gamma             = glGetUniformLocation(renderer->hbShaderProgram, "u_gamma");
-   renderer->hbShaderProgram_UniformLocation_foreground        = glGetUniformLocation(renderer->hbShaderProgram, "u_foreground");
-   renderer->hbShaderProgram_UniformLocation_debug             = glGetUniformLocation(renderer->hbShaderProgram, "u_debug");
-   renderer->hbShaderProgram_UniformLocation_stem_darkening    = glGetUniformLocation(renderer->hbShaderProgram, "u_stem_darkening");
-   renderer->hbShaderProgram_UniformLocation_hb_gpu_atlas      = glGetUniformLocation(renderer->hbShaderProgram, "hb_gpu_atlas");
-   renderer->hbShaderProgram_UniformLocation_runeIdx           = glGetUniformLocation(renderer->hbShaderProgram, "u_runeIdx");
+   renderer->matViewProjectionLoc = glGetUniformLocation(renderer->hbShaderProgram, "u_matViewProjection");
+   renderer->viewportLoc          = glGetUniformLocation(renderer->hbShaderProgram, "u_viewport");
+   renderer->scaleLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_scale");
+   renderer->positionLoc          = glGetUniformLocation(renderer->hbShaderProgram, "u_position");
+   renderer->gammaLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_gamma");
+   renderer->foregroundLoc        = glGetUniformLocation(renderer->hbShaderProgram, "u_foreground");
+   renderer->debugLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_debug");
+   renderer->stemDarkeningLoc     = glGetUniformLocation(renderer->hbShaderProgram, "u_stem_darkening");
+   renderer->hbGpuAtlasLoc        = glGetUniformLocation(renderer->hbShaderProgram, "hb_gpu_atlas");
+   renderer->runeIdxLoc           = glGetUniformLocation(renderer->hbShaderProgram, "u_runeIdx");
 
    /*****************
     * the main loop *
@@ -353,8 +353,8 @@ int main(int argc, char *argv[])
        * calculate the horizontal scroll offset *
        *****************************************/
       u32 runeIdx       = layout->glyphQuadVertices[editor->cursorCol * 6].runeIdx;
-      u32 cursorLeftPx  = layout->glyphQuadVertices[editor->cursorCol * 6].x * renderer->hbUniform_scale;
-      u32 cursorWidthPx = layout->glyphCache[runeIdx].extents.xMax * renderer->hbUniform_scale;
+      u32 cursorLeftPx  = layout->glyphQuadVertices[editor->cursorCol * 6].x * renderer->scale;
+      u32 cursorWidthPx = layout->glyphCache[runeIdx].extents.xMax * renderer->scale;
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
       if (editor->xScrollOffset + windowWidth < cursorRightPx)
@@ -365,24 +365,24 @@ int main(int argc, char *argv[])
       /***********************************
        * calculate transformation matrix *
        **********************************/
-      renderer->hbUniform_matViewProjection = glms_ortho(0, windowWidth, 0, windowHeight, 0.0f, 100.0f);
-      renderer->hbUniform_matViewProjection = glms_translate(renderer->hbUniform_matViewProjection, (vec3s) { -editor->xScrollOffset, 0.0f, 0.0f });
+      renderer->matViewProjection = glms_ortho(0, windowWidth, 0, windowHeight, 0.0f, 100.0f);
+      renderer->matViewProjection = glms_translate(renderer->matViewProjection, (vec3s) { -editor->xScrollOffset, 0.0f, 0.0f });
 
       /********************
        * update variables *
        *******************/
 
-      glGetIntegerv(GL_VIEWPORT, renderer->hbUniform_viewport.raw);
+      glGetIntegerv(GL_VIEWPORT, renderer->viewport.raw);
 
       i32 xScale, yScale;
       hb_font_get_scale(layout->hbFont, &xScale, &yScale);
-      renderer->hbUniform_scale = editor->fontSize / (f32) yScale;
+      renderer->scale = editor->fontSize / (f32) yScale;
 
-      renderer->hbUniform_position.y   = (windowHeight - editor->fontSize) / 2;
-      renderer->hbUniform_gamma        = 1.0f;
-      renderer->hbUniform_debug        = false;
-      renderer->hbUniform_hb_gpu_atlas = renderer->atlasTextureUnit;
-      renderer->hbUniform_runeIdx      = editor->cursorCol;
+      renderer->position.y = (windowHeight - editor->fontSize) / 2;
+      renderer->gamma      = 1.0f;
+      renderer->debug      = false;
+      renderer->hbGpuAtlas = renderer->atlasTextureUnit;
+      renderer->runeIdx    = editor->cursorCol;
 
       /****************
        * set uniforms *
@@ -390,16 +390,16 @@ int main(int argc, char *argv[])
 
       glBindVertexArray(renderer->glyphQuadVerticesVAO);
 
-      glUniformMatrix4fv(renderer->hbShaderProgram_UniformLocation_matViewProjection, 1, GL_FALSE, renderer->hbUniform_matViewProjection.col[0].raw);
-      glUniform4fv(renderer->hbShaderProgram_UniformLocation_foreground, 1, renderer->hbUniform_foreground.raw);
-      glUniform2fv(renderer->hbShaderProgram_UniformLocation_position, 1, renderer->hbUniform_position.raw);
-      glUniform2f(renderer->hbShaderProgram_UniformLocation_viewport, (f32) renderer->hbUniform_viewport.raw[2], (f32) renderer->hbUniform_viewport.raw[3]);
-      glUniform1f(renderer->hbShaderProgram_UniformLocation_scale, (f32) renderer->hbUniform_scale);
-      glUniform1f(renderer->hbShaderProgram_UniformLocation_stem_darkening, renderer->hbUniform_stem_darkening);
-      glUniform1f(renderer->hbShaderProgram_UniformLocation_runeIdx, renderer->hbUniform_runeIdx);
-      glUniform1f(renderer->hbShaderProgram_UniformLocation_debug, renderer->hbUniform_debug);
-      glUniform1f(renderer->hbShaderProgram_UniformLocation_gamma, renderer->hbUniform_gamma);
-      glUniform1i(renderer->hbShaderProgram_UniformLocation_hb_gpu_atlas, (i32) renderer->hbUniform_hb_gpu_atlas);
+      glUniformMatrix4fv(renderer->matViewProjectionLoc, 1, GL_FALSE, renderer->matViewProjection.col[0].raw);
+      glUniform4fv(renderer->foregroundLoc, 1, renderer->foreground.raw);
+      glUniform2fv(renderer->positionLoc, 1, renderer->position.raw);
+      glUniform2f(renderer->viewportLoc, (f32) renderer->viewport.raw[2], (f32) renderer->viewport.raw[3]);
+      glUniform1f(renderer->scaleLoc, (f32) renderer->scale);
+      glUniform1f(renderer->stemDarkeningLoc, renderer->stemDarkening);
+      glUniform1f(renderer->runeIdxLoc, renderer->runeIdx);
+      glUniform1f(renderer->debugLoc, renderer->debug);
+      glUniform1f(renderer->gammaLoc, renderer->gamma);
+      glUniform1i(renderer->hbGpuAtlasLoc, (i32) renderer->hbGpuAtlas);
 
       /**********************
        * opengl: draw calls *
