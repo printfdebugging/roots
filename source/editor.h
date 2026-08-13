@@ -144,6 +144,8 @@ struct Editor
     * window globals *
     *****************/
    GLFWwindow *window;
+   i32 windowWidth;
+   i32 windowHeight;
    f32 lastTime;
    f32 timeDelta;
 

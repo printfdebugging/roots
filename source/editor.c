@@ -275,12 +275,6 @@ int main(int argc, char *argv[])
       if (glfwGetKey(editor->window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
          glfwSetWindowShouldClose(editor->window, GLFW_TRUE);
 
-      /**********************
-       * update window size *
-       *********************/
-      i32 windowWidth, windowHeight;
-      glfwGetWindowSize(editor->window, &windowWidth, &windowHeight);
-
       /******************************************
        * calculate the horizontal scroll offset *
        *****************************************/
@@ -289,15 +283,15 @@ int main(int argc, char *argv[])
       u32 cursorWidthPx = layout->glyphCache[runeIdx].extents.xMax * renderer->scale;
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
-      if (editor->xScrollOffset + windowWidth < cursorRightPx)
-         editor->xScrollOffset = cursorRightPx - windowWidth;
+      if (editor->xScrollOffset + editor->windowWidth < cursorRightPx)
+         editor->xScrollOffset = cursorRightPx - editor->windowWidth;
       if (cursorLeftPx < editor->xScrollOffset)
          editor->xScrollOffset = cursorLeftPx;
 
       /***********************************
        * calculate transformation matrix *
        **********************************/
-      renderer->matViewProjection = glms_ortho(0, windowWidth, 0, windowHeight, 0.0f, 100.0f);
+      renderer->matViewProjection = glms_ortho(0, editor->windowWidth, 0, editor->windowHeight, 0.0f, 100.0f);
       renderer->matViewProjection = glms_translate(renderer->matViewProjection, (vec3s) { -editor->xScrollOffset, 0.0f, 0.0f });
 
       /********************
@@ -310,7 +304,7 @@ int main(int argc, char *argv[])
       hb_font_get_scale(layout->hbFont, &xScale, &yScale);
       renderer->scale = editor->fontSize / (f32) yScale;
 
-      renderer->position.y = (windowHeight - editor->fontSize) / 2;
+      renderer->position.y = (editor->windowHeight - editor->fontSize) / 2;
       renderer->gamma      = 1.0f;
       renderer->debug      = false;
       renderer->hbGpuAtlas = renderer->atlasTextureUnit;

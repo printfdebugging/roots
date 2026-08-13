@@ -26,7 +26,11 @@ void windowInit(struct Editor *editor)
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
 
-   GLFWwindow *window = glfwCreateWindow(1600, 200, "GLFWWindow", NULL, NULL);
+   const i32 windowWidth   = 1600;
+   const i32 windowHeight  = 200;
+   const char *windowTitle = "GLFWWindow";
+
+   GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
    glfwMakeContextCurrent(window);
    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -43,7 +47,10 @@ void windowInit(struct Editor *editor)
    glfwSetFramebufferSizeCallback(window, windowResize);
    glfwSetKeyCallback(window, keyPress);
    glfwSetWindowUserPointer(window, editor);
-   editor->window = window;
+
+   editor->windowWidth  = windowWidth;
+   editor->windowHeight = windowHeight;
+   editor->window       = window;
 }
 
 void windowDeInit(struct Editor *editor)
@@ -54,6 +61,9 @@ void windowDeInit(struct Editor *editor)
 
 void windowResize(GLFWwindow *window, i32 width, i32 height)
 {
+   struct Editor *editor = glfwGetWindowUserPointer(window);
+   editor->windowWidth   = width;
+   editor->windowHeight  = height;
    glViewport(0, 0, width, height);
 }
 
