@@ -26,10 +26,10 @@ void windowInit(struct Editor *editor)
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
 
-   editor->window = glfwCreateWindow(1600, 200, "GLFWWindow", NULL, NULL);
-   glfwMakeContextCurrent(editor->window);
+   GLFWwindow *window = glfwCreateWindow(1600, 200, "GLFWWindow", NULL, NULL);
+   glfwMakeContextCurrent(window);
    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-   glfwSetInputMode(editor->window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
    glfwSwapInterval(1);
 
    glEnable(GL_DEPTH_TEST);
@@ -38,11 +38,12 @@ void windowInit(struct Editor *editor)
    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    glLineWidth(2);
 
-   glfwSetCursorPosCallback(editor->window, mouseMove);
-   glfwSetScrollCallback(editor->window, mouseScroll);
-   glfwSetFramebufferSizeCallback(editor->window, windowResize);
-   glfwSetKeyCallback(editor->window, keyPress);
-   glfwSetWindowUserPointer(editor->window, editor);
+   glfwSetCursorPosCallback(window, mouseMove);
+   glfwSetScrollCallback(window, mouseScroll);
+   glfwSetFramebufferSizeCallback(window, windowResize);
+   glfwSetKeyCallback(window, keyPress);
+   glfwSetWindowUserPointer(window, editor);
+   editor->window = window;
 }
 
 void windowDeInit(struct Editor *editor)
