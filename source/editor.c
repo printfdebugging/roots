@@ -43,8 +43,6 @@ int main(int argc, char *argv[])
       perror("failed to initialize harfbuzz");
    }
 
-   hb_font_set_ptem(layout->hbFont, (f32) editor->displayDPI);
-   hb_font_set_scale(layout->hbFont, (i32) editor->displayDPI * 1, (i32) editor->displayDPI * 1);
    hb_blob_destroy(hbBlob);
 
    /************************************************************
@@ -447,8 +445,7 @@ void editorInit(struct Editor *editor)
    editor->cursorCol     = 0;
    editor->cursorOffset  = 0;
 
-   editor->fontSize     = 28.0f;
-   editor->displayDPI   = 163.0f;
+   editor->fontSize     = 48.0f;
    editor->fontFilePath = calloc(fontFilePathLen + 1, sizeof(char));
    strcpy(editor->fontFilePath, fontFilePath);
 }

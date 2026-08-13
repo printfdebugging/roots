@@ -1,6 +1,13 @@
 *log.txt*
 
 --------------------------------------------------------------------------
+@printfdebugging                           Thu Aug 13 12:47:58 PM IST 2026
+
+             TODO: REIMPLEMENT THE FONT RENDERING PIPELINE ~
+- |https://github.com/harfbuzz/harfbuzz/issues/6131|
+- |https://harfbuzz.github.io/harfbuzz-hb-gpu.html|
+
+--------------------------------------------------------------------------
 @printfdebugging                           Wed Aug 12 01:03:05 PM IST 2026
 
                         RENDERING MULTIPLE LINES ~
