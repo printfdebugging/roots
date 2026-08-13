@@ -153,18 +153,16 @@ struct Editor
    struct FontRenderer *fontRenderer;
 };
 
-struct FontLayout
+struct Font
 {
-   /***********************************************************************
-    * layout - objects which do the layouting                             *
-    * note: we might want to abstract these out on a per font basis,      *
-    * since we can reuse all of these, the face, the font and the encoder *
-    * todo: something to do when we have a font manager                   *
-    **********************************************************************/
+   char *fontPath;
+
+   /******************************
+    * font objects & the encoder *
+    *****************************/
    hb_face_t *hbFace;
    hb_font_t *hbFont;
    hb_gpu_draw_t *hbDraw;
-   char *fontPath;
 
    /****************
     * font metrics *
@@ -173,12 +171,18 @@ struct FontLayout
    i32 hbDescent;
    i32 hbMaxHeight;
 
-   /*********************************************************************************************
-    * layout data - internal copy - we relayout when it is invalidated & sync with the renderer *
-    ********************************************************************************************/
+   struct GlyphInfo *glyphCache;
+};
+
+/**!
+ * Font Layout doesn't need to even have the Font with it. Font
+ * is just a brush and it's the FontManager (in fontmanager.c)
+ * readily provides one for each font.
+ */
+struct FontLayout
+{
    struct GlyphVertex *glyphQuadVertices;
    u32 glyphQuadVerticesCount;
-   struct GlyphInfo *glyphCache;
 };
 
 struct FontRenderer
@@ -235,6 +239,17 @@ struct FontRenderer
 
 void editorInit(struct Editor *editor);
 void editorDeInit(struct Editor *editor);
+
+/*****************
+ * fontmanager.c *
+ ****************/
+
+void fontManagerInit();
+void fontManagerDeInit();
+struct Font *fontManagerGetFont(const char *filePath);
+struct Font *fontManagerGetFontWithRune(rune codepoint);
+
+void fontInit(struct Font *font, const char *filePath);
 
 /************
  * layout.c *

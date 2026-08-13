@@ -24,6 +24,9 @@ int main(int argc, char *argv[])
    editorInit(editor);
    fontLayoutInit(layout, editor->fontFilePath);
    fontRendererInit(fontRenderer);
+   fontManagerInit();
+
+   struct Font *font = fontManagerGetFont(editor->fontFilePath);
 
    /********************************************************
     * harfbuzz: shape the glyphs and get the glyph indices *
@@ -33,7 +36,7 @@ int main(int argc, char *argv[])
    hb_buffer_add_codepoints(buffer, editor->lineRunes, editor->lineRunelen, 0, -1);
    hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
    hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
-   hb_shape(layout->hbFont, buffer, NULL, 0);
+   hb_shape(font->hbFont, buffer, NULL, 0);
 
    u32 glyphCount                      = 0;
    hb_glyph_info_t *glyphInfos         = hb_buffer_get_glyph_infos(buffer, &glyphCount);
@@ -60,29 +63,29 @@ int main(int argc, char *argv[])
        * harfbuzz: cache the glyph primitives if not cached already *
        *************************************************************/
 
-      if (!layout->glyphCache[glyphIndex].cached)
+      if (!font->glyphCache[glyphIndex].cached)
       {
          i32 xScale, yScale;
-         hb_font_get_scale(layout->hbFont, &xScale, &yScale);
-         hb_gpu_draw_clear(layout->hbDraw);
-         hb_gpu_draw_glyph(layout->hbDraw, layout->hbFont, glyphIndex);
+         hb_font_get_scale(font->hbFont, &xScale, &yScale);
+         hb_gpu_draw_clear(font->hbDraw);
+         hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
 
          hb_glyph_extents_t hbGlyphExtents = {};
          hb_blob_t *hbBlob                 = NULL;
 
-         hbBlob           = hb_gpu_draw_encode(layout->hbDraw, &hbGlyphExtents);
+         hbBlob           = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
          u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
 
          /*****************************
           * cache the glyph quad info *
           ****************************/
 
-         layout->glyphCache[glyphIndex] = (struct GlyphInfo) {
+         font->glyphCache[glyphIndex] = (struct GlyphInfo) {
             .extents.xMin = 0,
-            .extents.xMax = hb_font_get_glyph_h_advance(layout->hbFont, glyphIndex),
-            .extents.yMin = layout->hbDescent,
-            .extents.yMax = layout->hbAscent,
-            .advance      = hb_font_get_glyph_h_advance(layout->hbFont, glyphIndex),
+            .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+            .extents.yMin = font->hbDescent,
+            .extents.yMax = font->hbAscent,
+            .advance      = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
             .upem         = yScale,
             .empty        = (hbBlobLength == 0),
             .cached       = true,
@@ -92,16 +95,16 @@ int main(int argc, char *argv[])
           * upload glyph primitives to the gpu & store the offset *
           ********************************************************/
 
-         if (!layout->glyphCache[glyphIndex].empty)
+         if (!font->glyphCache[glyphIndex].empty)
          {
             const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
             glBindBuffer(GL_TEXTURE_BUFFER, fontRenderer->atlasTextureBufferObject);
             glBufferSubData(GL_TEXTURE_BUFFER, fontRenderer->atlasCursorOffsetBytes, hbBlobLength, hbGlyphData);
 
-            layout->glyphCache[glyphIndex].atlasOffset = fontRenderer->atlasCursorOffsetBytes;
+            font->glyphCache[glyphIndex].atlasOffset = fontRenderer->atlasCursorOffsetBytes;
             fontRenderer->atlasCursorOffsetBytes += hbBlobLength;
 
-            hb_gpu_draw_recycle_blob(layout->hbDraw, hbBlob);
+            hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
          }
       }
 
@@ -109,7 +112,7 @@ int main(int argc, char *argv[])
        * load `glyphInfo` from `glyphCache` *
        *************************************/
 
-      glyphInfo = layout->glyphCache[glyphIndex];
+      glyphInfo = font->glyphCache[glyphIndex];
 
       /**********************
        * create glyph quads *
@@ -194,7 +197,7 @@ int main(int argc, char *argv[])
        *****************************************/
       u32 runeIdx       = layout->glyphQuadVertices[editor->cursorCol * 6].runeIdx;
       u32 cursorLeftPx  = layout->glyphQuadVertices[editor->cursorCol * 6].x * fontRenderer->scale;
-      u32 cursorWidthPx = layout->glyphCache[runeIdx].extents.xMax * fontRenderer->scale;
+      u32 cursorWidthPx = font->glyphCache[runeIdx].extents.xMax * fontRenderer->scale;
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
       if (editor->xScrollOffset + editor->windowWidth < cursorRightPx)
@@ -215,7 +218,7 @@ int main(int argc, char *argv[])
       glGetIntegerv(GL_VIEWPORT, fontRenderer->viewport.raw);
 
       i32 xScale, yScale;
-      hb_font_get_scale(layout->hbFont, &xScale, &yScale);
+      hb_font_get_scale(font->hbFont, &xScale, &yScale);
       fontRenderer->scale = editor->fontSize / (f32) yScale;
 
       fontRenderer->position.y = (editor->windowHeight - editor->fontSize) / 2;
@@ -251,6 +254,7 @@ int main(int argc, char *argv[])
    fontRendererDeInit(fontRenderer);
    editorDeInit(editor);
    fontLayoutDeInit(layout);
+   fontManagerDeInit();
    windowDeInit(editor);
 
    free(layout);
