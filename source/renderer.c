@@ -2,6 +2,18 @@
 
 #include "glad/glad.h"
 
+static i32 CURRENT_SHADER_PROGRAM = 0;
+
+static void _rendererUseShaderProgram(struct Renderer *renderer)
+{
+   assert(renderer->hbShaderProgram != 0);
+   if (renderer->hbShaderProgram != CURRENT_SHADER_PROGRAM)
+   {
+      glUseProgram(renderer->hbShaderProgram);
+      CURRENT_SHADER_PROGRAM = renderer->hbShaderProgram;
+   }
+}
+
 void _rendererInitGlyphAtlas(struct Renderer *renderer)
 {
    /************************************************************
@@ -79,7 +91,7 @@ void rendererCacheUniformLocations(struct Renderer *renderer)
    /******************************************
     * opengl: cache shader uniform locations *
     *****************************************/
-   assert(renderer->hbShaderProgram);
+   _rendererUseShaderProgram(renderer);
    renderer->matViewProjectionLoc = glGetUniformLocation(renderer->hbShaderProgram, "u_matViewProjection");
    renderer->viewportLoc          = glGetUniformLocation(renderer->hbShaderProgram, "u_viewport");
    renderer->scaleLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_scale");
@@ -94,6 +106,7 @@ void rendererCacheUniformLocations(struct Renderer *renderer)
 
 void rendererUploadUniforms(struct Renderer *renderer)
 {
+   _rendererUseShaderProgram(renderer);
    glUniformMatrix4fv(renderer->matViewProjectionLoc, 1, GL_FALSE, renderer->matViewProjection.col[0].raw);
    glUniform4fv(renderer->foregroundLoc, 1, renderer->foreground.raw);
    glUniform2fv(renderer->positionLoc, 1, renderer->position.raw);
