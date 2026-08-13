@@ -373,7 +373,7 @@ int main(int argc, char *argv[])
        * opengl: draw calls *
        *********************/
 
-      glClearColor(ColorRGBAHex(0X282C34FF));
+      glClearColor(ColorRGBAHex(0X282C33FF));
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       glDrawArrays(GL_TRIANGLES, 0, (i32) layout->glyphQuadVerticesCount);
