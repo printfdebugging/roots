@@ -3,7 +3,6 @@
 #include <string.h>
 
 #include "glad/glad.h"
-#include "hb-ot.h"
 
 #include "editor.h"
 
@@ -35,18 +34,6 @@ int main(int argc, char *argv[])
     *****************************/
 
    layout->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
-
-   /*************************************
-    * harfbuzz: get glyph ascent/decent *
-    ************************************/
-
-   const hb_ot_metrics_tag_t ASCENT_HHEA  = HB_TAG('H', 'a', 's', 'c');
-   const hb_ot_metrics_tag_t DESCENT_HHEA = HB_TAG('H', 'd', 's', 'c');
-
-   hb_position_t hbAscent, hbDescent, hbMaxHeight;
-   hb_ot_metrics_get_position(layout->hbFont, ASCENT_HHEA, &hbAscent);
-   hb_ot_metrics_get_position(layout->hbFont, DESCENT_HHEA, &hbDescent);
-   hb_ot_metrics_get_position(layout->hbFont, HB_OT_METRICS_TAG_CAP_HEIGHT, &hbMaxHeight);
 
    /********************************************************
     * harfbuzz: shape the glyphs and get the glyph indices *
@@ -103,8 +90,8 @@ int main(int argc, char *argv[])
          layout->glyphCache[glyphIndex] = (struct GlyphInfo) {
             .extents.xMin = 0,
             .extents.xMax = hb_font_get_glyph_h_advance(layout->hbFont, glyphIndex),
-            .extents.yMin = hbDescent,
-            .extents.yMax = hbAscent,
+            .extents.yMin = layout->hbDescent,
+            .extents.yMax = layout->hbAscent,
             .advance      = hb_font_get_glyph_h_advance(layout->hbFont, glyphIndex),
             .upem         = yScale,
             .empty        = (hbBlobLength == 0),

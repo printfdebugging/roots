@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "hb-ot.h"
+
 #include "editor.h"
 
 void _layoutInitHarfbuzz(struct Layout *layout)
@@ -19,6 +21,16 @@ void _layoutInitHarfbuzz(struct Layout *layout)
    }
 
    hb_blob_destroy(hbBlob);
+}
+
+void _layoutLoadFontMetrics(struct Layout *layout)
+{
+   const hb_ot_metrics_tag_t ASCENT_HHEA  = HB_TAG('H', 'a', 's', 'c');
+   const hb_ot_metrics_tag_t DESCENT_HHEA = HB_TAG('H', 'd', 's', 'c');
+
+   hb_ot_metrics_get_position(layout->hbFont, ASCENT_HHEA, &layout->hbAscent);
+   hb_ot_metrics_get_position(layout->hbFont, DESCENT_HHEA, &layout->hbDescent);
+   hb_ot_metrics_get_position(layout->hbFont, HB_OT_METRICS_TAG_CAP_HEIGHT, &layout->hbMaxHeight);
 }
 
 void layoutInit(struct Layout *layout, const char *fontPath)
@@ -43,6 +55,7 @@ void layoutInit(struct Layout *layout, const char *fontPath)
    layout->glyphCache             = NULL;
 
    _layoutInitHarfbuzz(layout);
+   _layoutLoadFontMetrics(layout);
 }
 
 void layoutDeInit(struct Layout *layout)

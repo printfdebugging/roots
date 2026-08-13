@@ -164,6 +164,13 @@ struct Layout
    hb_gpu_draw_t *hbDraw;
    char *fontPath;
 
+   /****************
+    * font metrics *
+    ***************/
+   i32 hbAscent;
+   i32 hbDescent;
+   i32 hbMaxHeight;
+
    /*********************************************************************************************
     * layout data - internal copy - we relayout when it is invalidated & sync with the renderer *
     ********************************************************************************************/
