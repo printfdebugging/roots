@@ -400,7 +400,7 @@ int main(int argc, char *argv[])
 void editorInit(struct Editor *editor)
 {
    u8 lineUTF8[]       = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-   char *fontFilePath  = "/usr/share/fonts/TTF/IosevkaNerdFont-Regular.ttf";
+   char *fontFilePath  = ASSETS_DIR "LilexNerdFont-Regular.ttf";
    u32 fontFilePathLen = strlen(fontFilePath);
 
    if (!(editor->lineBytelen = strlen((char *) lineUTF8)) ||
