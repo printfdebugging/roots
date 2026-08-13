@@ -3,10 +3,10 @@
 
 #include <stdint.h>
 
-#include "unicode/unicode.h"
-
 #include "hb.h"
 #include "hb-gpu.h"
+#include "cglm/struct.h"
+#include "unicode/unicode.h"
 
 /**********
  * macros *
@@ -140,6 +140,7 @@ struct Editor
    char *fontFilePath;
 
    struct Layout *layout;
+   struct Renderer *renderer;
 };
 
 struct Layout
@@ -159,6 +160,54 @@ struct Layout
    struct GlyphInfo *glyphCache;
 };
 
+struct Renderer
+{
+   /*************************************
+    * renderer - draw uniform locations *
+    ************************************/
+   u32 hbShaderProgram;
+   i32 hbShaderProgram_UniformLocation_matViewProjection;
+   i32 hbShaderProgram_UniformLocation_viewport;
+   f32 hbShaderProgram_UniformLocation_scale;
+   i32 hbShaderProgram_UniformLocation_position;
+   i32 hbShaderProgram_UniformLocation_hb_gpu_atlas;
+   i32 hbShaderProgram_UniformLocation_gamma;
+   i32 hbShaderProgram_UniformLocation_foreground;
+   i32 hbShaderProgram_UniformLocation_debug;
+   i32 hbShaderProgram_UniformLocation_stem_darkening;
+   i32 hbShaderProgram_UniformLocation_runeIdx;
+
+   /**********************************
+    * renderer - draw uniform states *
+    *********************************/
+   mat4s hbUniform_matViewProjection;
+   ivec4s hbUniform_viewport;
+   f32 hbUniform_scale;
+   vec2s hbUniform_position;
+   i32 hbUniform_hb_gpu_atlas;
+   f32 hbUniform_gamma;
+   vec4s hbUniform_foreground;
+   b8 hbUniform_debug;
+   b8 hbUniform_stem_darkening;
+   i32 hbUniform_runeIdx;
+
+   /*********************************
+    * renderer - object store/cache *
+    ********************************/
+   u32 atlasTexture;
+   u32 atlasTextureUnit;
+   u32 atlasTextureBufferObject;
+   u32 atlasCapacityBytes;
+   u32 atlasCursorOffsetBytes;
+
+   /**************************
+    * renderer - layout data *
+    *************************/
+   u32 glyphQuadVerticesVAO;
+   u32 glyphQuadVerticesVBO;
+   b32 glyphQuadsUploaded;
+};
+
 /************
  * editor.c *
  ***********/
@@ -172,6 +221,13 @@ void editorDeInit(struct Editor *editor);
 
 void layoutInit(struct Layout *layout);
 void layoutDeInit(struct Layout *layout);
+
+/**************
+ * renderer.c *
+ *************/
+
+void rendererInit(struct Renderer *renderer);
+void rendererDeInit(struct Renderer *renderer);
 
 /**********
  * text.c *

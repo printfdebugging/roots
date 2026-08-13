@@ -30,6 +30,7 @@ add_executable(editor
    source/filesystem.c
    source/text.c
    source/layout.c
+   source/renderer.c
 )
 
 if (TEXT_LINE_IMPLEMENTATION)

@@ -4,10 +4,6 @@
 
 #include "GLFW/glfw3.h"
 #include "glad/glad.h"
-#include "cglm/struct.h"
-#include "unicode/unicode.h"
-#include "hb.h"
-#include "hb-gpu.h"
 #include "hb-ot.h"
 
 #include "editor.h"
@@ -31,63 +27,21 @@ static void keyPress(GLFWwindow *window, int key, int scancode, int action, int 
 
 struct Editor *editor;
 
-/*************************************
- * renderer - draw uniform locations *
- ************************************/
-u32 hbShaderProgram;
-i32 hbShaderProgram_UniformLocation_matViewProjection = -1;
-i32 hbShaderProgram_UniformLocation_viewport          = -1;
-f32 hbShaderProgram_UniformLocation_scale             = -1;
-i32 hbShaderProgram_UniformLocation_position          = -1;
-i32 hbShaderProgram_UniformLocation_hb_gpu_atlas      = -1;
-i32 hbShaderProgram_UniformLocation_gamma             = -1;
-i32 hbShaderProgram_UniformLocation_foreground        = -1;
-i32 hbShaderProgram_UniformLocation_debug             = -1;
-i32 hbShaderProgram_UniformLocation_stem_darkening    = -1;
-i32 hbShaderProgram_UniformLocation_runeIdx           = -1;
-
-/**********************************
- * renderer - draw uniform states *
- *********************************/
-mat4s hbUniform_matViewProjection = { GLM_MAT4_IDENTITY_INIT };
-i32 hbUniform_viewport[4]         = { 0 };
-f32 hbUniform_scale               = 0;
-vec2s hbUniform_position          = { 0 };
-i32 hbUniform_hb_gpu_atlas        = 0;
-f32 hbUniform_gamma               = 0;
-vec4s hbUniform_foreground        = { ColorRGBAHex(0XD8DEE9FF) };
-b8 hbUniform_debug                = false;
-b8 hbUniform_stem_darkening       = false;
-i32 hbUniform_runeIdx             = 0;
-
-/*********************************
- * renderer - object store/cache *
- ********************************/
-u32 atlasTexture             = 0;
-u32 atlasTextureUnit         = GL_TEXTURE0;
-u32 atlasTextureBufferObject = 0;
-u32 atlasCapacityBytes       = 0;
-u32 atlasCursorOffsetBytes   = 0;
-
-/**************************
- * renderer - layout data *
- *************************/
-u32 glyphQuadVerticesVAO = 0;
-u32 glyphQuadVerticesVBO = 0;
-b32 glyphQuadsUploaded   = false;
-
 int main(int argc, char *argv[])
 {
    if (!(editor = calloc(1, sizeof(struct Editor))) ||
-       !(editor->layout = calloc(1, sizeof(struct Layout))))
+       !(editor->layout = calloc(1, sizeof(struct Layout))) ||
+       !(editor->renderer = calloc(1, sizeof(struct Renderer))))
    {
       perror("failed to allocate structs\n");
    }
 
-   struct Layout *layout = editor->layout;
+   struct Layout *layout     = editor->layout;
+   struct Renderer *renderer = editor->renderer;
 
    editorInit(editor);
    layoutInit(layout);
+   rendererInit(renderer);
 
    /*************************
     * window initialization *
@@ -147,16 +101,16 @@ int main(int argc, char *argv[])
     * opengl: create an atlas texture to upload the glyph data *
     ***********************************************************/
 
-   atlasCapacityBytes     = ATLAS_PAGE_SIZE;
-   atlasCursorOffsetBytes = 0;
-   glGenBuffers(1, &atlasTextureBufferObject);
-   glBindBuffer(GL_TEXTURE_BUFFER, atlasTextureBufferObject);
-   glBufferData(GL_TEXTURE_BUFFER, atlasCapacityBytes, NULL, GL_STATIC_DRAW);
+   renderer->atlasCapacityBytes     = ATLAS_PAGE_SIZE;
+   renderer->atlasCursorOffsetBytes = 0;
+   glGenBuffers(1, &renderer->atlasTextureBufferObject);
+   glBindBuffer(GL_TEXTURE_BUFFER, renderer->atlasTextureBufferObject);
+   glBufferData(GL_TEXTURE_BUFFER, renderer->atlasCapacityBytes, NULL, GL_STATIC_DRAW);
 
-   glActiveTexture(atlasTextureUnit);
-   glGenTextures(1, &atlasTexture);
-   glBindTexture(GL_TEXTURE_BUFFER, atlasTexture);
-   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, atlasTextureBufferObject);
+   glActiveTexture(renderer->atlasTextureUnit);
+   glGenTextures(1, &renderer->atlasTexture);
+   glBindTexture(GL_TEXTURE_BUFFER, renderer->atlasTexture);
+   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, renderer->atlasTextureBufferObject);
 
    /******************************
     * glyph cache initialization *
@@ -246,11 +200,11 @@ int main(int argc, char *argv[])
          if (!layout->glyphCache[glyphIndex].empty)
          {
             const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
-            glBindBuffer(GL_TEXTURE_BUFFER, atlasTextureBufferObject);
-            glBufferSubData(GL_TEXTURE_BUFFER, atlasCursorOffsetBytes, hbBlobLength, hbGlyphData);
+            glBindBuffer(GL_TEXTURE_BUFFER, renderer->atlasTextureBufferObject);
+            glBufferSubData(GL_TEXTURE_BUFFER, renderer->atlasCursorOffsetBytes, hbBlobLength, hbGlyphData);
 
-            layout->glyphCache[glyphIndex].atlasOffset = atlasCursorOffsetBytes;
-            atlasCursorOffsetBytes += hbBlobLength;
+            layout->glyphCache[glyphIndex].atlasOffset = renderer->atlasCursorOffsetBytes;
+            renderer->atlasCursorOffsetBytes += hbBlobLength;
 
             hb_gpu_draw_recycle_blob(layout->hbDraw, hbBlob);
          }
@@ -309,13 +263,13 @@ int main(int argc, char *argv[])
    /************************************
     * opengl: glyph quad upload to gpu *
     ***********************************/
-   glGenVertexArrays(1, &glyphQuadVerticesVAO);
-   glGenBuffers(1, &glyphQuadVerticesVBO);
+   glGenVertexArrays(1, &renderer->glyphQuadVerticesVAO);
+   glGenBuffers(1, &renderer->glyphQuadVerticesVBO);
 
-   glBindVertexArray(glyphQuadVerticesVAO);
-   glBindBuffer(GL_ARRAY_BUFFER, glyphQuadVerticesVBO);
+   glBindVertexArray(renderer->glyphQuadVerticesVAO);
+   glBindBuffer(GL_ARRAY_BUFFER, renderer->glyphQuadVerticesVBO);
    glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
-   glyphQuadsUploaded = true;
+   renderer->glyphQuadsUploaded = true;
 
    /******************************************************************
     * opengl: create a shader `hbShaderProgram` for rendering glyphs *
@@ -357,11 +311,11 @@ int main(int argc, char *argv[])
    if (!shaderGetCompileStatus(hbFragmentShader))
       perror("fragment shader compilation failed");
 
-   hbShaderProgram = glCreateProgram();
-   glAttachShader(hbShaderProgram, hbVertexShader);
-   glAttachShader(hbShaderProgram, hbFragmentShader);
-   glLinkProgram(hbShaderProgram);
-   if (!shaderGetLinkStatus(hbShaderProgram))
+   renderer->hbShaderProgram = glCreateProgram();
+   glAttachShader(renderer->hbShaderProgram, hbVertexShader);
+   glAttachShader(renderer->hbShaderProgram, hbFragmentShader);
+   glLinkProgram(renderer->hbShaderProgram);
+   if (!shaderGetLinkStatus(renderer->hbShaderProgram))
       perror("failed to link shader program");
 
    glDeleteShader(hbVertexShader);
@@ -376,46 +330,46 @@ int main(int argc, char *argv[])
    i32 glyphQuadObjectStride = sizeof(struct GlyphVertex);
    i32 attribLocation        = -1;
 
-   attribLocation = glGetAttribLocation(hbShaderProgram, "a_position");
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_position");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, x));
 
-   attribLocation = glGetAttribLocation(hbShaderProgram, "a_texcoord");
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_texcoord");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, tx));
 
-   attribLocation = glGetAttribLocation(hbShaderProgram, "a_normal");
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_normal");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, nx));
 
-   attribLocation = glGetAttribLocation(hbShaderProgram, "a_emPerPos");
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_emPerPos");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribPointer((u32) attribLocation, 1, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, emPerPos));
 
-   attribLocation = glGetAttribLocation(hbShaderProgram, "a_glyphLoc");
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_glyphLoc");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlasOffset));
 
-   attribLocation = glGetAttribLocation(hbShaderProgram, "a_runeIdx");
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_runeIdx");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, runeIdx));
 
-   glUseProgram(hbShaderProgram);
+   glUseProgram(renderer->hbShaderProgram);
 
    /******************************************
     * opengl: cache shader uniform locations *
     *****************************************/
 
-   hbShaderProgram_UniformLocation_matViewProjection = glGetUniformLocation(hbShaderProgram, "u_matViewProjection");
-   hbShaderProgram_UniformLocation_viewport          = glGetUniformLocation(hbShaderProgram, "u_viewport");
-   hbShaderProgram_UniformLocation_scale             = glGetUniformLocation(hbShaderProgram, "u_scale");
-   hbShaderProgram_UniformLocation_position          = glGetUniformLocation(hbShaderProgram, "u_position");
-   hbShaderProgram_UniformLocation_gamma             = glGetUniformLocation(hbShaderProgram, "u_gamma");
-   hbShaderProgram_UniformLocation_foreground        = glGetUniformLocation(hbShaderProgram, "u_foreground");
-   hbShaderProgram_UniformLocation_debug             = glGetUniformLocation(hbShaderProgram, "u_debug");
-   hbShaderProgram_UniformLocation_stem_darkening    = glGetUniformLocation(hbShaderProgram, "u_stem_darkening");
-   hbShaderProgram_UniformLocation_hb_gpu_atlas      = glGetUniformLocation(hbShaderProgram, "hb_gpu_atlas");
-   hbShaderProgram_UniformLocation_runeIdx           = glGetUniformLocation(hbShaderProgram, "u_runeIdx");
+   renderer->hbShaderProgram_UniformLocation_matViewProjection = glGetUniformLocation(renderer->hbShaderProgram, "u_matViewProjection");
+   renderer->hbShaderProgram_UniformLocation_viewport          = glGetUniformLocation(renderer->hbShaderProgram, "u_viewport");
+   renderer->hbShaderProgram_UniformLocation_scale             = glGetUniformLocation(renderer->hbShaderProgram, "u_scale");
+   renderer->hbShaderProgram_UniformLocation_position          = glGetUniformLocation(renderer->hbShaderProgram, "u_position");
+   renderer->hbShaderProgram_UniformLocation_gamma             = glGetUniformLocation(renderer->hbShaderProgram, "u_gamma");
+   renderer->hbShaderProgram_UniformLocation_foreground        = glGetUniformLocation(renderer->hbShaderProgram, "u_foreground");
+   renderer->hbShaderProgram_UniformLocation_debug             = glGetUniformLocation(renderer->hbShaderProgram, "u_debug");
+   renderer->hbShaderProgram_UniformLocation_stem_darkening    = glGetUniformLocation(renderer->hbShaderProgram, "u_stem_darkening");
+   renderer->hbShaderProgram_UniformLocation_hb_gpu_atlas      = glGetUniformLocation(renderer->hbShaderProgram, "hb_gpu_atlas");
+   renderer->hbShaderProgram_UniformLocation_runeIdx           = glGetUniformLocation(renderer->hbShaderProgram, "u_runeIdx");
 
    /*****************
     * the main loop *
@@ -449,8 +403,8 @@ int main(int argc, char *argv[])
        * calculate the horizontal scroll offset *
        *****************************************/
       u32 runeIdx       = layout->glyphQuadVertices[editor->cursorCol * 6].runeIdx;
-      u32 cursorLeftPx  = layout->glyphQuadVertices[editor->cursorCol * 6].x * hbUniform_scale;
-      u32 cursorWidthPx = layout->glyphCache[runeIdx].extents.xMax * hbUniform_scale;
+      u32 cursorLeftPx  = layout->glyphQuadVertices[editor->cursorCol * 6].x * renderer->hbUniform_scale;
+      u32 cursorWidthPx = layout->glyphCache[runeIdx].extents.xMax * renderer->hbUniform_scale;
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
       if (editor->xScrollOffset + windowWidth < cursorRightPx)
@@ -461,41 +415,41 @@ int main(int argc, char *argv[])
       /***********************************
        * calculate transformation matrix *
        **********************************/
-      hbUniform_matViewProjection = glms_ortho(0, windowWidth, 0, windowHeight, 0.0f, 100.0f);
-      hbUniform_matViewProjection = glms_translate(hbUniform_matViewProjection, (vec3s) { -editor->xScrollOffset, 0.0f, 0.0f });
+      renderer->hbUniform_matViewProjection = glms_ortho(0, windowWidth, 0, windowHeight, 0.0f, 100.0f);
+      renderer->hbUniform_matViewProjection = glms_translate(renderer->hbUniform_matViewProjection, (vec3s) { -editor->xScrollOffset, 0.0f, 0.0f });
 
       /********************
        * update variables *
        *******************/
 
-      glGetIntegerv(GL_VIEWPORT, hbUniform_viewport);
+      glGetIntegerv(GL_VIEWPORT, renderer->hbUniform_viewport.raw);
 
       i32 xScale, yScale;
       hb_font_get_scale(layout->hbFont, &xScale, &yScale);
-      hbUniform_scale = editor->fontSize / (f32) yScale;
+      renderer->hbUniform_scale = editor->fontSize / (f32) yScale;
 
-      hbUniform_position.y   = (windowHeight - editor->fontSize) / 2;
-      hbUniform_gamma        = 1.0f;
-      hbUniform_debug        = false;
-      hbUniform_hb_gpu_atlas = atlasTextureUnit;
-      hbUniform_runeIdx      = editor->cursorCol;
+      renderer->hbUniform_position.y   = (windowHeight - editor->fontSize) / 2;
+      renderer->hbUniform_gamma        = 1.0f;
+      renderer->hbUniform_debug        = false;
+      renderer->hbUniform_hb_gpu_atlas = renderer->atlasTextureUnit;
+      renderer->hbUniform_runeIdx      = editor->cursorCol;
 
       /****************
        * set uniforms *
        ***************/
 
-      glBindVertexArray(glyphQuadVerticesVAO);
+      glBindVertexArray(renderer->glyphQuadVerticesVAO);
 
-      glUniformMatrix4fv(hbShaderProgram_UniformLocation_matViewProjection, 1, GL_FALSE, hbUniform_matViewProjection.col[0].raw);
-      glUniform4fv(hbShaderProgram_UniformLocation_foreground, 1, hbUniform_foreground.raw);
-      glUniform2fv(hbShaderProgram_UniformLocation_position, 1, hbUniform_position.raw);
-      glUniform2f(hbShaderProgram_UniformLocation_viewport, (f32) hbUniform_viewport[2], (f32) hbUniform_viewport[3]);
-      glUniform1f(hbShaderProgram_UniformLocation_scale, (f32) hbUniform_scale);
-      glUniform1f(hbShaderProgram_UniformLocation_stem_darkening, hbUniform_stem_darkening);
-      glUniform1f(hbShaderProgram_UniformLocation_runeIdx, hbUniform_runeIdx);
-      glUniform1f(hbShaderProgram_UniformLocation_debug, hbUniform_debug);
-      glUniform1f(hbShaderProgram_UniformLocation_gamma, hbUniform_gamma);
-      glUniform1i(hbShaderProgram_UniformLocation_hb_gpu_atlas, (i32) hbUniform_hb_gpu_atlas);
+      glUniformMatrix4fv(renderer->hbShaderProgram_UniformLocation_matViewProjection, 1, GL_FALSE, renderer->hbUniform_matViewProjection.col[0].raw);
+      glUniform4fv(renderer->hbShaderProgram_UniformLocation_foreground, 1, renderer->hbUniform_foreground.raw);
+      glUniform2fv(renderer->hbShaderProgram_UniformLocation_position, 1, renderer->hbUniform_position.raw);
+      glUniform2f(renderer->hbShaderProgram_UniformLocation_viewport, (f32) renderer->hbUniform_viewport.raw[2], (f32) renderer->hbUniform_viewport.raw[3]);
+      glUniform1f(renderer->hbShaderProgram_UniformLocation_scale, (f32) renderer->hbUniform_scale);
+      glUniform1f(renderer->hbShaderProgram_UniformLocation_stem_darkening, renderer->hbUniform_stem_darkening);
+      glUniform1f(renderer->hbShaderProgram_UniformLocation_runeIdx, renderer->hbUniform_runeIdx);
+      glUniform1f(renderer->hbShaderProgram_UniformLocation_debug, renderer->hbUniform_debug);
+      glUniform1f(renderer->hbShaderProgram_UniformLocation_gamma, renderer->hbUniform_gamma);
+      glUniform1i(renderer->hbShaderProgram_UniformLocation_hb_gpu_atlas, (i32) renderer->hbUniform_hb_gpu_atlas);
 
       /**********************
        * opengl: draw calls *
@@ -513,11 +467,13 @@ int main(int argc, char *argv[])
     * cleanup *
     **********/
 
+   rendererDeInit(renderer);
    editorDeInit(editor);
    layoutDeInit(layout);
 
-   free(editor);
    free(layout);
+   free(renderer);
+   free(editor);
 
    glfwDestroyWindow(window);
    glfwTerminate();
