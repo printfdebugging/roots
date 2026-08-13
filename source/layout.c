@@ -5,7 +5,7 @@
 
 #include "editor.h"
 
-void _layoutInitHarfbuzz(struct Layout *layout)
+void _fontLayoutInitHarfbuzz(struct FontLayout *layout)
 {
    /*********************************************************
     * harfbuzz: font loading & shape encoder initialization *
@@ -23,7 +23,7 @@ void _layoutInitHarfbuzz(struct Layout *layout)
    hb_blob_destroy(hbBlob);
 }
 
-void _layoutLoadFontMetrics(struct Layout *layout)
+void _fontLayoutLoadFontMetrics(struct FontLayout *layout)
 {
    const hb_ot_metrics_tag_t ASCENT_HHEA  = HB_TAG('H', 'a', 's', 'c');
    const hb_ot_metrics_tag_t DESCENT_HHEA = HB_TAG('H', 'd', 's', 'c');
@@ -33,7 +33,7 @@ void _layoutLoadFontMetrics(struct Layout *layout)
    hb_ot_metrics_get_position(layout->hbFont, HB_OT_METRICS_TAG_CAP_HEIGHT, &layout->hbMaxHeight);
 }
 
-void layoutInit(struct Layout *layout, const char *fontPath)
+void fontLayoutInit(struct FontLayout *layout, const char *fontPath)
 {
    /*******************************************
     * layout - objects which do the layouting *
@@ -58,11 +58,11 @@ void layoutInit(struct Layout *layout, const char *fontPath)
     *************************/
    layout->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
 
-   _layoutInitHarfbuzz(layout);
-   _layoutLoadFontMetrics(layout);
+   _fontLayoutInitHarfbuzz(layout);
+   _fontLayoutLoadFontMetrics(layout);
 }
 
-void layoutDeInit(struct Layout *layout)
+void fontLayoutDeInit(struct FontLayout *layout)
 {
    hb_face_destroy(layout->hbFace);
    hb_font_destroy(layout->hbFont);

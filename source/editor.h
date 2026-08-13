@@ -149,11 +149,11 @@ struct Editor
    f32 lastTime;
    f32 timeDelta;
 
-   struct Layout *layout;
+   struct FontLayout *fontLayout;
    struct FontRenderer *fontRenderer;
 };
 
-struct Layout
+struct FontLayout
 {
    /***********************************************************************
     * layout - objects which do the layouting                             *
@@ -240,8 +240,8 @@ void editorDeInit(struct Editor *editor);
  * layout.c *
  ***********/
 
-void layoutInit(struct Layout *layout, const char *fontPath);
-void layoutDeInit(struct Layout *layout);
+void fontLayoutInit(struct FontLayout *layout, const char *fontPath);
+void fontLayoutDeInit(struct FontLayout *layout);
 
 /**************
  * renderer.c *

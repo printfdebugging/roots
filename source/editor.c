@@ -11,18 +11,18 @@ struct Editor *editor;
 int main(int argc, char *argv[])
 {
    if (!(editor = calloc(1, sizeof(struct Editor))) ||
-       !(editor->layout = calloc(1, sizeof(struct Layout))) ||
+       !(editor->fontLayout = calloc(1, sizeof(struct FontLayout))) ||
        !(editor->fontRenderer = calloc(1, sizeof(struct FontRenderer))))
    {
       perror("failed to allocate structs\n");
    }
 
-   struct Layout *layout             = editor->layout;
+   struct FontLayout *layout         = editor->fontLayout;
    struct FontRenderer *fontRenderer = editor->fontRenderer;
 
    windowInit(editor);
    editorInit(editor);
-   layoutInit(layout, editor->fontFilePath);
+   fontLayoutInit(layout, editor->fontFilePath);
    fontRendererInit(fontRenderer);
 
    /********************************************************
@@ -250,7 +250,7 @@ int main(int argc, char *argv[])
 
    fontRendererDeInit(fontRenderer);
    editorDeInit(editor);
-   layoutDeInit(layout);
+   fontLayoutDeInit(layout);
    windowDeInit(editor);
 
    free(layout);
