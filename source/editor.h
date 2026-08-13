@@ -248,6 +248,7 @@ void layoutDeInit(struct Layout *layout);
 void rendererInit(struct Renderer *renderer);
 void rendererDeInit(struct Renderer *renderer);
 void rendererCacheUniformLocations(struct Renderer *renderer);
+void rendererUploadUniforms(struct Renderer *renderer);
 
 /**********
  * text.c *

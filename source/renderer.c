@@ -91,3 +91,17 @@ void rendererCacheUniformLocations(struct Renderer *renderer)
    renderer->hbGpuAtlasLoc        = glGetUniformLocation(renderer->hbShaderProgram, "hb_gpu_atlas");
    renderer->runeIdxLoc           = glGetUniformLocation(renderer->hbShaderProgram, "u_runeIdx");
 }
+
+void rendererUploadUniforms(struct Renderer *renderer)
+{
+   glUniformMatrix4fv(renderer->matViewProjectionLoc, 1, GL_FALSE, renderer->matViewProjection.col[0].raw);
+   glUniform4fv(renderer->foregroundLoc, 1, renderer->foreground.raw);
+   glUniform2fv(renderer->positionLoc, 1, renderer->position.raw);
+   glUniform2f(renderer->viewportLoc, (f32) renderer->viewport.raw[2], (f32) renderer->viewport.raw[3]);
+   glUniform1f(renderer->scaleLoc, (f32) renderer->scale);
+   glUniform1f(renderer->stemDarkeningLoc, renderer->stemDarkening);
+   glUniform1f(renderer->runeIdxLoc, renderer->runeIdx);
+   glUniform1f(renderer->debugLoc, renderer->debug);
+   glUniform1f(renderer->gammaLoc, renderer->gamma);
+   glUniform1i(renderer->hbGpuAtlasLoc, (i32) renderer->hbGpuAtlas);
+}
