@@ -162,6 +162,7 @@ struct Layout
    hb_face_t *hbFace;
    hb_font_t *hbFont;
    hb_gpu_draw_t *hbDraw;
+   char *fontPath;
 
    /*********************************************************************************************
     * layout data - internal copy - we relayout when it is invalidated & sync with the renderer *
@@ -230,7 +231,7 @@ void editorDeInit(struct Editor *editor);
  * layout.c *
  ***********/
 
-void layoutInit(struct Layout *layout);
+void layoutInit(struct Layout *layout, const char *fontPath);
 void layoutDeInit(struct Layout *layout);
 
 /**************

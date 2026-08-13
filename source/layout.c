@@ -1,8 +1,9 @@
 #include <stdlib.h>
+#include <string.h>
 
 #include "editor.h"
 
-void layoutInit(struct Layout *layout)
+void layoutInit(struct Layout *layout, const char *fontPath)
 {
    /*******************************************
     * layout - objects which do the layouting *
@@ -10,6 +11,11 @@ void layoutInit(struct Layout *layout)
    layout->hbFace = NULL;
    layout->hbFont = NULL;
    layout->hbDraw = NULL;
+
+   i32 fontPathLen = strlen(fontPath);
+   assert(fontPathLen != 0);
+   layout->fontPath = calloc(fontPathLen + 1, sizeof(char));
+   strcpy(layout->fontPath, fontPath);
 
    /*********************************************************************************************
     * layout data - internal copy - we relayout when it is invalidated & sync with the renderer *
@@ -26,4 +32,5 @@ void layoutDeInit(struct Layout *layout)
    hb_gpu_draw_destroy(layout->hbDraw);
 
    free(layout->glyphQuadVertices);
+   free(layout->fontPath);
 }

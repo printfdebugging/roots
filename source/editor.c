@@ -23,7 +23,7 @@ int main(int argc, char *argv[])
 
    windowInit(editor);
    editorInit(editor);
-   layoutInit(layout);
+   layoutInit(layout, editor->fontFilePath);
    rendererInit(renderer);
 
    /* we have a window to draw stuff on */
