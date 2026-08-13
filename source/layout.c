@@ -52,7 +52,11 @@ void layoutInit(struct Layout *layout, const char *fontPath)
     ********************************************************************************************/
    layout->glyphQuadVertices      = NULL;
    layout->glyphQuadVerticesCount = 0;
-   layout->glyphCache             = NULL;
+
+   /**************************
+    * glyph cache allocation *
+    *************************/
+   layout->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
 
    _layoutInitHarfbuzz(layout);
    _layoutLoadFontMetrics(layout);

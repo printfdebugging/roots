@@ -25,16 +25,6 @@ int main(int argc, char *argv[])
    layoutInit(layout, editor->fontFilePath);
    rendererInit(renderer);
 
-   /* we have a window to draw stuff on */
-
-   /* we have a stream of unicode codepoints to draw */
-
-   /******************************
-    * glyph cache initialization *
-    *****************************/
-
-   layout->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
-
    /********************************************************
     * harfbuzz: shape the glyphs and get the glyph indices *
     *******************************************************/
