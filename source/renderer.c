@@ -4,13 +4,13 @@
 
 static i32 CURRENT_SHADER_PROGRAM = 0;
 
-static void _rendererUseShaderProgram(struct FontRenderer *renderer)
+static void _rendererUseShaderProgram(i32 shaderProgram)
 {
-   assert(renderer->hbShaderProgram != 0);
-   if (renderer->hbShaderProgram != CURRENT_SHADER_PROGRAM)
+   assert(shaderProgram != 0);
+   if (shaderProgram != CURRENT_SHADER_PROGRAM)
    {
-      glUseProgram(renderer->hbShaderProgram);
-      CURRENT_SHADER_PROGRAM = renderer->hbShaderProgram;
+      glUseProgram(shaderProgram);
+      CURRENT_SHADER_PROGRAM = shaderProgram;
    }
 }
 
@@ -91,7 +91,7 @@ void fontRendererCacheUniformLoc(struct FontRenderer *renderer)
    /******************************************
     * opengl: cache shader uniform locations *
     *****************************************/
-   _rendererUseShaderProgram(renderer);
+   _rendererUseShaderProgram(renderer->hbShaderProgram);
    renderer->matViewProjectionLoc = glGetUniformLocation(renderer->hbShaderProgram, "u_matViewProjection");
    renderer->viewportLoc          = glGetUniformLocation(renderer->hbShaderProgram, "u_viewport");
    renderer->scaleLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_scale");
@@ -106,7 +106,7 @@ void fontRendererCacheUniformLoc(struct FontRenderer *renderer)
 
 void fontRendererUploadUniforms(struct FontRenderer *renderer)
 {
-   _rendererUseShaderProgram(renderer);
+   _rendererUseShaderProgram(renderer->hbShaderProgram);
    glUniformMatrix4fv(renderer->matViewProjectionLoc, 1, GL_FALSE, renderer->matViewProjection.col[0].raw);
    glUniform4fv(renderer->foregroundLoc, 1, renderer->foreground.raw);
    glUniform2fv(renderer->positionLoc, 1, renderer->position.raw);
