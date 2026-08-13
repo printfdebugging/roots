@@ -251,20 +251,7 @@ int main(int argc, char *argv[])
 
    glUseProgram(renderer->hbShaderProgram);
 
-   /******************************************
-    * opengl: cache shader uniform locations *
-    *****************************************/
-
-   renderer->matViewProjectionLoc = glGetUniformLocation(renderer->hbShaderProgram, "u_matViewProjection");
-   renderer->viewportLoc          = glGetUniformLocation(renderer->hbShaderProgram, "u_viewport");
-   renderer->scaleLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_scale");
-   renderer->positionLoc          = glGetUniformLocation(renderer->hbShaderProgram, "u_position");
-   renderer->gammaLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_gamma");
-   renderer->foregroundLoc        = glGetUniformLocation(renderer->hbShaderProgram, "u_foreground");
-   renderer->debugLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_debug");
-   renderer->stemDarkeningLoc     = glGetUniformLocation(renderer->hbShaderProgram, "u_stem_darkening");
-   renderer->hbGpuAtlasLoc        = glGetUniformLocation(renderer->hbShaderProgram, "hb_gpu_atlas");
-   renderer->runeIdxLoc           = glGetUniformLocation(renderer->hbShaderProgram, "u_runeIdx");
+   rendererCacheUniformLocations(renderer);
 
    /*****************
     * the main loop *
