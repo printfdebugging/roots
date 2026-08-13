@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "text.h"
+#include "editor.h"
 
 struct Text
 {

@@ -1,6 +1,6 @@
 #include <stdlib.h>
 
-#include "layout.h"
+#include "editor.h"
 
 void layoutInit(struct Layout *layout)
 {

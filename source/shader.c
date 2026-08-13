@@ -1,4 +1,7 @@
-#include "shader.h"
+#include <stdio.h>
+
+#include "editor.h"
+#include "glad/glad.h"
 
 b8 shaderGetCompileStatus(u32 shaderObject)
 {
