@@ -38,9 +38,9 @@ void rendererInit(struct Renderer *renderer)
     * renderer - draw uniform states *
     *********************************/
    renderer->matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT };
-   renderer->viewport          = (ivec4s) { 0 };
+   renderer->viewport          = GLMS_IVEC4_ZERO;
    renderer->scale             = 0;
-   renderer->position          = (vec2s) { 0 };
+   renderer->position          = GLMS_VEC2_ZERO;
    renderer->hbGpuAtlas        = 0;
    renderer->gamma             = 0;
    renderer->foreground        = (vec4s) { ColorRGBAHex(0XD8DEE9FF) };
