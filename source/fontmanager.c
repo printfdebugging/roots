@@ -1,6 +1,7 @@
 #include <string.h>
 
 #include "hb-ot.h"
+#include "glad/glad.h"
 
 #include "editor.h"
 
@@ -27,10 +28,20 @@ struct FontManager
     */
    struct Font *editorFont;
 
+   /**!
+    * OpenGL textures with the glyph data. `GlyphInfo.atlasOffset` is an
+    * offset into this texture. We only cache the glyphs being used, so
+    * even if we are using a few fonts, it should be fine for the most part.
+    */
+   struct GlyphAtlas glyphAtlas;
+
    b8 initialized;
 };
 
 static struct FontManager fontManager = { 0 };
+
+void _fontManagerGlyphAtlasInit();
+void _fontManagerGlyphAtlasDeInit();
 
 void fontManagerInit(char *editorFontPath)
 {
@@ -41,6 +52,7 @@ void fontManagerInit(char *editorFontPath)
     */
    fontManager.initialized = true;
 
+   _fontManagerGlyphAtlasInit();
    fontManager.editorFontPath = stringDuplicate(editorFontPath);
    fontManager.editorFont     = fontManagerGetFont(editorFontPath);
 }
@@ -52,10 +64,19 @@ void fontManagerDeInit()
 
    for (u32 fontIdx = 0; fontIdx < fontManager.fontCount; ++fontIdx)
       fontDeInit(&fontManager.font[fontIdx]);
+
    free(fontManager.font);
    free((void *) fontManager.editorFontPath);
 
+   _fontManagerGlyphAtlasDeInit();
    fontManager.initialized = false;
+}
+
+struct GlyphAtlas *fontManagerGetGlyphAtlas()
+{
+   if (!fontManager.initialized)
+      return NULL;
+   return &fontManager.glyphAtlas;
 }
 
 struct Font *fontManagerGetFont(const char *filePath)
@@ -117,4 +138,30 @@ void fontDeInit(struct Font *font)
 
    free(font->fontPath);
    free(font->glyphCache);
+}
+
+void _fontManagerGlyphAtlasInit()
+{
+   /************************************************************
+    * opengl: create an atlas texture to upload the glyph data *
+    ***********************************************************/
+   struct GlyphAtlas *glyphAtlas = &fontManager.glyphAtlas;
+
+   glyphAtlas->capacityBytes     = ATLAS_PAGE_SIZE;
+   glyphAtlas->cursorOffsetBytes = 0;
+   glGenBuffers(1, &glyphAtlas->textureBufferObject);
+   glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
+   glBufferData(GL_TEXTURE_BUFFER, glyphAtlas->capacityBytes, NULL, GL_STATIC_DRAW);
+
+   glActiveTexture(glyphAtlas->textureUnit);
+   glGenTextures(1, &glyphAtlas->texture);
+   glBindTexture(GL_TEXTURE_BUFFER, glyphAtlas->texture);
+   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, glyphAtlas->textureBufferObject);
+}
+
+void _fontManagerGlyphAtlasDeInit()
+{
+   struct GlyphAtlas *glyphAtlas = &fontManager.glyphAtlas;
+   glDeleteBuffers(1, &glyphAtlas->textureBufferObject);
+   glDeleteTextures(1, &glyphAtlas->texture);
 }

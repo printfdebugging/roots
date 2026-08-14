@@ -14,24 +14,6 @@ static void _rendererUseShaderProgram(u32 shaderProgram)
    }
 }
 
-void _fontRendererInitGlyphAtlas(struct FontRenderer *renderer)
-{
-   /************************************************************
-    * opengl: create an atlas texture to upload the glyph data *
-    ***********************************************************/
-
-   renderer->atlasCapacityBytes     = ATLAS_PAGE_SIZE;
-   renderer->atlasCursorOffsetBytes = 0;
-   glGenBuffers(1, &renderer->atlasTextureBufferObject);
-   glBindBuffer(GL_TEXTURE_BUFFER, renderer->atlasTextureBufferObject);
-   glBufferData(GL_TEXTURE_BUFFER, renderer->atlasCapacityBytes, NULL, GL_STATIC_DRAW);
-
-   glActiveTexture(renderer->atlasTextureUnit);
-   glGenTextures(1, &renderer->atlasTexture);
-   glBindTexture(GL_TEXTURE_BUFFER, renderer->atlasTexture);
-   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, renderer->atlasTextureBufferObject);
-}
-
 void fontRendererInit(struct FontRenderer *renderer)
 {
    renderer->hbShaderProgram      = 0;
@@ -60,23 +42,12 @@ void fontRendererInit(struct FontRenderer *renderer)
    renderer->stemDarkening     = false;
    renderer->runeIdx           = 0;
 
-   /*********************************
-    * renderer - object store/cache *
-    ********************************/
-   renderer->atlasTexture             = 0;
-   renderer->atlasTextureUnit         = GL_TEXTURE0;
-   renderer->atlasTextureBufferObject = 0;
-   renderer->atlasCapacityBytes       = 0;
-   renderer->atlasCursorOffsetBytes   = 0;
-
    /**************************
     * renderer - layout data *
     *************************/
    glGenVertexArrays(1, &renderer->glyphQuadVerticesVAO);
    glGenBuffers(1, &renderer->glyphQuadVerticesVBO);
    renderer->glyphQuadsUploaded = false;
-
-   _fontRendererInitGlyphAtlas(renderer);
 }
 
 void fontRendererDeInit(struct FontRenderer *renderer)

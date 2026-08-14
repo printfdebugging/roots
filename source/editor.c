@@ -53,6 +53,8 @@ int main(int argc, char *argv[])
    fontRendererSetupAttribLocations(fontRenderer);
    fontRendererCacheUniformLoc(fontRenderer);
 
+   struct GlyphAtlas *atlas = fontManagerGetGlyphAtlas();
+
    /*****************
     * the main loop *
     ****************/
@@ -107,7 +109,7 @@ int main(int argc, char *argv[])
       fontRenderer->position.y = (editor->windowHeight - editor->fontSize) / 2;
       fontRenderer->gamma      = 1.0f;
       fontRenderer->debug      = false;
-      fontRenderer->hbGpuAtlas = fontRenderer->atlasTextureUnit;
+      fontRenderer->hbGpuAtlas = atlas->textureUnit;
       fontRenderer->runeIdx    = editor->cursorCol;
 
       /****************
@@ -193,6 +195,7 @@ void magicFunction(char *lineBytes, struct Font *font, struct FontLayout *layout
 
    layout->glyphQuadVerticesCount = glyphCount * 6;
    layout->glyphQuadVertices      = calloc(layout->glyphQuadVerticesCount, sizeof(struct GlyphVertex));
+   struct GlyphAtlas *atlas       = fontManagerGetGlyphAtlas();
 
    /******************************************
     * harfbuzz: load & cache font glyph data *
@@ -245,11 +248,11 @@ void magicFunction(char *lineBytes, struct Font *font, struct FontLayout *layout
          if (!font->glyphCache[glyphIndex].empty)
          {
             const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
-            glBindBuffer(GL_TEXTURE_BUFFER, fontRenderer->atlasTextureBufferObject);
-            glBufferSubData(GL_TEXTURE_BUFFER, fontRenderer->atlasCursorOffsetBytes, hbBlobLength, hbGlyphData);
+            glBindBuffer(GL_TEXTURE_BUFFER, atlas->textureBufferObject);
+            glBufferSubData(GL_TEXTURE_BUFFER, atlas->cursorOffsetBytes, hbBlobLength, hbGlyphData);
 
-            font->glyphCache[glyphIndex].atlasOffset = fontRenderer->atlasCursorOffsetBytes;
-            fontRenderer->atlasCursorOffsetBytes += hbBlobLength;
+            font->glyphCache[glyphIndex].atlasOffset = atlas->cursorOffsetBytes;
+            atlas->cursorOffsetBytes += hbBlobLength;
 
             hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
          }

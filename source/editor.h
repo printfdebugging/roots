@@ -110,6 +110,15 @@ struct GlyphInfo
    struct Extents extents;
 };
 
+struct GlyphAtlas
+{
+   u32 texture;
+   u32 textureUnit;
+   u32 textureBufferObject;
+   u32 capacityBytes;
+   u32 cursorOffsetBytes;
+};
+
 /*****************************************************************************
  * Opaque `Text` type. There would be a few implementations in the backend,  *
  * a `GapBuffer` implementation, a `Rope` implementation, and the user would *
@@ -214,15 +223,6 @@ struct FontRenderer
    b8 stemDarkening;
    i32 runeIdx;
 
-   /*********************************
-    * renderer - object store/cache *
-    ********************************/
-   u32 atlasTexture;
-   u32 atlasTextureUnit;
-   u32 atlasTextureBufferObject;
-   u32 atlasCapacityBytes;
-   u32 atlasCursorOffsetBytes;
-
    /**************************
     * renderer - layout data *
     *************************/
@@ -244,6 +244,7 @@ void editorDeInit(struct Editor *editor);
 
 void fontManagerInit(char *editorFontPath);
 void fontManagerDeInit();
+struct GlyphAtlas *fontManagerGetGlyphAtlas();
 struct Font *fontManagerGetFont(const char *filePath);
 struct Font *fontManagerGetFontWithRune(rune codepoint);
 
