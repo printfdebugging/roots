@@ -254,7 +254,7 @@ void fontDeInit(struct Font *font);
  * layout.c *
  ***********/
 
-void fontLayoutInit(struct FontLayout *layout, const char *fontPath);
+void fontLayoutInit(struct FontLayout *layout);
 void fontLayoutDeInit(struct FontLayout *layout);
 
 /**************

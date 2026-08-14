@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 
    windowInit(editor);
    editorInit(editor);
-   fontLayoutInit(layout, editor->fontFilePath);
+   fontLayoutInit(layout);
    fontRendererInit(fontRenderer);
    fontManagerInit(editor->fontFilePath);
 

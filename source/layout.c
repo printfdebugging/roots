@@ -3,7 +3,7 @@
 
 #include "editor.h"
 
-void fontLayoutInit(struct FontLayout *layout, const char *fontPath)
+void fontLayoutInit(struct FontLayout *layout)
 {
    /*********************************************************************************************
     * layout data - internal copy - we relayout when it is invalidated & sync with the renderer *
