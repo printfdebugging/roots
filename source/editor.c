@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
       /******************************************
        * calculate the horizontal scroll offset *
        *****************************************/
+      struct Font *font = fontManagerGetDefaultFont();
       u32 runeIdx       = layout->glyphQuadVertices[editor->cursorCol * 6].runeIdx;
       u32 cursorLeftPx  = layout->glyphQuadVertices[editor->cursorCol * 6].x * fontRenderer->scale;
       u32 cursorWidthPx = font->glyphCache[runeIdx].extents.xMax * fontRenderer->scale;

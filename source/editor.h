@@ -246,6 +246,7 @@ void fontManagerInit(char *editorFontPath);
 void fontManagerDeInit();
 struct GlyphAtlas *fontManagerGetGlyphAtlas();
 struct Font *fontManagerGetFont(const char *filePath);
+struct Font *fontManagerGetDefaultFont();
 struct Font *fontManagerGetFontWithRune(rune codepoint);
 
 void fontInit(struct Font *font, const char *filePath);

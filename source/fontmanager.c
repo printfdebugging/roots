@@ -95,6 +95,13 @@ struct Font *fontManagerGetFont(const char *filePath)
    return font;
 }
 
+struct Font *fontManagerGetDefaultFont()
+{
+   if (!fontManager.initialized)
+      return NULL;
+   return fontManager.editorFont;
+}
+
 struct Font *fontManagerGetFontWithRune(rune codepoint)
 {
    (void) codepoint;
