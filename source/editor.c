@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
    editorInit(editor);
    fontLayoutInit(layout, editor->fontFilePath);
    fontRendererInit(fontRenderer);
-   fontManagerInit();
+   fontManagerInit(editor->fontFilePath);
 
    struct Font *font = fontManagerGetFont(editor->fontFilePath);
 

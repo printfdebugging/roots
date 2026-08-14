@@ -242,7 +242,7 @@ void editorDeInit(struct Editor *editor);
  * fontmanager.c *
  ****************/
 
-void fontManagerInit();
+void fontManagerInit(char *editorFontPath);
 void fontManagerDeInit();
 struct Font *fontManagerGetFont(const char *filePath);
 struct Font *fontManagerGetFontWithRune(rune codepoint);

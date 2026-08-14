@@ -14,14 +14,29 @@ struct FontManager
 {
    struct Font *font;
    u32 fontCount;
+
+   /**!
+    * Path the default editor font.
+    */
+   const char *editorFontPath;
+
+   /**!
+    * The default font of the editor. Every rune is first shaped
+    * with this font and if it doesn't have a glyph, we check other
+    * cached fonts then the system fonts using fontconfig.
+    */
+   struct Font *editorFont;
+
    b8 initialized;
 };
 
 static struct FontManager fontManager = { 0 };
 
-void fontManagerInit()
+void fontManagerInit(char *editorFontPath)
 {
-   fontManager.initialized = true;
+   fontManager.editorFont     = fontManagerGetFont(editorFontPath);
+   fontManager.editorFontPath = stringDuplicate(editorFontPath);
+   fontManager.initialized    = true;
 }
 
 void fontManagerDeInit()
@@ -32,6 +47,7 @@ void fontManagerDeInit()
    for (u32 fontIdx = 0; fontIdx < fontManager.fontCount; ++fontIdx)
       fontDeInit(&fontManager.font[fontIdx]);
    free(fontManager.font);
+   free((void *) fontManager.editorFontPath);
 
    fontManager.initialized = false;
 }
