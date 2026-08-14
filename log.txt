@@ -1,6 +1,41 @@
 *log.txt*
 
 --------------------------------------------------------------------------
+@printfdebugging                           Fri Aug 14 10:41:25 PM IST 2026
+
+             TODO: ##OpenGL - LOOK INTO SDF FOR GIANT TEXT ~
+- 22:33 rpav if you need giant text SDF is probably more efficient anyway
+- 22:33 rpav barring "i need giant text with perfect layout"
+
+                   USE ONE TEXTURE FOR ALL THE FONTS ~
+- Previously I thought of moving the atlasTexture (the texture which
+  contains the glyph curve data) to the `Font` as then a font object
+  would have everything needed to render text; the harfbuzz font
+  objects, the glyphCache and the renderer constructs, in this case
+  OpenGL texture and buffer objects... But this is not necessary.
+
+- We can upload all the glyph data from different fonts to a single
+  texture and have an offset into that. The `glyphCache` of each font
+  would still be the source of truth, just that there won't be
+  parallel pipelines to send this data to the gpu. Considering that in
+  most cases, we are using only a limited set of characters
+  repeatedly, a 16M texture should be fine for most use-cases I guess..
+
+- Before arriving to the above conclusion, I had some discussions with
+  nitrix on ##OpenGL and I was wondering if I could send the atlas
+  texture index per vertex element to the GPU and then use that to
+  index into a particular texture, to which the answer was - YES, but
+
+  - 21:53 nitrix The problem is you're limited by the number of
+    textures/fonts, so maybe you'd want the bindless textures extension or a
+    dynamic system that merge fonts into one large texture.
+
+             TODO: LOOK INTO THE BINDLESS TEXTURE EXTENSION ~
+- It would be quite useful, for rendering inline images, if not for
+  font rendering, since we can have more than 16 or 32 inline images
+  (displayed in a grid - planned feature of this editor).
+
+--------------------------------------------------------------------------
 @printfdebugging                           Fri Aug 14 07:26:44 PM IST 2026
 
                 DATA FLOW CHARTS HELP FIND THE UNKNOWNS ~
