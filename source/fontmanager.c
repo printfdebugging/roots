@@ -70,6 +70,7 @@ struct Font *fontManagerGetFont(const char *filePath)
 
 struct Font *fontManagerGetFontWithRune(rune codepoint)
 {
+   (void) codepoint;
    perror("todo");
    return NULL;
 }

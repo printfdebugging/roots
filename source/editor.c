@@ -10,6 +10,8 @@ void magicFunction(char *lineBytes, struct Font *font, struct FontLayout *layout
 
 int main(int argc, char *argv[])
 {
+   (void) argc;
+   (void) argv;
    /**************************************************************************
     * NOTE: the code as of today breaks on scrolling when we have characters *
     * which use more than one bytes... it's intentional, the goal is to get  *
@@ -147,8 +149,8 @@ int main(int argc, char *argv[])
 
 void editorInit(struct Editor *editor)
 {
-   u8 lineUTF8[]      = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-   char *fontFilePath = ASSETS_DIR "LilexNerdFont-Regular.ttf";
+   u8 lineUTF8[]            = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+   const char *fontFilePath = ASSETS_DIR "LilexNerdFont-Regular.ttf";
 
    if (!(editor->lineBytelen = strlen((char *) lineUTF8)) ||
        !(editor->lineBytes = (byte *) stringDuplicate((char *) lineUTF8)))

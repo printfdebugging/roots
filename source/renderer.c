@@ -2,9 +2,9 @@
 
 #include "glad/glad.h"
 
-static i32 CURRENT_SHADER_PROGRAM = 0;
+static u32 CURRENT_SHADER_PROGRAM = 0;
 
-static void _rendererUseShaderProgram(i32 shaderProgram)
+static void _rendererUseShaderProgram(u32 shaderProgram)
 {
    assert(shaderProgram != 0);
    if (shaderProgram != CURRENT_SHADER_PROGRAM)
@@ -55,7 +55,7 @@ void fontRendererInit(struct FontRenderer *renderer)
    renderer->position          = GLMS_VEC2_ZERO;
    renderer->hbGpuAtlas        = 0;
    renderer->gamma             = 0;
-   renderer->foreground        = (vec4s) { ColorRGBAHex(0XD8DEE9FF) };
+   renderer->foreground        = (vec4s) { { ColorRGBAHex(0XD8DEE9FF) } };
    renderer->debug             = false;
    renderer->stemDarkening     = false;
    renderer->runeIdx           = 0;
@@ -113,7 +113,7 @@ void fontRendererUploadUniforms(struct FontRenderer *renderer)
    glUniform2f(renderer->viewportLoc, (f32) renderer->viewport.raw[2], (f32) renderer->viewport.raw[3]);
    glUniform1f(renderer->scaleLoc, (f32) renderer->scale);
    glUniform1f(renderer->stemDarkeningLoc, renderer->stemDarkening);
-   glUniform1f(renderer->runeIdxLoc, renderer->runeIdx);
+   glUniform1i(renderer->runeIdxLoc, renderer->runeIdx);
    glUniform1f(renderer->debugLoc, renderer->debug);
    glUniform1f(renderer->gammaLoc, renderer->gamma);
    glUniform1i(renderer->hbGpuAtlasLoc, (i32) renderer->hbGpuAtlas);
@@ -125,10 +125,10 @@ void fontRendererCreateShader(struct FontRenderer *renderer)
     * opengl: create a shader `hbShaderProgram` for rendering glyphs *
     *****************************************************************/
 
-   char *hbShaderVersion  = "#version 330 core\n";
-   char *hbShaderPreamble = "#define HB_GPU_DEMO_DRAW\n";
-   char *hbVertexMain     = readFileContents(ASSETS_DIR "harfbuzz.vert");
-   char *hbFragmentMain   = readFileContents(ASSETS_DIR "harfbuzz.frag");
+   const char *hbShaderVersion  = "#version 330 core\n";
+   const char *hbShaderPreamble = "#define HB_GPU_DEMO_DRAW\n";
+   const char *hbVertexMain     = readFileContents(ASSETS_DIR "harfbuzz.vert");
+   const char *hbFragmentMain   = readFileContents(ASSETS_DIR "harfbuzz.frag");
 
    u32 hbVertexShader;
    u32 hbFragmentShader;
@@ -170,8 +170,8 @@ void fontRendererCreateShader(struct FontRenderer *renderer)
 
    glDeleteShader(hbVertexShader);
    glDeleteShader(hbFragmentShader);
-   free(hbVertexMain);
-   free(hbFragmentMain);
+   free((void *) hbVertexMain);
+   free((void *) hbFragmentMain);
 }
 
 void fontRendererSetupAttribLocations(struct FontRenderer *renderer)

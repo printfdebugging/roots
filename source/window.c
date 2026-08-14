@@ -69,14 +69,22 @@ void windowResize(GLFWwindow *window, i32 width, i32 height)
 
 void mouseScroll(GLFWwindow *window, f64 x, f64 y)
 {
+   (void) window;
+   (void) x;
+   (void) y;
 }
 
 void mouseMove(GLFWwindow *window, f64 x, f64 y)
 {
+   (void) window;
+   (void) x;
+   (void) y;
 }
 
 void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
+   (void) scancode;
+   (void) mods;
    struct Editor *editor = glfwGetWindowUserPointer(window);
 
    /**************************

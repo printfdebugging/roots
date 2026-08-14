@@ -6,7 +6,7 @@ uniform float u_gamma;
 uniform float u_debug;
 uniform float u_stem_darkening;
 uniform vec4 u_foreground;
-uniform float u_runeIdx;
+uniform int u_runeIdx;
 
 in vec2 v_texcoord;
 in float v_runeIdx;

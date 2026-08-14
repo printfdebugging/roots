@@ -144,8 +144,8 @@ struct Editor
    GLFWwindow *window;
    i32 windowWidth;
    i32 windowHeight;
-   f32 lastTime;
-   f32 timeDelta;
+   f64 lastTime;
+   f64 timeDelta;
 
    struct FontLayout *fontLayout;
    struct FontRenderer *fontRenderer;
@@ -191,7 +191,7 @@ struct FontRenderer
    u32 hbShaderProgram;
    i32 matViewProjectionLoc;
    i32 viewportLoc;
-   f32 scaleLoc;
+   i32 scaleLoc;
    i32 positionLoc;
    i32 hbGpuAtlasLoc;
    i32 gammaLoc;

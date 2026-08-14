@@ -36,6 +36,24 @@ add_executable(editor
    source/utils.c
 )
 
+target_compile_options(editor PRIVATE
+   -Wall
+   -Wextra
+   -Wundef
+   -Wshadow
+   -Wpointer-arith
+   -Wcast-align
+   -Wstrict-prototypes
+   -Wwrite-strings
+   -Wswitch-enum
+   -Wconversion
+   -Wunreachable-code
+   -Wpedantic
+   -Wno-override-init
+   -Wno-override-init-side-effects
+   -Werror=return-type
+)
+
 if (TEXT_LINE_IMPLEMENTATION)
    add_definitions(-DTEXT_LINE_IMPLEMENTATION=1)
 endif()
