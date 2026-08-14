@@ -250,6 +250,7 @@ struct Font *fontManagerGetFont(const char *filePath);
 struct Font *fontManagerGetFontWithRune(rune codepoint);
 
 void fontInit(struct Font *font, const char *filePath);
+void fontDeInit(struct Font *font);
 
 /************
  * layout.c *

@@ -29,6 +29,10 @@ void fontManagerDeInit()
    if (!fontManager.initialized)
       return;
 
+   for (u32 fontIdx = 0; fontIdx < fontManager.fontCount; ++fontIdx)
+      fontDeInit(&fontManager.font[fontIdx]);
+   free(fontManager.font);
+
    fontManager.initialized = false;
 }
 
@@ -84,4 +88,14 @@ void fontInit(struct Font *font, const char *filePath)
    hb_ot_metrics_get_position(font->hbFont, ASCENT_HHEA, &font->hbAscent);
    hb_ot_metrics_get_position(font->hbFont, DESCENT_HHEA, &font->hbDescent);
    hb_ot_metrics_get_position(font->hbFont, HB_OT_METRICS_TAG_CAP_HEIGHT, &font->hbMaxHeight);
+}
+
+void fontDeInit(struct Font *font)
+{
+   hb_font_destroy(font->hbFont);
+   hb_face_destroy(font->hbFace);
+   hb_gpu_draw_destroy(font->hbDraw);
+
+   free(font->fontPath);
+   free(font->glyphCache);
 }
