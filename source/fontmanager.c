@@ -72,6 +72,87 @@ void fontManagerDeInit()
    fontManager.initialized = false;
 }
 
+void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char *lineUTF8, u32 lineByteLen)
+{
+   (void) lineByteLen;
+   if (!fontManager.initialized)
+      return;
+
+   struct Font *font = fontManagerGetDefaultFont();
+
+   hb_buffer_t *buffer = hb_buffer_create();
+   hb_buffer_add_utf8(buffer, lineUTF8, -1, 0, -1);
+   hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
+   hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
+   hb_shape(font->hbFont, buffer, NULL, 0);
+
+   u32 glyphCount              = 0;
+   hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &glyphCount);
+
+   lineGlyphInfo->glyphInfo  = realloc(lineGlyphInfo->glyphInfo, glyphCount * sizeof(struct GlyphInfo));
+   lineGlyphInfo->glyphCount = glyphCount;
+   memset(lineGlyphInfo->glyphInfo, 0, glyphCount * sizeof(struct GlyphInfo));
+
+   for (u32 glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
+   {
+      hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
+      if (!font->glyphCache[glyphIndex].cached)
+      {
+         i32 xScale, yScale;
+         hb_font_get_scale(font->hbFont, &xScale, &yScale);
+         hb_gpu_draw_clear(font->hbDraw);
+         hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
+
+         hb_glyph_extents_t hbGlyphExtents = {};
+         hb_blob_t *hbBlob                 = NULL;
+
+         hbBlob           = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
+         u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
+
+         /******************************************************************
+          * todo: check if we got an empty glyph and if we did then        *
+          * find a font either in the `fontManager.fonts` or on the system *
+          * (using `fontconfig`) and cache that font.                      *
+          *****************************************************************/
+
+         /*****************************
+          * cache the glyph quad info *
+          ****************************/
+
+         font->glyphCache[glyphIndex] = (struct GlyphInfo) {
+            .extents.xMin = 0,
+            .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+            .extents.yMin = font->hbDescent,
+            .extents.yMax = font->hbAscent,
+            .advance      = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+            .upem         = yScale,
+            .empty        = (hbBlobLength == 0),
+            .cached       = true,
+         };
+
+         /*********************************************************
+          * upload glyph primitives to the gpu & store the offset *
+          ********************************************************/
+
+         struct GlyphAtlas *glyphAtlas = fontManagerGetGlyphAtlas();
+         if (!font->glyphCache[glyphIndex].empty)
+         {
+            const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
+            glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
+            glBufferSubData(GL_TEXTURE_BUFFER, glyphAtlas->cursorOffsetBytes, hbBlobLength, hbGlyphData);
+            font->glyphCache[glyphIndex].atlasOffset = glyphAtlas->cursorOffsetBytes;
+            glyphAtlas->cursorOffsetBytes += hbBlobLength;
+
+            hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
+         }
+      }
+
+      lineGlyphInfo->glyphInfo[glyphIdx] = font->glyphCache[glyphIndex];
+   }
+
+   hb_buffer_destroy(buffer);
+}
+
 struct GlyphAtlas *fontManagerGetGlyphAtlas()
 {
    if (!fontManager.initialized)

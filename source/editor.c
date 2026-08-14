@@ -6,8 +6,6 @@
 
 #include "editor.h"
 
-void magicFunction(char *lineBytes, struct Font *font, struct FontLayout *layout, struct FontRenderer *fontRenderer);
-
 int main(int argc, char *argv[])
 {
    (void) argc;
@@ -37,9 +35,63 @@ int main(int argc, char *argv[])
    fontRendererInit(fontRenderer);
    fontManagerInit(editor->fontFilePath);
 
-   struct Font *font = fontManagerGetFont(editor->fontFilePath);
+   struct LineGlyphInfo lineGlyphInfo = { 0 };
 
-   magicFunction((char *) editor->lineBytes, font, layout, fontRenderer);
+   fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) editor->lineBytes, editor->lineBytelen);
+   if (lineGlyphInfo.glyphCount == 0)
+      perror("fontManagerMakeLineGlyphInfoSpec returned 0 glyphs");
+
+   layout->glyphQuadVerticesCount = lineGlyphInfo.glyphCount * 6;
+   layout->glyphQuadVertices      = calloc(layout->glyphQuadVerticesCount, sizeof(struct GlyphVertex));
+
+   struct Point glyphPosition = { .x = 0, .y = 0 };
+   for (u32 glyphIdx = 0; glyphIdx < lineGlyphInfo.glyphCount; ++glyphIdx)
+   {
+      struct GlyphInfo *glyphInfo = &lineGlyphInfo.glyphInfo[glyphIdx];
+
+      /**********************
+       * create glyph quads *
+       *********************/
+
+      // glyphPosition.x += glyphPositions[glyphIdx].x_offset;
+      // glyphPosition.y += glyphPositions[glyphIdx].y_offset;
+
+      glyphPosition.x += glyphInfo->extents.xMin;
+      glyphPosition.y += 0;
+
+      struct GlyphVertex glyphQuadCorners[4];
+      for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
+      {
+         i32 cx = (cornerIdx >> 1) & 1;
+         i32 cy = cornerIdx & 1;
+         f64 ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
+         f64 ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
+
+         glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
+            .x           = (f32) glyphPosition.x,
+            .y           = (f32) glyphPosition.y,
+            .tx          = (f32) ex,
+            .ty          = (f32) ey,
+            .nx          = cx ? 1.f : -1.f,
+            .ny          = cy ? -1.f : 1.f,
+            .emPerPos    = 1.0,
+            .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
+            .runeIdx     = glyphIdx,
+         };
+      }
+
+      u32 glyphQuadOffset = glyphIdx * 6;
+
+      layout->glyphQuadVertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
+      layout->glyphQuadVertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
+      layout->glyphQuadVertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
+      layout->glyphQuadVertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
+      layout->glyphQuadVertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
+      layout->glyphQuadVertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
+
+      glyphPosition.x += glyphInfo->extents.xMax;
+      glyphPosition.y += 0;
+   }
 
    /**************************************************************************
     * layouting/relayouting, shared glue code between renderer and layouting *
@@ -172,139 +224,4 @@ void editorInit(struct Editor *editor)
 void editorDeInit(struct Editor *editor)
 {
    free(editor->fontFilePath);
-}
-
-void magicFunction(char *lineBytes, struct Font *font, struct FontLayout *layout, struct FontRenderer *fontRenderer)
-{
-   /********************************************************
-    * harfbuzz: shape the glyphs and get the glyph indices *
-    *******************************************************/
-
-   hb_buffer_t *buffer = hb_buffer_create();
-   hb_buffer_add_utf8(buffer, lineBytes, -1, 0, -1);
-   hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
-   hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
-   hb_shape(font->hbFont, buffer, NULL, 0);
-
-   u32 glyphCount                      = 0;
-   hb_glyph_info_t *glyphInfos         = hb_buffer_get_glyph_infos(buffer, &glyphCount);
-   hb_glyph_position_t *glyphPositions = hb_buffer_get_glyph_positions(buffer, &glyphCount);
-
-   /*************************************************
-    * harfbuzz: allocate space to store glyph quads *
-    ************************************************/
-
-   layout->glyphQuadVerticesCount = glyphCount * 6;
-   layout->glyphQuadVertices      = calloc(layout->glyphQuadVerticesCount, sizeof(struct GlyphVertex));
-   struct GlyphAtlas *atlas       = fontManagerGetGlyphAtlas();
-
-   /******************************************
-    * harfbuzz: load & cache font glyph data *
-    *****************************************/
-
-   struct Point glyphPosition = { .x = 0, .y = 0 };
-   for (u32 glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
-   {
-      hb_codepoint_t glyphIndex  = glyphInfos[glyphIdx].codepoint;
-      struct GlyphInfo glyphInfo = { 0 };
-
-      /**************************************************************
-       * harfbuzz: cache the glyph primitives if not cached already *
-       *************************************************************/
-
-      /* still font specific */
-      if (!font->glyphCache[glyphIndex].cached)
-      {
-         i32 xScale, yScale;
-         hb_font_get_scale(font->hbFont, &xScale, &yScale);
-         hb_gpu_draw_clear(font->hbDraw);
-         hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
-
-         hb_glyph_extents_t hbGlyphExtents = {};
-         hb_blob_t *hbBlob                 = NULL;
-
-         hbBlob           = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
-         u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
-
-         /*****************************
-          * cache the glyph quad info *
-          ****************************/
-
-         font->glyphCache[glyphIndex] = (struct GlyphInfo) {
-            .extents.xMin = 0,
-            .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
-            .extents.yMin = font->hbDescent,
-            .extents.yMax = font->hbAscent,
-            .advance      = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
-            .upem         = yScale,
-            .empty        = (hbBlobLength == 0),
-            .cached       = true,
-         };
-
-         /*********************************************************
-          * upload glyph primitives to the gpu & store the offset *
-          ********************************************************/
-
-         /* still font caching */
-         if (!font->glyphCache[glyphIndex].empty)
-         {
-            const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
-            glBindBuffer(GL_TEXTURE_BUFFER, atlas->textureBufferObject);
-            glBufferSubData(GL_TEXTURE_BUFFER, atlas->cursorOffsetBytes, hbBlobLength, hbGlyphData);
-
-            font->glyphCache[glyphIndex].atlasOffset = atlas->cursorOffsetBytes;
-            atlas->cursorOffsetBytes += hbBlobLength;
-
-            hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
-         }
-      }
-
-      /**************************************
-       * load `glyphInfo` from `glyphCache` *
-       *************************************/
-
-      glyphInfo = font->glyphCache[glyphIndex];
-
-      /**********************
-       * create glyph quads *
-       *********************/
-
-      glyphPosition.x += glyphPositions[glyphIdx].x_offset;
-      glyphPosition.y += glyphPositions[glyphIdx].y_offset;
-
-      struct GlyphVertex glyphQuadCorners[4];
-      for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
-      {
-         i32 cx = (cornerIdx >> 1) & 1;
-         i32 cy = cornerIdx & 1;
-         f64 ex = (1 - cx) * glyphInfo.extents.xMin + cx * glyphInfo.extents.xMax;
-         f64 ey = (1 - cy) * glyphInfo.extents.yMin + cy * glyphInfo.extents.yMax;
-
-         glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
-            .x           = (f32) glyphPosition.x,
-            .y           = (f32) glyphPosition.y,
-            .tx          = (f32) ex,
-            .ty          = (f32) ey,
-            .nx          = cx ? 1.f : -1.f,
-            .ny          = cy ? -1.f : 1.f,
-            .emPerPos    = 1.0,
-            .atlasOffset = glyphInfo.atlasOffset / TEXEL_SIZE,
-            .runeIdx     = glyphIdx,
-         };
-      }
-
-      u32 glyphQuadOffset = glyphIdx * 6;
-
-      layout->glyphQuadVertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
-      layout->glyphQuadVertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
-      layout->glyphQuadVertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
-      layout->glyphQuadVertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
-      layout->glyphQuadVertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
-      layout->glyphQuadVertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
-
-      glyphPosition.x += glyphPositions[glyphIdx].x_advance;
-      glyphPosition.y += glyphPositions[glyphIdx].y_advance;
-   }
-
-   hb_buffer_destroy(buffer);
 }
