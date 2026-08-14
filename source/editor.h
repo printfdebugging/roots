@@ -136,7 +136,6 @@ struct Editor
     * editor - core state *
     **********************/
    f32 fontSize;
-   f32 displayDPI;
    char *fontFilePath;
 
    /******************
