@@ -31,17 +31,12 @@ struct Text *textLoadFromFile(const char *filepath)
    i32 lineLen = 0;
    while ((lineLen = (i32) getline(&line, &lineCap, file)) != -1)
    {
-      while (lineLen > 1 && (line[lineLen - 1] == '\n' || line[lineLen - 1] == '\r'))
-         lineLen--;
       if (lineLen == 0)
          continue;
 
-      text->lines = realloc(text->lines, text->lineCount + 1);
-      /****************************************************************************************
-       * note: The substitution happens in the renderer where we just draw the visible lines. *
-       * There we substitute tabs with #spaces & newlines with a space as well                *
-       ***************************************************************************************/
+      text->lines                    = realloc(text->lines, (sizeof(char *)) * (text->lineCount + 1));
       text->lines[text->lineCount++] = line;
+      line                           = NULL;
    }
 
    fclose(file);
