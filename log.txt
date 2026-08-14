@@ -1,6 +1,30 @@
 *log.txt*
 
 --------------------------------------------------------------------------
+@printfdebugging                           Fri Aug 14 07:26:44 PM IST 2026
+
+                DATA FLOW CHARTS HELP FIND THE UNKNOWNS ~
+- Data flow is what matters, this is what shapes our abstractions and
+  our functions, so I spent some time creating a data flow diagram,
+  first on paper, but that wasn't enough, so I moved to excalidraw,
+  see |assets/roots.design.excalidraw|.
+
+- There are still some open ended questions regarding how the renderer
+  would draw the lines. Seems like along with the glyph data, we would
+  also have to add some variables for foreground, background,
+  fontAtlas.. or else we can't draw one line or multiple lines at a
+  time as then uniforms won't be enough to send the information about
+  each glyph being drawn, and fg/bg is a glyph local information
+  anyways, so seems fine.
+
+--------------------------------------------------------------------------
+@printfdebugging                           Fri Aug 14 06:28:38 PM IST 2026
+
+        TODO: #C - USE STAT CALLS INSTEAD OF SEEK() FOR FILESIZE ~
+- 18:27 siw5ohs0 printfdebugging: iirc the seek() filesize check can have
+  problems, would suggest looking into the stat calls
+
+--------------------------------------------------------------------------
 @printfdebugging                           Thu Aug 13 12:47:58 PM IST 2026
 
              TODO: REIMPLEMENT THE FONT RENDERING PIPELINE ~
