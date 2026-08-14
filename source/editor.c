@@ -140,9 +140,8 @@ int main(int argc, char *argv[])
 
 void editorInit(struct Editor *editor)
 {
-   u8 lineUTF8[]       = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-   char *fontFilePath  = ASSETS_DIR "LilexNerdFont-Regular.ttf";
-   u32 fontFilePathLen = strlen(fontFilePath);
+   u8 lineUTF8[]      = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+   char *fontFilePath = ASSETS_DIR "LilexNerdFont-Regular.ttf";
 
    if (!(editor->lineBytelen = strlen((char *) lineUTF8)) ||
        !(editor->lineRunelen = uc_rune_count(lineUTF8, editor->lineBytelen)) ||
@@ -157,8 +156,7 @@ void editorInit(struct Editor *editor)
    editor->cursorOffset  = 0;
 
    editor->fontSize     = 48.0f;
-   editor->fontFilePath = calloc(fontFilePathLen + 1, sizeof(char));
-   strcpy(editor->fontFilePath, fontFilePath);
+   editor->fontFilePath = stringDuplicate(fontFilePath);
 }
 
 void editorDeInit(struct Editor *editor)

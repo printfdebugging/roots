@@ -33,6 +33,7 @@ add_executable(editor
    source/renderer.c
    source/window.c
    source/fontmanager.c
+   source/utils.c
 )
 
 if (TEXT_LINE_IMPLEMENTATION)

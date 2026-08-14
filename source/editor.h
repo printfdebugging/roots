@@ -304,4 +304,17 @@ void windowResize(GLFWwindow *window, i32 width, i32 height);
 void mouseMove(GLFWwindow *window, f64 x, f64 y);
 void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
 
+/***********
+ * utils.c *
+ **********/
+
+/**!
+ * Duplicates the string, i.e. allocates memory for the bytes and a `\0`,
+ * and then uses `strcpy` to copy the string to the allocated memory.
+ *
+ * The caller is responsible for managing the `lifetime` of the returned
+ * string i.e. freeing it. Returns `NULL` on error.
+ */
+char *stringDuplicate(const char *str);
+
 #endif

@@ -60,11 +60,7 @@ struct Font *fontManagerGetFontWithRune(rune codepoint)
 
 void fontInit(struct Font *font, const char *filePath)
 {
-   i32 fontPathLen = strlen(filePath);
-   assert(fontPathLen != 0);
-   font->fontPath = calloc(fontPathLen + 1, sizeof(char));
-   strcpy(font->fontPath, filePath);
-
+   font->fontPath   = stringDuplicate(filePath);
    font->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
 
    /*********************************************************
