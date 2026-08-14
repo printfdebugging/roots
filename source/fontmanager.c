@@ -34,9 +34,15 @@ static struct FontManager fontManager = { 0 };
 
 void fontManagerInit(char *editorFontPath)
 {
-   fontManager.editorFont     = fontManagerGetFont(editorFontPath);
+   /**!
+    * `fontManagerGetFont` checks the `initialized` flag and
+    * returns early if not, so we should mark it early for the
+    * below call load/return the font
+    */
+   fontManager.initialized = true;
+
    fontManager.editorFontPath = stringDuplicate(editorFontPath);
-   fontManager.initialized    = true;
+   fontManager.editorFont     = fontManagerGetFont(editorFontPath);
 }
 
 void fontManagerDeInit()
