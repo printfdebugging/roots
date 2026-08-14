@@ -6,12 +6,19 @@
 
 #include "editor.h"
 
-struct Editor *editor;
-
-void magicFunction(struct Font *font, struct FontLayout *layout, struct FontRenderer *fontRenderer);
+void magicFunction(char *lineBytes, struct Font *font, struct FontLayout *layout, struct FontRenderer *fontRenderer);
 
 int main(int argc, char *argv[])
 {
+   /**************************************************************************
+    * NOTE: the code as of today breaks on scrolling when we have characters *
+    * which use more than one bytes... it's intentional, the goal is to get  *
+    * the rendering/scrolling working and then we fix these issues...        *
+    * see  window.c keyPress                                                 *
+    *************************************************************************/
+
+   struct Editor *editor;
+
    if (!(editor = calloc(1, sizeof(struct Editor))) ||
        !(editor->fontLayout = calloc(1, sizeof(struct FontLayout))) ||
        !(editor->fontRenderer = calloc(1, sizeof(struct FontRenderer))))
@@ -30,7 +37,7 @@ int main(int argc, char *argv[])
 
    struct Font *font = fontManagerGetFont(editor->fontFilePath);
 
-   magicFunction(font, layout, fontRenderer);
+   magicFunction((char *) editor->lineBytes, font, layout, fontRenderer);
 
    /**************************************************************************
     * layouting/relayouting, shared glue code between renderer and layouting *
@@ -144,9 +151,7 @@ void editorInit(struct Editor *editor)
    char *fontFilePath = ASSETS_DIR "LilexNerdFont-Regular.ttf";
 
    if (!(editor->lineBytelen = strlen((char *) lineUTF8)) ||
-       !(editor->lineRunelen = uc_rune_count(lineUTF8, editor->lineBytelen)) ||
-       !(editor->lineRunes = calloc(editor->lineRunelen, sizeof(rune))) ||
-       !(uc_utf8_decode_stream(lineUTF8, editor->lineBytelen, editor->lineRunes, editor->lineRunelen)))
+       !(editor->lineBytes = (byte *) stringDuplicate((char *) lineUTF8)))
    {
       perror("failed to decode lineUTF8\n");
    }
@@ -161,18 +166,17 @@ void editorInit(struct Editor *editor)
 
 void editorDeInit(struct Editor *editor)
 {
-   free(editor->lineRunes);
    free(editor->fontFilePath);
 }
 
-void magicFunction(struct Font *font, struct FontLayout *layout, struct FontRenderer *fontRenderer)
+void magicFunction(char *lineBytes, struct Font *font, struct FontLayout *layout, struct FontRenderer *fontRenderer)
 {
    /********************************************************
     * harfbuzz: shape the glyphs and get the glyph indices *
     *******************************************************/
 
    hb_buffer_t *buffer = hb_buffer_create();
-   hb_buffer_add_codepoints(buffer, editor->lineRunes, editor->lineRunelen, 0, -1);
+   hb_buffer_add_utf8(buffer, lineBytes, -1, 0, -1);
    hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
    hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
    hb_shape(font->hbFont, buffer, NULL, 0);

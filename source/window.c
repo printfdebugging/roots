@@ -89,10 +89,17 @@ void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
          editor->cursorCol = 0;
    }
 
+   /****************************************************************************************
+    * NOTE: instead of incrementing the cursor column, we should ask the editor to do      *
+    * it. That way, the editor can progress the cursor internally by multiple bytes        *
+    * for non-ASCII characters which take more than one byte in their UTF8 representation, *
+    * like "你好世界"                                                                  *
+    ***************************************************************************************/
+
    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
    {
       editor->cursorCol += 1;
-      if (editor->cursorCol >= editor->lineRunelen)
-         editor->cursorCol = editor->lineRunelen - 1;
+      if (editor->cursorCol >= editor->lineBytelen)
+         editor->cursorCol = editor->lineBytelen - 1;
    }
 }

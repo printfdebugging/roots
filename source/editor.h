@@ -123,8 +123,7 @@ struct Editor
     * editor - internal text representation *
     ****************************************/
    u32 lineBytelen;
-   u32 lineRunelen;
-   rune *lineRunes;
+   byte *lineBytes;
 
    /***************************
     * editor - internal state *
