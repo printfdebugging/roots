@@ -53,9 +53,6 @@ int main(int argc, char *argv[])
        * create glyph quads *
        *********************/
 
-      // glyphPosition.x += glyphPositions[glyphIdx].x_offset;
-      // glyphPosition.y += glyphPositions[glyphIdx].y_offset;
-
       glyphPosition.x += glyphInfo->extents.xMin;
       glyphPosition.y += 0;
 
@@ -134,20 +131,20 @@ int main(int argc, char *argv[])
        *****************************************/
       struct Font *font = fontManagerGetDefaultFont();
       u32 runeIdx       = layout->glyphQuadVertices[editor->cursorCol * 6].runeIdx;
-      u32 cursorLeftPx  = layout->glyphQuadVertices[editor->cursorCol * 6].x * fontRenderer->scale;
-      u32 cursorWidthPx = font->glyphCache[runeIdx].extents.xMax * fontRenderer->scale;
+      u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[editor->cursorCol * 6].x * fontRenderer->scale);
+      u32 cursorWidthPx = (u32) (font->glyphCache[runeIdx].extents.xMax * fontRenderer->scale);
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
-      if (editor->xScrollOffset + editor->windowWidth < cursorRightPx)
-         editor->xScrollOffset = cursorRightPx - editor->windowWidth;
+      if (editor->xScrollOffset + (u32) editor->windowWidth < cursorRightPx)
+         editor->xScrollOffset = cursorRightPx - (u32) editor->windowWidth;
       if (cursorLeftPx < editor->xScrollOffset)
          editor->xScrollOffset = cursorLeftPx;
 
       /***********************************
        * calculate transformation matrix *
        **********************************/
-      fontRenderer->matViewProjection = glms_ortho(0, editor->windowWidth, 0, editor->windowHeight, 0.0f, 100.0f);
-      fontRenderer->matViewProjection = glms_translate(fontRenderer->matViewProjection, (vec3s) { -editor->xScrollOffset, 0.0f, 0.0f });
+      fontRenderer->matViewProjection = glms_ortho(0, (f32) editor->windowWidth, 0, (f32) editor->windowHeight, 0.0f, 100.0f);
+      fontRenderer->matViewProjection = glms_translate(fontRenderer->matViewProjection, (vec3s) { { (f32) -editor->xScrollOffset, 0.0f, 0.0f } });
 
       /********************
        * update variables *
@@ -159,11 +156,11 @@ int main(int argc, char *argv[])
       hb_font_get_scale(font->hbFont, &xScale, &yScale);
       fontRenderer->scale = editor->fontSize / (f32) yScale;
 
-      fontRenderer->position.y = (editor->windowHeight - editor->fontSize) / 2;
+      fontRenderer->position.y = ((f32) editor->windowHeight - editor->fontSize) / 2;
       fontRenderer->gamma      = 1.0f;
       fontRenderer->debug      = false;
       fontRenderer->hbGpuAtlas = atlas->textureUnit;
-      fontRenderer->runeIdx    = editor->cursorCol;
+      fontRenderer->runeIdx    = (i32) editor->cursorCol; /* todo: remove this soon */
 
       /****************
        * set uniforms *

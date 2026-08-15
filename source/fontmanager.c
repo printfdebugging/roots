@@ -72,7 +72,7 @@ void fontManagerDeInit()
    fontManager.initialized = false;
 }
 
-void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char *lineUTF8, u32 lineByteLen)
+void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char *lineUTF8, u64 lineByteLen)
 {
    (void) lineByteLen;
    if (!fontManager.initialized)
