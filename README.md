@@ -33,3 +33,11 @@ cmake --build build
 ## Philosophy
 - Add minimal/shallow abstractions only when necessary - keeps things flexible
 - Make it work, then make it fast, then make it beautiful/elegant
+
+## LLM Policy
+
+> [!NOTE]
+> I do not use LLMs for this project, and I will not take patches written by one.
+> Here we read the docs and the code, try things, make mistakes, discuss those on
+> IRC, fix them and document the whole process in `log.txt`. The goal is
+> learning...
