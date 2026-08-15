@@ -4,7 +4,7 @@
 
 char *stringDuplicate(const char *str)
 {
-   u64 strLen = strlen(str);
+   i32 strLen = strlen(str);
    if (strLen == 0)
       return NULL;
 

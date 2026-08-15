@@ -45,7 +45,6 @@ struct Text *textLoadFromFile(const char *filepath)
 
 bool textWriteToFile(const char *filepath)
 {
-   (void) filepath;
    perror("todo");
    return true;
 }

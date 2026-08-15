@@ -113,7 +113,7 @@ struct GlyphInfo
 struct GlyphAtlas
 {
    u32 texture;
-   i32 textureUnit;
+   u32 textureUnit;
    u32 textureBufferObject;
    u32 capacityBytes;
    u32 cursorOffsetBytes;
@@ -131,15 +131,15 @@ struct Editor
    /*****************************************
     * editor - internal text representation *
     ****************************************/
-   u64 lineBytelen;
+   u32 lineBytelen;
    byte *lineBytes;
 
    /***************************
     * editor - internal state *
     **************************/
-   u64 xScrollOffset;
-   u64 cursorCol;
-   u64 cursorOffset;
+   i32 xScrollOffset;
+   i32 cursorCol;
+   i32 cursorOffset;
 
    /***********************
     * editor - core state *
@@ -250,7 +250,7 @@ void editorDeInit(struct Editor *editor);
 
 void fontManagerInit(char *editorFontPath);
 void fontManagerDeInit();
-void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char *lineUTF8, u64 lineByteLen);
+void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char *lineUTF8, u32 lineByteLen);
 struct GlyphAtlas *fontManagerGetGlyphAtlas();
 struct Font *fontManagerGetFont(const char *filePath);
 struct Font *fontManagerGetDefaultFont();
