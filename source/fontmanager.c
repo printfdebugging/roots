@@ -45,6 +45,9 @@ void _fontManagerGlyphAtlasDeInit();
 
 void fontManagerInit(char *editorFontPath)
 {
+   if (fontManager.initialized)
+      return;
+
    /**!
     * `fontManagerGetFont` checks the `initialized` flag and
     * returns early if not, so we should mark it early for the
