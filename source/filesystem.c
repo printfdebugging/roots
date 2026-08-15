@@ -29,10 +29,10 @@ char *readFileContents(const char *filPath)
       goto failure;
    }
 
-   u64 read_count = fread(data, 1, (u32) length, file);
-   if (read_count < (u32) length || read_count == 0)
+   u64 readCount = fread(data, 1, (u32) length, file);
+   if (readCount < (u32) length || readCount == 0)
    {
-      fprintf(stderr, "read returned %li which is either 0 or less than %li", read_count, length);
+      fprintf(stderr, "read returned %li which is either 0 or less than %li", readCount, length);
       goto failure;
    }
 
