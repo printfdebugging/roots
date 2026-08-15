@@ -92,9 +92,8 @@ void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
     *************************/
    if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
    {
-      editor->cursorCol -= 1;
-      if (editor->cursorCol < 0)
-         editor->cursorCol = 0;
+      if (editor->cursorCol != 0)
+         editor->cursorCol -= 1;
    }
 
    /****************************************************************************************
