@@ -137,7 +137,7 @@ struct Editor
    /***************************
     * editor - internal state *
     **************************/
-   i32 xScrollOffset;
+   u32 xScrollOffset;
    i32 cursorCol;
    i32 cursorOffset;
 
