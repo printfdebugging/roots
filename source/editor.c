@@ -53,9 +53,6 @@ int main(int argc, char *argv[])
        * create glyph quads *
        *********************/
 
-      // glyphPosition.x += glyphPositions[glyphIdx].x_offset;
-      // glyphPosition.y += glyphPositions[glyphIdx].y_offset;
-
       glyphPosition.x += glyphInfo->extents.xMin;
       glyphPosition.y += 0;
 
