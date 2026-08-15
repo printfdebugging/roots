@@ -23,14 +23,14 @@ char *readFileContents(const char *filPath)
       goto failure;
    }
 
-   if (!(data = calloc(1, length + 1)))
+   if (!(data = calloc(1, (u32) length + 1)))
    {
       fprintf(stderr, "failed to allocate memory for data to store file %s\n", filPath);
       goto failure;
    }
 
-   u64 read_count = fread(data, 1, length, file);
-   if (read_count < length || read_count == 0)
+   u64 read_count = fread(data, 1, (u32) length, file);
+   if (read_count < (u32) length || read_count == 0)
    {
       fprintf(stderr, "read returned %li which is either 0 or less than %li", read_count, length);
       goto failure;

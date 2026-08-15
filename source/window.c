@@ -105,6 +105,8 @@ void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
 
    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
    {
+      /* note: this way of doing things has to go away, since
+       * we should use the forthcoming Text api to scroll */
       editor->cursorCol += 1;
       if (editor->cursorCol >= editor->lineBytelen)
          editor->cursorCol = editor->lineBytelen - 1;

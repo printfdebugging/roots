@@ -241,7 +241,7 @@ void _fontManagerGlyphAtlasInit()
    glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
    glBufferData(GL_TEXTURE_BUFFER, glyphAtlas->capacityBytes, NULL, GL_STATIC_DRAW);
 
-   glActiveTexture(glyphAtlas->textureUnit);
+   glActiveTexture((u32) glyphAtlas->textureUnit);
    glGenTextures(1, &glyphAtlas->texture);
    glBindTexture(GL_TEXTURE_BUFFER, glyphAtlas->texture);
    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, glyphAtlas->textureBufferObject);
