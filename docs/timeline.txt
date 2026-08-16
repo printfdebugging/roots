@@ -1,0 +1,15 @@
+
+--------------------------------------------------------------------------
+@printfdebugging                           Sun Aug 16 07:27:52 PM IST 2026
+
+                                WEEK 34 ~
+- Budget:
+  - Weekly  - 15h
+
+- Tasks:
+  - Abstract away the layouting code from main to FontLayout
+  - Render multiple lines & add vertical scrolling
+  - Introduce Text API for moving cursor over UTF8 bytes
+  - Substitute Spaces, Tabs, Newlines etc. on the renderer side
+
+vim:ft=help
