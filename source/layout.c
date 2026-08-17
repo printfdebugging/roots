@@ -3,7 +3,7 @@
 
 #include "editor.h"
 
-void fontLayoutInit(struct FontLayout *layout)
+void lineLayoutInit(struct LineLayout *layout)
 {
    /*********************************************************************************************
     * layout data - internal copy - we relayout when it is invalidated & sync with the renderer *
@@ -16,7 +16,7 @@ void fontLayoutInit(struct FontLayout *layout)
  * note: don't realayout the whole line, just the visible part + some more
  * todo:
  */
-void fontLayoutGlyphQuadsFromInfo(struct FontLayout *layout, struct LineGlyphInfo *lineGlyphInfo)
+void lineLayoutGlyphQuadsFromInfo(struct LineLayout *layout, struct LineGlyphInfo *lineGlyphInfo)
 {
    layout->glyphQuadVerticesCount = lineGlyphInfo->glyphCount * 6;
    layout->glyphQuadVertices      = realloc(layout->glyphQuadVertices, layout->glyphQuadVerticesCount * sizeof(struct GlyphVertex));
@@ -68,7 +68,7 @@ void fontLayoutGlyphQuadsFromInfo(struct FontLayout *layout, struct LineGlyphInf
    }
 }
 
-void fontLayoutDeInit(struct FontLayout *layout)
+void lineLayoutDeInit(struct LineLayout *layout)
 {
    free(layout->glyphQuadVertices);
 }

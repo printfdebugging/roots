@@ -20,30 +20,30 @@ int main(int argc, char *argv[])
    struct Editor *editor;
 
    if (!(editor = calloc(1, sizeof(struct Editor))) ||
-       !(editor->fontLayout = calloc(1, sizeof(struct FontLayout))) ||
-       !(editor->fontRenderer = calloc(1, sizeof(struct FontRenderer))))
+       !(editor->lineLayout = calloc(1, sizeof(struct LineLayout))) ||
+       !(editor->lineRenderer = calloc(1, sizeof(struct LineRenderer))))
    {
       perror("failed to allocate structs\n");
    }
 
-   struct FontLayout *layout         = editor->fontLayout;
-   struct FontRenderer *fontRenderer = editor->fontRenderer;
+   struct LineLayout *layout         = editor->lineLayout;
+   struct LineRenderer *lineRenderer = editor->lineRenderer;
 
    windowInit(editor);
    editorInit(editor);
-   fontLayoutInit(layout);
-   fontRendererInit(fontRenderer);
+   lineLayoutInit(layout);
+   lineRendererInit(lineRenderer);
    fontManagerInit(editor->fontFilePath);
 
    struct LineGlyphInfo lineGlyphInfo = { 0 };
 
    fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) editor->lineBytes, editor->lineBytelen);
-   fontLayoutGlyphQuadsFromInfo(layout, &lineGlyphInfo);
-   fontRendererUploadLayoutQuadsToGPU(fontRenderer, layout);
+   lineLayoutGlyphQuadsFromInfo(layout, &lineGlyphInfo);
+   lineRendererUploadLayoutQuadsToGPU(lineRenderer, layout);
 
-   fontRendererCreateShader(fontRenderer);
-   fontRendererSetupAttribLocations(fontRenderer);
-   fontRendererCacheUniformLoc(fontRenderer);
+   lineRendererCreateShader(lineRenderer);
+   lineRendererSetupAttribLocations(lineRenderer);
+   lineRendererCacheUniformLoc(lineRenderer);
 
    /*****************
     * the main loop *
@@ -72,8 +72,8 @@ int main(int argc, char *argv[])
        *****************************************/
       struct Font *font = fontManagerGetDefaultFont();
       u32 runeIdx       = layout->glyphQuadVertices[editor->cursorCol * 6].runeIdx;
-      u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[editor->cursorCol * 6].x * fontRenderer->scale);
-      u32 cursorWidthPx = (u32) (font->glyphCache[runeIdx].extents.xMax * fontRenderer->scale);
+      u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[editor->cursorCol * 6].x * lineRenderer->scale);
+      u32 cursorWidthPx = (u32) (font->glyphCache[runeIdx].extents.xMax * lineRenderer->scale);
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
       if (editor->xScrollOffset + (u32) editor->windowWidth < cursorRightPx)
@@ -84,33 +84,33 @@ int main(int argc, char *argv[])
       /***********************************
        * calculate transformation matrix *
        **********************************/
-      fontRenderer->matViewProjection = glms_ortho(0, (f32) editor->windowWidth, 0, (f32) editor->windowHeight, 0.0f, 100.0f);
-      fontRenderer->matViewProjection = glms_translate(fontRenderer->matViewProjection, (vec3s) { { -((f32) editor->xScrollOffset), 0.0f, 0.0f } });
+      lineRenderer->matViewProjection = glms_ortho(0, (f32) editor->windowWidth, 0, (f32) editor->windowHeight, 0.0f, 100.0f);
+      lineRenderer->matViewProjection = glms_translate(lineRenderer->matViewProjection, (vec3s) { { -((f32) editor->xScrollOffset), 0.0f, 0.0f } });
 
       /********************
        * update variables *
        *******************/
 
-      glGetIntegerv(GL_VIEWPORT, fontRenderer->viewport.raw);
+      glGetIntegerv(GL_VIEWPORT, lineRenderer->viewport.raw);
 
       i32 xScale, yScale;
       hb_font_get_scale(font->hbFont, &xScale, &yScale);
-      fontRenderer->scale = editor->fontSize / (f32) yScale;
+      lineRenderer->scale = editor->fontSize / (f32) yScale;
 
       struct GlyphAtlas *atlas = fontManagerGetGlyphAtlas();
-      fontRenderer->position.y = ((f32) editor->windowHeight - editor->fontSize) / 2;
-      fontRenderer->gamma      = 1.0f;
-      fontRenderer->debug      = false;
-      fontRenderer->hbGpuAtlas = atlas->textureUnit;
-      fontRenderer->runeIdx    = editor->cursorCol;
+      lineRenderer->position.y = ((f32) editor->windowHeight - editor->fontSize) / 2;
+      lineRenderer->gamma      = 1.0f;
+      lineRenderer->debug      = false;
+      lineRenderer->hbGpuAtlas = atlas->textureUnit;
+      lineRenderer->runeIdx    = editor->cursorCol;
 
       /****************
        * set uniforms *
        ***************/
 
-      glBindVertexArray(fontRenderer->glyphQuadVerticesVAO);
+      glBindVertexArray(lineRenderer->glyphQuadVerticesVAO);
 
-      fontRendererUploadUniforms(fontRenderer);
+      lineRendererUploadUniforms(lineRenderer);
 
       /**********************
        * opengl: draw calls *
@@ -128,14 +128,14 @@ int main(int argc, char *argv[])
     * cleanup *
     **********/
 
-   fontRendererDeInit(fontRenderer);
+   lineRendererDeInit(lineRenderer);
    editorDeInit(editor);
-   fontLayoutDeInit(layout);
+   lineLayoutDeInit(layout);
    fontManagerDeInit();
    windowDeInit(editor);
 
    free(layout);
-   free(fontRenderer);
+   free(lineRenderer);
    free(editor);
 
    return EXIT_SUCCESS;

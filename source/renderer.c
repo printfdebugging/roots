@@ -14,7 +14,7 @@ static void _rendererUseShaderProgram(u32 shaderProgram)
    }
 }
 
-void fontRendererInit(struct FontRenderer *renderer)
+void lineRendererInit(struct LineRenderer *renderer)
 {
    renderer->hbShaderProgram      = 0;
    renderer->matViewProjectionLoc = -1;
@@ -50,14 +50,14 @@ void fontRendererInit(struct FontRenderer *renderer)
    renderer->glyphQuadsUploaded = false;
 }
 
-void fontRendererDeInit(struct FontRenderer *renderer)
+void lineRendererDeInit(struct LineRenderer *renderer)
 {
    glDeleteBuffers(1, &renderer->glyphQuadVerticesVBO);
    glDeleteVertexArrays(1, &renderer->glyphQuadVerticesVAO);
    glDeleteProgram(renderer->hbShaderProgram);
 }
 
-void fontRendererCacheUniformLoc(struct FontRenderer *renderer)
+void lineRendererCacheUniformLoc(struct LineRenderer *renderer)
 {
    /******************************************
     * opengl: cache shader uniform locations *
@@ -75,7 +75,7 @@ void fontRendererCacheUniformLoc(struct FontRenderer *renderer)
    renderer->runeIdxLoc           = glGetUniformLocation(renderer->hbShaderProgram, "u_runeIdx");
 }
 
-void fontRendererUploadUniforms(struct FontRenderer *renderer)
+void lineRendererUploadUniforms(struct LineRenderer *renderer)
 {
    _rendererUseShaderProgram(renderer->hbShaderProgram);
    glUniformMatrix4fv(renderer->matViewProjectionLoc, 1, GL_FALSE, renderer->matViewProjection.col[0].raw);
@@ -90,7 +90,7 @@ void fontRendererUploadUniforms(struct FontRenderer *renderer)
    glUniform1i(renderer->hbGpuAtlasLoc, (i32) renderer->hbGpuAtlas);
 }
 
-void fontRendererCreateShader(struct FontRenderer *renderer)
+void lineRendererCreateShader(struct LineRenderer *renderer)
 {
    /******************************************************************
     * opengl: create a shader `hbShaderProgram` for rendering glyphs *
@@ -145,7 +145,7 @@ void fontRendererCreateShader(struct FontRenderer *renderer)
    free((void *) hbFragmentMain);
 }
 
-void fontRendererSetupAttribLocations(struct FontRenderer *renderer)
+void lineRendererSetupAttribLocations(struct LineRenderer *renderer)
 {
    /**********************************************************
     * opengl: setup attribute locations in `hbShaderProgram` *
@@ -178,7 +178,7 @@ void fontRendererSetupAttribLocations(struct FontRenderer *renderer)
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, runeIdx));
 }
 
-void fontRendererUploadLayoutQuadsToGPU(struct FontRenderer *renderer, struct FontLayout *layout)
+void lineRendererUploadLayoutQuadsToGPU(struct LineRenderer *renderer, struct LineLayout *layout)
 {
    glBindVertexArray(renderer->glyphQuadVerticesVAO);
    glBindBuffer(GL_ARRAY_BUFFER, renderer->glyphQuadVerticesVBO);

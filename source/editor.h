@@ -156,8 +156,8 @@ struct Editor
    f64 lastTime;
    f64 timeDelta;
 
-   struct FontLayout *fontLayout;
-   struct FontRenderer *fontRenderer;
+   struct LineLayout *lineLayout;
+   struct LineRenderer *lineRenderer;
 };
 
 struct LineGlyphInfo
@@ -192,13 +192,13 @@ struct Font
  * is just a brush and it's the FontManager (in fontmanager.c)
  * readily provides one for each font.
  */
-struct FontLayout
+struct LineLayout
 {
    struct GlyphVertex *glyphQuadVertices;
    u32 glyphQuadVerticesCount;
 };
 
-struct FontRenderer
+struct LineRenderer
 {
    /*************************************
     * renderer - draw uniform locations *
@@ -263,21 +263,21 @@ void fontDeInit(struct Font *font);
  * layout.c *
  ***********/
 
-void fontLayoutInit(struct FontLayout *layout);
-void fontLayoutGlyphQuadsFromInfo(struct FontLayout *layout, struct LineGlyphInfo *lineGlyphInfo);
-void fontLayoutDeInit(struct FontLayout *layout);
+void lineLayoutInit(struct LineLayout *layout);
+void lineLayoutGlyphQuadsFromInfo(struct LineLayout *layout, struct LineGlyphInfo *lineGlyphInfo);
+void lineLayoutDeInit(struct LineLayout *layout);
 
 /**************
  * renderer.c *
  *************/
 
-void fontRendererInit(struct FontRenderer *renderer);
-void fontRendererDeInit(struct FontRenderer *renderer);
-void fontRendererCacheUniformLoc(struct FontRenderer *renderer);
-void fontRendererUploadUniforms(struct FontRenderer *renderer);
-void fontRendererCreateShader(struct FontRenderer *renderer);
-void fontRendererSetupAttribLocations(struct FontRenderer *renderer);
-void fontRendererUploadLayoutQuadsToGPU(struct FontRenderer *renderer, struct FontLayout *layout);
+void lineRendererInit(struct LineRenderer *renderer);
+void lineRendererDeInit(struct LineRenderer *renderer);
+void lineRendererCacheUniformLoc(struct LineRenderer *renderer);
+void lineRendererUploadUniforms(struct LineRenderer *renderer);
+void lineRendererCreateShader(struct LineRenderer *renderer);
+void lineRendererSetupAttribLocations(struct LineRenderer *renderer);
+void lineRendererUploadLayoutQuadsToGPU(struct LineRenderer *renderer, struct LineLayout *layout);
 
 /**********
  * text.c *
