@@ -27,7 +27,7 @@ void windowInit(struct Editor *editor)
 #endif
 
    const i32 windowWidth   = 1600;
-   const i32 windowHeight  = 200;
+   const i32 windowHeight  = 800;
    const char *windowTitle = "GLFWWindow";
 
    GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
