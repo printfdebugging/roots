@@ -11,5 +11,6 @@
   - Render multiple lines & add vertical scrolling
   - Introduce Text API for moving cursor over UTF8 bytes
   - Substitute Spaces, Tabs, Newlines etc. on the renderer side
+  - Add some performance testing constructs
 
 vim:ft=help
