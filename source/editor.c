@@ -38,71 +38,12 @@ int main(int argc, char *argv[])
    struct LineGlyphInfo lineGlyphInfo = { 0 };
 
    fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) editor->lineBytes, editor->lineBytelen);
-   if (lineGlyphInfo.glyphCount == 0)
-      perror("fontManagerMakeLineGlyphInfoSpec returned 0 glyphs");
-
-   layout->glyphQuadVerticesCount = lineGlyphInfo.glyphCount * 6;
-   layout->glyphQuadVertices      = calloc(layout->glyphQuadVerticesCount, sizeof(struct GlyphVertex));
-
-   struct Point glyphPosition = { .x = 0, .y = 0 };
-   for (u32 glyphIdx = 0; glyphIdx < lineGlyphInfo.glyphCount; ++glyphIdx)
-   {
-      struct GlyphInfo *glyphInfo = &lineGlyphInfo.glyphInfo[glyphIdx];
-
-      /**********************
-       * create glyph quads *
-       *********************/
-
-      glyphPosition.x += glyphInfo->extents.xMin;
-      glyphPosition.y += 0;
-
-      struct GlyphVertex glyphQuadCorners[4];
-      for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
-      {
-         i32 cx = (cornerIdx >> 1) & 1;
-         i32 cy = cornerIdx & 1;
-         f64 ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
-         f64 ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
-
-         glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
-            .x           = (f32) glyphPosition.x,
-            .y           = (f32) glyphPosition.y,
-            .tx          = (f32) ex,
-            .ty          = (f32) ey,
-            .nx          = cx ? 1.f : -1.f,
-            .ny          = cy ? -1.f : 1.f,
-            .emPerPos    = 1.0,
-            .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
-            .runeIdx     = glyphIdx,
-         };
-      }
-
-      u32 glyphQuadOffset = glyphIdx * 6;
-
-      layout->glyphQuadVertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
-      layout->glyphQuadVertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
-      layout->glyphQuadVertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
-      layout->glyphQuadVertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
-      layout->glyphQuadVertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
-      layout->glyphQuadVertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
-
-      glyphPosition.x += glyphInfo->extents.xMax;
-      glyphPosition.y += 0;
-   }
-
-   /**************************************************************************
-    * layouting/relayouting, shared glue code between renderer and layouting *
-    *************************************************************************/
-   glBindVertexArray(fontRenderer->glyphQuadVerticesVAO);
-   glBindBuffer(GL_ARRAY_BUFFER, fontRenderer->glyphQuadVerticesVBO);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
-   fontRenderer->glyphQuadsUploaded = true;
+   fontLayoutGlyphQuadsFromInfo(layout, &lineGlyphInfo);
+   fontRendererUploadLayoutQuadsToGPU(fontRenderer, layout);
 
    fontRendererCreateShader(fontRenderer);
    fontRendererSetupAttribLocations(fontRenderer);
    fontRendererCacheUniformLoc(fontRenderer);
-
-   struct GlyphAtlas *atlas = fontManagerGetGlyphAtlas();
 
    /*****************
     * the main loop *
@@ -156,6 +97,7 @@ int main(int argc, char *argv[])
       hb_font_get_scale(font->hbFont, &xScale, &yScale);
       fontRenderer->scale = editor->fontSize / (f32) yScale;
 
+      struct GlyphAtlas *atlas = fontManagerGetGlyphAtlas();
       fontRenderer->position.y = ((f32) editor->windowHeight - editor->fontSize) / 2;
       fontRenderer->gamma      = 1.0f;
       fontRenderer->debug      = false;

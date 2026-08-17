@@ -177,3 +177,11 @@ void fontRendererSetupAttribLocations(struct FontRenderer *renderer)
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, runeIdx));
 }
+
+void fontRendererUploadLayoutQuadsToGPU(struct FontRenderer *renderer, struct FontLayout *layout)
+{
+   glBindVertexArray(renderer->glyphQuadVerticesVAO);
+   glBindBuffer(GL_ARRAY_BUFFER, renderer->glyphQuadVerticesVBO);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
+   renderer->glyphQuadsUploaded = true;
+}

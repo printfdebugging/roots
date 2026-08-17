@@ -264,6 +264,7 @@ void fontDeInit(struct Font *font);
  ***********/
 
 void fontLayoutInit(struct FontLayout *layout);
+void fontLayoutGlyphQuadsFromInfo(struct FontLayout *layout, struct LineGlyphInfo *lineGlyphInfo);
 void fontLayoutDeInit(struct FontLayout *layout);
 
 /**************
@@ -276,6 +277,7 @@ void fontRendererCacheUniformLoc(struct FontRenderer *renderer);
 void fontRendererUploadUniforms(struct FontRenderer *renderer);
 void fontRendererCreateShader(struct FontRenderer *renderer);
 void fontRendererSetupAttribLocations(struct FontRenderer *renderer);
+void fontRendererUploadLayoutQuadsToGPU(struct FontRenderer *renderer, struct FontLayout *layout);
 
 /**********
  * text.c *
