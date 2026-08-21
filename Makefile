@@ -1,3 +1,6 @@
+export CC      := clang
+export CXX     := clang++
+
 run: debug
 	./build/editor
 

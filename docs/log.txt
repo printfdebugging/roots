@@ -1,6 +1,47 @@
 *log.txt*
 
 --------------------------------------------------------------------------
+@printfdebugging                           Fri Aug 21 11:49:02 PM IST 2026
+
+
+    - https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer
+    - https://github.com/google/sanitizers/issues/1628
+    - https://github.com/google/sanitizers/wiki/AddressSanitizer
+    - https://github.com/google/sanitizers/wiki/MemorySanitizer
+      - MemorySanitizer and AddressSanitizer don't work together for
+        some reason. The documentation doesn't seem to even talk about
+        it.
+
+--------------------------------------------------------------------------
+@printfdebugging                           Fri Aug 21 11:40:12 PM IST 2026
+
+                        READING & UNDERSTANDING ~
+- In these times, it's easy to reach out for an LLM to externalize
+  your thinking and we are trying to not do that here. Then how do fix
+  an error which seems really hard and you don't have any clue about
+  it?
+
+- This is no different than using a library for the first time, or
+  exploring a new area of the codebase. You must UNDERSTAND what's
+  going on. That takes time, but it's fine, there's no substitute for
+  that. Spend some hours reading the documentation, taking notes,
+  making arrow diagrams on paper... all that is often necessary when
+  you are trying to understand something very complex. Spend time with
+  the problem and UNDERSTAND it.
+
+- Once you understand the problem, the rest becomes easy, you now have
+  an overview of what's going on and reading also reveals a number of
+  potential fixes, so now it's about choosing the best fix for the
+  problem, that's not simple, still far less overwhelming then the
+  first problem.
+
+- To understand, you must READ properly, don't just gloss over the
+  prose looking for keywords.. Over time, you build an intuition about
+  where you might find the solution, the official documentation, some
+  github readme, or maybe some article on the topic, in the decreasing
+  order of value I guess.
+
+--------------------------------------------------------------------------
 @printfdebugging                           Fri Aug 14 10:41:25 PM IST 2026
 
              TODO: ##OpenGL - LOOK INTO SDF FOR GIANT TEXT ~

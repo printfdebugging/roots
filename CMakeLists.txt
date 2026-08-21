@@ -34,6 +34,7 @@ add_executable(editor
    source/window.c
    source/fontmanager.c
    source/utils.c
+   source/sanitizers.c
 )
 
 target_compile_options(editor PRIVATE
@@ -50,9 +51,20 @@ target_compile_options(editor PRIVATE
    -Wunreachable-code
    -Wpedantic
    -Wno-override-init
-   -Wno-override-init-side-effects
    -Werror=return-type
+   -Wdouble-promotion
+   -fno-omit-frame-pointer
+   $<$<CONFIG:Debug>:-Og -g3>
+   $<$<CONFIG:Debug>:-fsanitize=undefined,address>
 )
+
+
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+   target_link_options(editor PUBLIC
+      -fsanitize=undefined
+      -fsanitize=address
+   )
+endif()
 
 if (TEXT_LINE_IMPLEMENTATION)
    add_definitions(-DTEXT_LINE_IMPLEMENTATION=1)
