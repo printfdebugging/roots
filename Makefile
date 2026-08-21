@@ -35,6 +35,9 @@ perf: debug
 clean:
 	rm -rf build
 	rm -rf install
+	rm -rf perf*
+	rm -rf roots.tar.gz
+	rm -rf tags
 
 update:
 	git submodule update --remote --merge
