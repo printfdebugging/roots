@@ -20,4 +20,10 @@ const char *__lsan_default_suppressions()
           "leak:_glfwCreateWindowX11\n"
           "leak:glfwCreateWindow\n";
 }
+
+const char *__asan_default_options()
+{
+   return "stack_trace_format=\"%S (%f)\"";
+}
+
 #endif
