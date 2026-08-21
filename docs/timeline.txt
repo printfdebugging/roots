@@ -1,17 +1,21 @@
 
 --------------------------------------------------------------------------
+@printfdebugging                           Sat Aug 22 01:22:04 AM IST 2026
+
+                              TASKS BUCKET ~
+- Tasks:
+  - [ ] render multiple lines & add vertical scrolling
+  - [ ] introduce text api for moving cursor over utf8 bytes
+  - [ ] substitute spaces, tabs, newlines etc. on the renderer side
+  - [ ] add some performance testing constructs
+
+--------------------------------------------------------------------------
 @printfdebugging                           Sun Aug 16 07:27:52 PM IST 2026
 
                                 WEEK 34 ~
-- Budget:
-  - Weekly  - 15h
-
 - Tasks:
+  - [x] abstract away the layouting code from main to fontlayout
   - [x] use fixed sized types backing the u8/u16.. type aliases
-  - Abstract away the layouting code from main to FontLayout
-  - Render multiple lines & add vertical scrolling
-  - Introduce Text API for moving cursor over UTF8 bytes
-  - Substitute Spaces, Tabs, Newlines etc. on the renderer side
-  - Add some performance testing constructs
+  - [x] setup sanitizers - exclude glfw's leaks from the output
 
 vim:ft=help
