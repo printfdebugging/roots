@@ -137,6 +137,7 @@ int main(int argc, char *argv[])
    free(layout);
    free(lineRenderer);
    free(editor);
+   free(lineGlyphInfo.glyphInfo);
 
    return EXIT_SUCCESS;
 }
@@ -163,4 +164,5 @@ void editorInit(struct Editor *editor)
 void editorDeInit(struct Editor *editor)
 {
    free(editor->fontFilePath);
+   free(editor->lineBytes);
 }
