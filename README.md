@@ -30,7 +30,7 @@ cmake --build build
 ./build/editor
 ```
 
-## Philosophy
+## Coding Style/Philosophy
 - Add minimal/shallow abstractions only when necessary - keeps things flexible
 - Make it work, then make it fast, then make it beautiful/elegant
 

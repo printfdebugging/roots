@@ -1,21 +1,64 @@
+*timeline.txt*
 
---------------------------------------------------------------------------
-@printfdebugging                           Sat Aug 22 01:22:04 AM IST 2026
+------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Sun Aug 16 07:27:52 PM IST 2026                  *timeline.txt-2026-08-16-0727*
 
-                              TASKS BUCKET ~
-- Tasks:
-  - [ ] render multiple lines & add vertical scrolling
-  - [ ] introduce text api for moving cursor over utf8 bytes
-  - [ ] substitute spaces, tabs, newlines etc. on the renderer side
-  - [ ] add some performance testing constructs
+Week 34                                                                                             *timeline.txt-week-34* ~
 
---------------------------------------------------------------------------
-@printfdebugging                           Sun Aug 16 07:27:52 PM IST 2026
+   - [x] Abstract away the layouting code from main to fontlayout
+   - [x] Use fixed sized types backing the u8/u16.. type aliases
+   - [x] Setup sanitizers - exclude glfw's leaks from the output
 
-                                WEEK 34 ~
-- Tasks:
-  - [x] abstract away the layouting code from main to fontlayout
-  - [x] use fixed sized types backing the u8/u16.. type aliases
-  - [x] setup sanitizers - exclude glfw's leaks from the output
+------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Sat Aug 22 01:22:04 AM IST 2026                  *timeline.txt-2026-08-22-0122*
 
-vim:ft=help
+Tasks Bucketlist                                                                           *timeline.txt-tasks-bucketlist* ~
+
+   - [ ] Render multiple lines & add vertical scrolling
+   - [ ] Introduce text api for moving cursor over utf8 bytes
+   - [ ] Substitute spaces, tabs, newlines etc. on the renderer side
+   - [ ] Add some performance testing constructs
+   - [ ] Inline image previews (single|centered|gallary|row)
+   - [ ] Virtual Lines and Characters (Read Only)
+   - [ ] Line Numbers Implementation
+   - [ ] True Conceal Implementation
+   - [ ] Implement text editing - single line text interface
+   - [ ] Implement text selection
+   - [ ] Mouse Interactions
+   - [ ] Implement undo/redo
+   - [ ] Integrate treesitter
+   - [ ] Implement gap buffer as another backend for Text
+   - [ ] Support Multiple Locales (LOCALES & LTR/RTL)
+   - [ ] Support multiple fonts
+   - [ ] Support different font sizes - like Emacs ;)
+   - [ ] Minibuffer Completion Engine Implementation - like Vertico
+   - [ ] Wiki Implementation - vimhelp - highly opinionated ;)
+      - [ ] Inline video playback support with time stamp pinning
+      - [ ] Interactive Codeblocks, Lisp? Lua (preferably)? C? All?
+   - [ ] Similar to the Text API - Hot Swappable
+   - [ ] Implement rope as another backend for Text
+   - [ ] Completion Backends Implementation (PATH/BUFFER)
+   - [ ] Mutex Free Threading of Various Operations
+   - [ ] Keybindings Implementation - Hotswappable
+   - [ ] Tabs and Splits
+   - [ ] Fast Indentation Guides Implementation
+   - [ ] LSP client Implementation
+   - [ ] Multiple Cursors
+   - [ ] Multiple Frames (Shared OpenGL Context)
+   - [ ] Git Client - Integartions with Github/Gitlab etc to do everything locally
+   - [ ] Debugger Implementation
+   - [ ] Builtin Terminal Emulator (defaults to zsh)
+   - [ ] Completion Popup Implementation
+   - [ ] LocationList/QucikFixList implementations
+   - [ ] PDF Viewer & Image Previews (in one buffer)
+   - [ ] Scripting Support - Org Babel, silverbullet.md.. (lua preferably)
+   - [ ] Gantt Chart + Timelog & TasksList + Notes buffer + Report Views
+      - [ ] Explore Org Agenda and various other systems which do this
+      - [ ] Gantt chart == google calendar but one day per line
+      - [ ] Reports compare the gantt chart with the timelog to show expectations v/s reality
+   - [ ] IRC & Clients?? Why not ;)
+   - [ ] A Mail Client?? Why not ;)
+   - [ ] A Web Browser?? Maybe that's too much :)
+   - [ ] Daemon Client Mode? Maybe. -> P2P? Maybe.
+
+vim:ft=help:toc=no

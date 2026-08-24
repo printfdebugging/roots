@@ -3,7 +3,6 @@
 --------------------------------------------------------------------------
 @printfdebugging                           Fri Aug 21 11:49:02 PM IST 2026
 
-
     - https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer
     - https://github.com/google/sanitizers/issues/1628
     - https://github.com/google/sanitizers/wiki/AddressSanitizer
@@ -154,4 +153,4 @@
 - with this here, i don't have to write a blog about things, devs can
   just read this file and know what's going on.
 
-vim:ft=help
+vim:ft=help:toc=no
