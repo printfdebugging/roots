@@ -87,28 +87,13 @@ void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
    (void) mods;
    struct Editor *editor = glfwGetWindowUserPointer(window);
 
-   /**************************
-    * update cursor location *
-    *************************/
-   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-   {
-      if (editor->cursorCol != 0)
-         editor->cursorCol -= 1;
-   }
+   bool dirty = false;
 
-   /****************************************************************************************
-    * NOTE: instead of incrementing the cursor column, we should ask the editor to do      *
-    * it. That way, the editor can progress the cursor internally by multiple bytes        *
-    * for non-ASCII characters which take more than one byte in their UTF8 representation, *
-    * like "你好世界"                                                                  *
-    ***************************************************************************************/
+   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
+      dirty |= textMoveCursorLeft(editor->text);
 
    if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-   {
-      /* note: this way of doing things has to go away, since
-       * we should use the forthcoming Text api to scroll */
-      editor->cursorCol += 1;
-      if ((u32) editor->cursorCol >= editor->lineBytelen)
-         editor->cursorCol = (i32) editor->lineBytelen - 1;
-   }
+      dirty |= textMoveCursorRight(editor->text);
+
+   editor->lineDirty = dirty;
 }

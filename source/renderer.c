@@ -26,7 +26,6 @@ void lineRendererInit(struct LineRenderer *renderer)
    renderer->foregroundLoc        = -1;
    renderer->debugLoc             = -1;
    renderer->stemDarkeningLoc     = -1;
-   renderer->runeIdxLoc           = -1;
 
    renderer->rendererOpts = (struct LineRendererOptions) {
       .matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT },
@@ -39,8 +38,6 @@ void lineRendererInit(struct LineRenderer *renderer)
       .debug             = false,
       .stemDarkening     = false,
    };
-
-   renderer->runeIdx = 0;
 
    /**************************
     * renderer - layout data *
@@ -73,7 +70,6 @@ void lineRendererCacheUniformLoc(struct LineRenderer *renderer)
    renderer->debugLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_debug");
    renderer->stemDarkeningLoc     = glGetUniformLocation(renderer->hbShaderProgram, "u_stem_darkening");
    renderer->hbGpuAtlasLoc        = glGetUniformLocation(renderer->hbShaderProgram, "hb_gpu_atlas");
-   renderer->runeIdxLoc           = glGetUniformLocation(renderer->hbShaderProgram, "u_runeIdx");
 }
 
 void lineRendererUploadUniforms(struct LineRenderer *renderer)
@@ -87,7 +83,6 @@ void lineRendererUploadUniforms(struct LineRenderer *renderer)
    glUniform2f(renderer->viewportLoc, (f32) opts.viewport.raw[2], (f32) opts.viewport.raw[3]);
    glUniform1f(renderer->scaleLoc, (f32) opts.scale);
    glUniform1f(renderer->stemDarkeningLoc, opts.stemDarkening);
-   glUniform1i(renderer->runeIdxLoc, renderer->runeIdx);
    glUniform1f(renderer->debugLoc, opts.debug);
    glUniform1f(renderer->gammaLoc, opts.gamma);
    glUniform1i(renderer->hbGpuAtlasLoc, (i32) opts.hbGpuAtlas);
@@ -181,9 +176,9 @@ void lineRendererSetupAttribLocations(struct LineRenderer *renderer)
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlasOffset));
 
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_runeIdx");
+   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_hasCursor");
    glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, runeIdx));
+   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, hasCursor));
 }
 
 void lineRendererUploadLayoutQuadsToGPU(struct LineRenderer *renderer, struct LineLayout *layout)

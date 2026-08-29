@@ -30,6 +30,12 @@ int main(int argc, char *argv[])
 
    editorInit(editor);
 
+   u8 lineUTF8[]     = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
+   struct Text *text = textLoadFromData((char *) lineUTF8, (u32) strlen((char *) lineUTF8));
+   editor->text      = text;
+   byte *lineBytes   = (byte *) textGetUTF8Line(text, 0);
+   u64 lineBytelen   = strlen((char *) lineBytes);
+
    /**!
     * note: we need to initialize windowing before anything gpu
     * related because that is what loads the glad pointers.
@@ -41,9 +47,15 @@ int main(int argc, char *argv[])
    lineRendererInit(lineRenderer);
    fontManagerInit(editor->fontFilePath);
 
-   struct LineGlyphInfo lineGlyphInfo = { 0 };
+   struct LineGlyphInfo lineGlyphInfo = {
+      .cursorLine   = textGetCursorLine(text),
+      .cursorColumn = textGetCursorColumn(text),
+   };
 
-   fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) editor->lineBytes, editor->lineBytelen);
+   /* todo: layouting should layout and also take care of the cursor line.. so line should be marked with it */
+   /* with multiple glyphs getting cursor flag, we can add multiple cursros to gui easily */
+   fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) lineBytes, lineBytelen);
+   /* layouting is where we add cursor etc information, to be sent to the gpu.. */
    lineLayoutGlyphQuadsFromInfo(layout, &lineGlyphInfo);
    lineRendererUploadLayoutQuadsToGPU(lineRenderer, layout);
 
@@ -81,13 +93,36 @@ int main(int argc, char *argv[])
       if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
          glfwSetWindowShouldClose(window, GLFW_TRUE);
 
+      /* note: keep this a property of line. probably some way to map
+       * text -> LineLayout.., buffer would have it all
+       */
+      if (editor->lineDirty)
+      {
+         /**!
+          * note: a single key presses goes through
+          * this quite a few times, that shouldn't happen.
+          * if the cursor is not moving, no reason to mark
+          * the line dirty for now (later we might have treesitter
+          * etc updating the lines, so that would be different.)
+          * fprintf(stderr, "dirty\n");
+          */
+         lineGlyphInfo = (struct LineGlyphInfo) {
+            .cursorLine   = textGetCursorLine(text),
+            .cursorColumn = textGetCursorColumn(text),
+         };
+
+         fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) lineBytes, lineBytelen);
+         lineLayoutGlyphQuadsFromInfo(layout, &lineGlyphInfo);
+         lineRendererUploadLayoutQuadsToGPU(lineRenderer, layout);
+      }
+
       /******************************************
        * calculate the horizontal scroll offset *
        *****************************************/
       struct Font *font = fontManagerGetDefaultFont();
-      u32 runeIdx       = layout->glyphQuadVertices[editor->cursorCol * 6].runeIdx;
-      u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[editor->cursorCol * 6].x * lineRenderer->rendererOpts.scale);
-      u32 cursorWidthPx = (u32) (font->glyphCache[runeIdx].extents.xMax * lineRenderer->rendererOpts.scale);
+      u32 cursorColumn  = textGetCursorColumn(text);
+      u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[cursorColumn * 6].x * lineRenderer->rendererOpts.scale);
+      u32 cursorWidthPx = (u32) (font->glyphCache[cursorColumn].extents.xMax * lineRenderer->rendererOpts.scale);
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
       if (editor->xScrollOffset + (u32) windowWidth < cursorRightPx)
@@ -116,7 +151,6 @@ int main(int argc, char *argv[])
       lineRenderer->rendererOpts.gamma      = 1.0f;
       lineRenderer->rendererOpts.debug      = false;
       lineRenderer->rendererOpts.hbGpuAtlas = atlas->textureUnit;
-      lineRenderer->runeIdx                 = editor->cursorCol;
 
       /****************
        * set uniforms *
@@ -158,18 +192,9 @@ int main(int argc, char *argv[])
 
 void editorInit(struct Editor *editor)
 {
-   u8 lineUTF8[]            = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
    const char *fontFilePath = ASSETS_DIR "LilexNerdFont-Regular.ttf";
-
-   if (!(editor->lineBytelen = strlen((char *) lineUTF8)) ||
-       !(editor->lineBytes = (byte *) stringDuplicate((char *) lineUTF8)))
-   {
-      perror("failed to decode lineUTF8\n");
-   }
-
-   editor->xScrollOffset = 0;
-   editor->cursorCol     = 0;
-   editor->cursorOffset  = 0;
+   editor->xScrollOffset    = 0;
+   editor->lineDirty        = false;
 
    editor->fontSize     = 48.0f;
    editor->fontFilePath = stringDuplicate(fontFilePath);
@@ -178,5 +203,4 @@ void editorInit(struct Editor *editor)
 void editorDeInit(struct Editor *editor)
 {
    free(editor->fontFilePath);
-   free(editor->lineBytes);
 }
