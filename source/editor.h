@@ -70,7 +70,6 @@ typedef int64_t i64;
 
 typedef float f32;
 typedef double f64;
-typedef bool b8;
 typedef int b32;
 
 struct GlyphVertex
@@ -225,8 +224,8 @@ struct LineRenderer
    i32 hbGpuAtlas;
    f32 gamma;
    vec4s foreground;
-   b8 debug;
-   b8 stemDarkening;
+   bool debug;
+   bool stemDarkening;
    i32 runeIdx;
 
    /**************************
@@ -301,8 +300,8 @@ char *readFileContents(const char *filPath);
  * shader.c *
  ***********/
 
-b8 shaderGetCompileStatus(u32 shaderObject);
-b8 shaderGetLinkStatus(u32 shaderProgram);
+bool shaderGetCompileStatus(u32 shaderObject);
+bool shaderGetLinkStatus(u32 shaderProgram);
 
 /************
  * window.c *

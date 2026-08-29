@@ -35,7 +35,7 @@ struct FontManager
     */
    struct GlyphAtlas glyphAtlas;
 
-   b8 initialized;
+   bool initialized;
 };
 
 static struct FontManager fontManager = { 0 };
