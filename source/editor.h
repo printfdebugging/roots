@@ -146,12 +146,6 @@ struct Editor
    f32 fontSize;
    char *fontFilePath;
 
-   /******************
-    * window globals *
-    *****************/
-   GLFWwindow *window;
-   i32 windowWidth;
-   i32 windowHeight;
    f64 lastTime;
    f64 timeDelta;
 };
@@ -316,8 +310,9 @@ bool shaderGetLinkStatus(u32 shaderProgram);
  * window.c *
  ***********/
 
-void windowInit(struct Editor *editor);
-void windowDeInit(struct Editor *editor);
+GLFWwindow *windowCreate();
+void windowDestroy(GLFWwindow *window);
+void windowSetUserDataPtr(GLFWwindow *window, void *userData);
 void mouseScroll(GLFWwindow *window, f64 x, f64 y);
 void windowResize(GLFWwindow *window, i32 width, i32 height);
 void mouseMove(GLFWwindow *window, f64 x, f64 y);
