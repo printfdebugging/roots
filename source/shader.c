@@ -3,7 +3,7 @@
 #include "editor.h"
 #include "glad/glad.h"
 
-b8 shaderGetCompileStatus(u32 shaderObject)
+bool shaderGetCompileStatus(u32 shaderObject)
 {
    i32 compileStatus;
    glGetShaderiv(shaderObject, GL_COMPILE_STATUS, &compileStatus);
@@ -19,7 +19,7 @@ b8 shaderGetCompileStatus(u32 shaderObject)
    return false;
 }
 
-b8 shaderGetLinkStatus(u32 shaderProgram)
+bool shaderGetLinkStatus(u32 shaderProgram)
 {
    i32 linkStatus;
    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);
