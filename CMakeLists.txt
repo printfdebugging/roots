@@ -52,7 +52,7 @@ target_compile_options(editor PRIVATE
    -Wpedantic
    -Wno-override-init
    -Werror=return-type
-   -Wdouble-promotion
+   -Wno-double-promotion
    -fno-omit-frame-pointer
    $<$<CONFIG:Debug>:-Og -g3>
    $<$<CONFIG:Debug>:-fsanitize=undefined,address>
