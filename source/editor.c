@@ -42,6 +42,7 @@ int main(int argc, char *argv[])
     */
    GLFWwindow *window = windowCreate();
    windowSetUserDataPtr(window, editor);
+   u32 xScrollOffset = 0;
 
    lineLayoutInit(layout);
    lineRendererInit(lineRenderer);
@@ -125,16 +126,16 @@ int main(int argc, char *argv[])
       u32 cursorWidthPx = (u32) (font->glyphCache[cursorColumn].extents.xMax * lineRenderer->rendererOpts.scale);
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
-      if (editor->xScrollOffset + (u32) windowWidth < cursorRightPx)
-         editor->xScrollOffset = cursorRightPx - (u32) windowWidth;
-      if (cursorLeftPx < editor->xScrollOffset)
-         editor->xScrollOffset = cursorLeftPx;
+      if (xScrollOffset + (u32) windowWidth < cursorRightPx)
+         xScrollOffset = cursorRightPx - (u32) windowWidth;
+      if (cursorLeftPx < xScrollOffset)
+         xScrollOffset = cursorLeftPx;
 
       /***********************************
        * calculate transformation matrix *
        **********************************/
       lineRenderer->rendererOpts.matViewProjection = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
-      lineRenderer->rendererOpts.matViewProjection = glms_translate(lineRenderer->rendererOpts.matViewProjection, (vec3s) { { -((f32) editor->xScrollOffset), 0.0f, 0.0f } });
+      lineRenderer->rendererOpts.matViewProjection = glms_translate(lineRenderer->rendererOpts.matViewProjection, (vec3s) { { -((f32) xScrollOffset), 0.0f, 0.0f } });
 
       /********************
        * update variables *
@@ -193,7 +194,6 @@ int main(int argc, char *argv[])
 void editorInit(struct Editor *editor)
 {
    const char *fontFilePath = ASSETS_DIR "LilexNerdFont-Regular.ttf";
-   editor->xScrollOffset    = 0;
    editor->lineDirty        = false;
 
    editor->fontSize     = 48.0f;
