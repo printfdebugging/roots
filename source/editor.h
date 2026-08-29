@@ -82,7 +82,7 @@ struct GlyphVertex
    f32 ny;
    f32 emPerPos;
    u32 atlasOffset;
-   u32 runeIdx;
+   u32 hasCursor;
 };
 
 struct Extents
@@ -127,18 +127,15 @@ struct Text;
 
 struct Editor
 {
-   /*****************************************
-    * editor - internal text representation *
-    ****************************************/
-   u64 lineBytelen;
-   byte *lineBytes;
-
    /***************************
     * editor - internal state *
     **************************/
+   /* todo: move out of editor */
    u32 xScrollOffset;
-   i32 cursorCol;
-   i32 cursorOffset;
+   bool lineDirty;
+
+   /* note: add text here temporarily to access in window */
+   struct Text *text;
 
    /***********************
     * editor - core state *
@@ -154,6 +151,10 @@ struct LineGlyphInfo
 {
    struct GlyphInfo *glyphInfo;
    u32 glyphCount;
+
+   /* note: naive implementation for now */
+   u32 cursorLine;
+   u32 cursorColumn;
 };
 
 struct Font
@@ -216,18 +217,6 @@ struct LineRenderer
    i32 foregroundLoc;
    i32 debugLoc;
    i32 stemDarkeningLoc;
-   /**!
-    * deprecate: remove this... instead the quad vertices should
-    * have params about whether it's selected or not, or
-    * underlined or not etc..
-    */
-   i32 runeIdxLoc;
-
-   /**!
-    * deprecate: remove this.. this should be a part of the line's
-    * primitives.
-    */
-   i32 runeIdx;
 
    struct LineRendererOptions rendererOpts;
 
@@ -288,10 +277,31 @@ void lineRendererUploadLayoutQuadsToGPU(struct LineRenderer *renderer, struct Li
  *********/
 
 struct Text *textLoadFromFile(const char *filepath);
+struct Text *textLoadFromData(const char *data, u32 dataLength);
 bool textWriteToFile(const char *filepath);
 u32 textGetLineCount(struct Text *text);
 char *textGetUTF8Line(struct Text *text, u32 line);
 void textDestroy(struct Text *text);
+
+/* note: not thought through.. just trying to make some things work
+ * this should be thought through again.. */
+
+/* also note: that these functions for now just use strlen
+ * to find the number of characters... that's not right,
+ * we should use utf8 wrappers around the text, a char
+ * is not a character.. */
+bool textMoveCursorUp(struct Text *text);
+bool textMoveCursorDown(struct Text *text);
+bool textMoveCursorLeft(struct Text *text);
+bool textMoveCursorRight(struct Text *text);
+/**!
+ * note: not sure if we should keep the cursor
+ * info in the text.. maybe when we have a buffer
+ * type, we can store the cursor location there..
+ * that seems more appropriate, but for now let's keep it here..
+ */
+u32 textGetCursorLine(struct Text *text);
+u32 textGetCursorColumn(struct Text *text);
 
 /****************
  * filesystem.c *

@@ -24,6 +24,7 @@ void lineLayoutGlyphQuadsFromInfo(struct LineLayout *layout, struct LineGlyphInf
    struct Point glyphPosition = { .x = 0, .y = 0 };
    for (u32 glyphIdx = 0; glyphIdx < lineGlyphInfo->glyphCount; ++glyphIdx)
    {
+      bool hasCursor              = lineGlyphInfo->cursorColumn == glyphIdx; /* naive approach */
       struct GlyphInfo *glyphInfo = &lineGlyphInfo->glyphInfo[glyphIdx];
 
       /**********************
@@ -50,7 +51,7 @@ void lineLayoutGlyphQuadsFromInfo(struct LineLayout *layout, struct LineGlyphInf
             .ny          = cy ? -1.f : 1.f,
             .emPerPos    = 1.0,
             .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
-            .runeIdx     = glyphIdx,
+            .hasCursor   = hasCursor,
          };
       }
 
