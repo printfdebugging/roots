@@ -197,6 +197,19 @@ struct LineLayout
    u32 glyphQuadVerticesCount;
 };
 
+struct LineRendererOptions
+{
+   mat4s matViewProjection;
+   ivec4s viewport;
+   f32 scale;
+   vec2s position;
+   i32 hbGpuAtlas;
+   f32 gamma;
+   vec4s foreground;
+   bool debug;
+   bool stemDarkening;
+};
+
 struct LineRenderer
 {
    /*************************************
@@ -212,21 +225,20 @@ struct LineRenderer
    i32 foregroundLoc;
    i32 debugLoc;
    i32 stemDarkeningLoc;
+   /**!
+    * deprecate: remove this... instead the quad vertices should
+    * have params about whether it's selected or not, or
+    * underlined or not etc..
+    */
    i32 runeIdxLoc;
 
-   /**********************************
-    * renderer - draw uniform states *
-    *********************************/
-   mat4s matViewProjection;
-   ivec4s viewport;
-   f32 scale;
-   vec2s position;
-   i32 hbGpuAtlas;
-   f32 gamma;
-   vec4s foreground;
-   bool debug;
-   bool stemDarkening;
+   /**!
+    * deprecate: remove this.. this should be a part of the line's
+    * primitives.
+    */
    i32 runeIdx;
+
+   struct LineRendererOptions rendererOpts;
 
    /**************************
     * renderer - layout data *

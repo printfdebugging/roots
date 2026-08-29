@@ -28,19 +28,19 @@ void lineRendererInit(struct LineRenderer *renderer)
    renderer->stemDarkeningLoc     = -1;
    renderer->runeIdxLoc           = -1;
 
-   /**********************************
-    * renderer - draw uniform states *
-    *********************************/
-   renderer->matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT };
-   renderer->viewport          = GLMS_IVEC4_ZERO;
-   renderer->scale             = 0;
-   renderer->position          = GLMS_VEC2_ZERO;
-   renderer->hbGpuAtlas        = 0;
-   renderer->gamma             = 0;
-   renderer->foreground        = (vec4s) { { ColorRGBAHex(0XD8DEE9FF) } };
-   renderer->debug             = false;
-   renderer->stemDarkening     = false;
-   renderer->runeIdx           = 0;
+   renderer->rendererOpts = (struct LineRendererOptions) {
+      .matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT },
+      .viewport          = GLMS_IVEC4_ZERO,
+      .scale             = 0,
+      .position          = GLMS_VEC2_ZERO,
+      .hbGpuAtlas        = 0,
+      .gamma             = 0,
+      .foreground        = (vec4s) { { ColorRGBAHex(0XD8DEE9FF) } },
+      .debug             = false,
+      .stemDarkening     = false,
+   };
+
+   renderer->runeIdx = 0;
 
    /**************************
     * renderer - layout data *
@@ -79,16 +79,18 @@ void lineRendererCacheUniformLoc(struct LineRenderer *renderer)
 void lineRendererUploadUniforms(struct LineRenderer *renderer)
 {
    _rendererUseShaderProgram(renderer->hbShaderProgram);
-   glUniformMatrix4fv(renderer->matViewProjectionLoc, 1, GL_FALSE, renderer->matViewProjection.col[0].raw);
-   glUniform4fv(renderer->foregroundLoc, 1, renderer->foreground.raw);
-   glUniform2fv(renderer->positionLoc, 1, renderer->position.raw);
-   glUniform2f(renderer->viewportLoc, (f32) renderer->viewport.raw[2], (f32) renderer->viewport.raw[3]);
-   glUniform1f(renderer->scaleLoc, (f32) renderer->scale);
-   glUniform1f(renderer->stemDarkeningLoc, renderer->stemDarkening);
+   struct LineRendererOptions opts = renderer->rendererOpts;
+
+   glUniformMatrix4fv(renderer->matViewProjectionLoc, 1, GL_FALSE, opts.matViewProjection.col[0].raw);
+   glUniform4fv(renderer->foregroundLoc, 1, opts.foreground.raw);
+   glUniform2fv(renderer->positionLoc, 1, opts.position.raw);
+   glUniform2f(renderer->viewportLoc, (f32) opts.viewport.raw[2], (f32) opts.viewport.raw[3]);
+   glUniform1f(renderer->scaleLoc, (f32) opts.scale);
+   glUniform1f(renderer->stemDarkeningLoc, opts.stemDarkening);
    glUniform1i(renderer->runeIdxLoc, renderer->runeIdx);
-   glUniform1f(renderer->debugLoc, renderer->debug);
-   glUniform1f(renderer->gammaLoc, renderer->gamma);
-   glUniform1i(renderer->hbGpuAtlasLoc, (i32) renderer->hbGpuAtlas);
+   glUniform1f(renderer->debugLoc, opts.debug);
+   glUniform1f(renderer->gammaLoc, opts.gamma);
+   glUniform1i(renderer->hbGpuAtlasLoc, (i32) opts.hbGpuAtlas);
 }
 
 void lineRendererRenderLine(struct LineRenderer *renderer)
