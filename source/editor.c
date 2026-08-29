@@ -17,17 +17,16 @@ int main(int argc, char *argv[])
     * see  window.c keyPress                                                 *
     *************************************************************************/
 
-   struct Editor *editor;
+   struct Editor *editor             = NULL;
+   struct LineLayout *layout         = NULL;
+   struct LineRenderer *lineRenderer = NULL;
 
    if (!(editor = calloc(1, sizeof(struct Editor))) ||
-       !(editor->lineLayout = calloc(1, sizeof(struct LineLayout))) ||
-       !(editor->lineRenderer = calloc(1, sizeof(struct LineRenderer))))
+       !(layout = calloc(1, sizeof(struct LineLayout))) ||
+       !(lineRenderer = calloc(1, sizeof(struct LineRenderer))))
    {
       perror("failed to allocate structs\n");
    }
-
-   struct LineLayout *layout         = editor->lineLayout;
-   struct LineRenderer *lineRenderer = editor->lineRenderer;
 
    windowInit(editor);
    editorInit(editor);

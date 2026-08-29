@@ -154,9 +154,6 @@ struct Editor
    i32 windowHeight;
    f64 lastTime;
    f64 timeDelta;
-
-   struct LineLayout *lineLayout;
-   struct LineRenderer *lineRenderer;
 };
 
 struct LineGlyphInfo
