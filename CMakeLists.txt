@@ -54,7 +54,8 @@ target_compile_options(editor PRIVATE
    -Werror=return-type
    -Wno-double-promotion
    -fno-omit-frame-pointer
-   $<$<CONFIG:Debug>:-Og -g3>
+   # $<$<CONFIG:Debug>:-Og -g3>
+   $<$<CONFIG:Debug>:-O0>
    $<$<CONFIG:Debug>:-fsanitize=undefined,address>
 )
 
