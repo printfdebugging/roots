@@ -9,7 +9,13 @@
  * not much thought is put into it, so this might change *
  * in some time.                                         *
  ********************************************************/
-void windowInit(struct Editor *editor)
+
+void windowSetUserDataPtr(GLFWwindow *window, void *userData)
+{
+   glfwSetWindowUserPointer(window, userData);
+}
+
+GLFWwindow *windowCreate()
 {
    /*************************
     * window initialization *
@@ -46,24 +52,18 @@ void windowInit(struct Editor *editor)
    glfwSetScrollCallback(window, mouseScroll);
    glfwSetFramebufferSizeCallback(window, windowResize);
    glfwSetKeyCallback(window, keyPress);
-   glfwSetWindowUserPointer(window, editor);
-
-   editor->windowWidth  = windowWidth;
-   editor->windowHeight = windowHeight;
-   editor->window       = window;
+   return window;
 }
 
-void windowDeInit(struct Editor *editor)
+void windowDestroy(GLFWwindow *window)
 {
-   glfwDestroyWindow(editor->window);
+   glfwDestroyWindow(window);
    glfwTerminate();
 }
 
 void windowResize(GLFWwindow *window, i32 width, i32 height)
 {
-   struct Editor *editor = glfwGetWindowUserPointer(window);
-   editor->windowWidth   = width;
-   editor->windowHeight  = height;
+   (void) window;
    glViewport(0, 0, width, height);
 }
 

@@ -28,8 +28,15 @@ int main(int argc, char *argv[])
       perror("failed to allocate structs\n");
    }
 
-   windowInit(editor);
    editorInit(editor);
+
+   /**!
+    * note: we need to initialize windowing before anything gpu
+    * related because that is what loads the glad pointers.
+    */
+   GLFWwindow *window = windowCreate();
+   windowSetUserDataPtr(window, editor);
+
    lineLayoutInit(layout);
    lineRendererInit(lineRenderer);
    fontManagerInit(editor->fontFilePath);
@@ -53,7 +60,7 @@ int main(int argc, char *argv[])
     * but as of now is very loosely defined. this doesn't mean
     * create fancy abstractions, just keep in check what happens when..
     */
-   while (!glfwWindowShouldClose(editor->window))
+   while (!glfwWindowShouldClose(window))
    {
       /*********************
        * frame bookkeeping *
@@ -63,13 +70,16 @@ int main(int argc, char *argv[])
       editor->timeDelta = timeNow - editor->lastTime;
       editor->lastTime  = timeNow;
 
+      i32 windowWidth, windowHeight;
+      glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
       /*****************
        * event polling *
        ****************/
 
       glfwPollEvents();
-      if (glfwGetKey(editor->window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
-         glfwSetWindowShouldClose(editor->window, GLFW_TRUE);
+      if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
+         glfwSetWindowShouldClose(window, GLFW_TRUE);
 
       /******************************************
        * calculate the horizontal scroll offset *
@@ -80,15 +90,15 @@ int main(int argc, char *argv[])
       u32 cursorWidthPx = (u32) (font->glyphCache[runeIdx].extents.xMax * lineRenderer->rendererOpts.scale);
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
-      if (editor->xScrollOffset + (u32) editor->windowWidth < cursorRightPx)
-         editor->xScrollOffset = cursorRightPx - (u32) editor->windowWidth;
+      if (editor->xScrollOffset + (u32) windowWidth < cursorRightPx)
+         editor->xScrollOffset = cursorRightPx - (u32) windowWidth;
       if (cursorLeftPx < editor->xScrollOffset)
          editor->xScrollOffset = cursorLeftPx;
 
       /***********************************
        * calculate transformation matrix *
        **********************************/
-      lineRenderer->rendererOpts.matViewProjection = glms_ortho(0, (f32) editor->windowWidth, 0, (f32) editor->windowHeight, 0.0f, 100.0f);
+      lineRenderer->rendererOpts.matViewProjection = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
       lineRenderer->rendererOpts.matViewProjection = glms_translate(lineRenderer->rendererOpts.matViewProjection, (vec3s) { { -((f32) editor->xScrollOffset), 0.0f, 0.0f } });
 
       /********************
@@ -102,7 +112,7 @@ int main(int argc, char *argv[])
       lineRenderer->rendererOpts.scale = editor->fontSize / (f32) yScale;
 
       struct GlyphAtlas *atlas              = fontManagerGetGlyphAtlas();
-      lineRenderer->rendererOpts.position.y = ((f32) editor->windowHeight - editor->fontSize) / 2;
+      lineRenderer->rendererOpts.position.y = ((f32) windowHeight - editor->fontSize) / 2;
       lineRenderer->rendererOpts.gamma      = 1.0f;
       lineRenderer->rendererOpts.debug      = false;
       lineRenderer->rendererOpts.hbGpuAtlas = atlas->textureUnit;
@@ -125,7 +135,7 @@ int main(int argc, char *argv[])
 
       lineRendererRenderLine(lineRenderer);
 
-      glfwSwapBuffers(editor->window);
+      glfwSwapBuffers(window);
    }
 
    /***********
@@ -136,7 +146,7 @@ int main(int argc, char *argv[])
    editorDeInit(editor);
    lineLayoutDeInit(layout);
    fontManagerDeInit();
-   windowDeInit(editor);
+   windowDestroy(window);
 
    free(layout);
    free(lineRenderer);
