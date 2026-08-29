@@ -49,6 +49,11 @@ int main(int argc, char *argv[])
     * the main loop *
     ****************/
 
+   /**!
+    * note: properly define a data flow pipeline, it exists
+    * but as of now is very loosely defined. this doesn't mean
+    * create fancy abstractions, just keep in check what happens when..
+    */
    while (!glfwWindowShouldClose(editor->window))
    {
       /*********************
@@ -72,8 +77,8 @@ int main(int argc, char *argv[])
        *****************************************/
       struct Font *font = fontManagerGetDefaultFont();
       u32 runeIdx       = layout->glyphQuadVertices[editor->cursorCol * 6].runeIdx;
-      u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[editor->cursorCol * 6].x * lineRenderer->scale);
-      u32 cursorWidthPx = (u32) (font->glyphCache[runeIdx].extents.xMax * lineRenderer->scale);
+      u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[editor->cursorCol * 6].x * lineRenderer->rendererOpts.scale);
+      u32 cursorWidthPx = (u32) (font->glyphCache[runeIdx].extents.xMax * lineRenderer->rendererOpts.scale);
       u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
 
       if (editor->xScrollOffset + (u32) editor->windowWidth < cursorRightPx)
@@ -84,25 +89,25 @@ int main(int argc, char *argv[])
       /***********************************
        * calculate transformation matrix *
        **********************************/
-      lineRenderer->matViewProjection = glms_ortho(0, (f32) editor->windowWidth, 0, (f32) editor->windowHeight, 0.0f, 100.0f);
-      lineRenderer->matViewProjection = glms_translate(lineRenderer->matViewProjection, (vec3s) { { -((f32) editor->xScrollOffset), 0.0f, 0.0f } });
+      lineRenderer->rendererOpts.matViewProjection = glms_ortho(0, (f32) editor->windowWidth, 0, (f32) editor->windowHeight, 0.0f, 100.0f);
+      lineRenderer->rendererOpts.matViewProjection = glms_translate(lineRenderer->rendererOpts.matViewProjection, (vec3s) { { -((f32) editor->xScrollOffset), 0.0f, 0.0f } });
 
       /********************
        * update variables *
        *******************/
 
-      glGetIntegerv(GL_VIEWPORT, lineRenderer->viewport.raw);
+      glGetIntegerv(GL_VIEWPORT, lineRenderer->rendererOpts.viewport.raw);
 
       i32 xScale, yScale;
       hb_font_get_scale(font->hbFont, &xScale, &yScale);
-      lineRenderer->scale = editor->fontSize / (f32) yScale;
+      lineRenderer->rendererOpts.scale = editor->fontSize / (f32) yScale;
 
-      struct GlyphAtlas *atlas = fontManagerGetGlyphAtlas();
-      lineRenderer->position.y = ((f32) editor->windowHeight - editor->fontSize) / 2;
-      lineRenderer->gamma      = 1.0f;
-      lineRenderer->debug      = false;
-      lineRenderer->hbGpuAtlas = atlas->textureUnit;
-      lineRenderer->runeIdx    = editor->cursorCol;
+      struct GlyphAtlas *atlas              = fontManagerGetGlyphAtlas();
+      lineRenderer->rendererOpts.position.y = ((f32) editor->windowHeight - editor->fontSize) / 2;
+      lineRenderer->rendererOpts.gamma      = 1.0f;
+      lineRenderer->rendererOpts.debug      = false;
+      lineRenderer->rendererOpts.hbGpuAtlas = atlas->textureUnit;
+      lineRenderer->runeIdx                 = editor->cursorCol;
 
       /****************
        * set uniforms *
