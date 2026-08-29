@@ -233,6 +233,7 @@ struct LineRenderer
     * renderer - layout data *
     *************************/
    u32 glyphQuadVerticesVAO;
+   u32 glyphQuadVerticesCount;
    u32 glyphQuadVerticesVBO;
    b32 glyphQuadsUploaded;
 };
@@ -275,6 +276,7 @@ void lineRendererInit(struct LineRenderer *renderer);
 void lineRendererDeInit(struct LineRenderer *renderer);
 void lineRendererCacheUniformLoc(struct LineRenderer *renderer);
 void lineRendererUploadUniforms(struct LineRenderer *renderer);
+void lineRendererRenderLine(struct LineRenderer *renderer);
 void lineRendererCreateShader(struct LineRenderer *renderer);
 void lineRendererSetupAttribLocations(struct LineRenderer *renderer);
 void lineRendererUploadLayoutQuadsToGPU(struct LineRenderer *renderer, struct LineLayout *layout);

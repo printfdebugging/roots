@@ -119,8 +119,8 @@ int main(int argc, char *argv[])
       glClearColor(ColorRGBAHex(0X282C33FF));
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      /* note: this info, the renderer should have already i think */
-      glDrawArrays(GL_TRIANGLES, 0, (i32) layout->glyphQuadVerticesCount);
+      lineRendererRenderLine(lineRenderer);
+
       glfwSwapBuffers(editor->window);
    }
 

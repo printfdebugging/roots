@@ -47,7 +47,8 @@ void lineRendererInit(struct LineRenderer *renderer)
     *************************/
    glGenVertexArrays(1, &renderer->glyphQuadVerticesVAO);
    glGenBuffers(1, &renderer->glyphQuadVerticesVBO);
-   renderer->glyphQuadsUploaded = false;
+   renderer->glyphQuadVerticesCount = 0;
+   renderer->glyphQuadsUploaded     = false;
 }
 
 void lineRendererDeInit(struct LineRenderer *renderer)
@@ -88,6 +89,11 @@ void lineRendererUploadUniforms(struct LineRenderer *renderer)
    glUniform1f(renderer->debugLoc, renderer->debug);
    glUniform1f(renderer->gammaLoc, renderer->gamma);
    glUniform1i(renderer->hbGpuAtlasLoc, (i32) renderer->hbGpuAtlas);
+}
+
+void lineRendererRenderLine(struct LineRenderer *renderer)
+{
+   glDrawArrays(GL_TRIANGLES, 0, (i32) renderer->glyphQuadVerticesCount);
 }
 
 void lineRendererCreateShader(struct LineRenderer *renderer)
@@ -183,5 +189,6 @@ void lineRendererUploadLayoutQuadsToGPU(struct LineRenderer *renderer, struct Li
    glBindVertexArray(renderer->glyphQuadVerticesVAO);
    glBindBuffer(GL_ARRAY_BUFFER, renderer->glyphQuadVerticesVBO);
    glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
-   renderer->glyphQuadsUploaded = true;
+   renderer->glyphQuadVerticesCount = layout->glyphQuadVerticesCount;
+   renderer->glyphQuadsUploaded     = true;
 }
