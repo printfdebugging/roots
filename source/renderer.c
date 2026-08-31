@@ -4,30 +4,126 @@
 
 static u32 CURRENT_SHADER_PROGRAM = 0;
 
-static void _rendererUseShaderProgram(u32 shaderProgram)
-{
-   assert(shaderProgram != 0);
-   if (shaderProgram != CURRENT_SHADER_PROGRAM)
-   {
-      glUseProgram(shaderProgram);
-      CURRENT_SHADER_PROGRAM = shaderProgram;
-   }
-}
+static u32 _lineShaderCreate();
+static void _rendererUseShaderProgram(u32 shaderProgram);
 
 void lineRendererInit(struct LineRenderer *renderer)
 {
-   renderer->hbShaderProgram      = 0;
-   renderer->matViewProjectionLoc = -1;
-   renderer->viewportLoc          = -1;
-   renderer->scaleLoc             = -1;
-   renderer->positionLoc          = -1;
-   renderer->hbGpuAtlasLoc        = -1;
-   renderer->gammaLoc             = -1;
-   renderer->foregroundLoc        = -1;
-   renderer->debugLoc             = -1;
-   renderer->stemDarkeningLoc     = -1;
+   lineShaderUniformsInit(&renderer->uniforms);
+   linePrimitivesInit(&renderer->primitives);
+}
 
-   renderer->rendererOpts = (struct LineRendererOptions) {
+void lineRendererDeInit(struct LineRenderer *renderer)
+{
+   linePrimitivesDeInit(&renderer->primitives);
+}
+
+void linePrimitivesInit(struct LinePrimitives *primitives)
+{
+   glGenVertexArrays(1, &primitives->glyphQuadVerticesVAO);
+   glGenBuffers(1, &primitives->glyphQuadVerticesVBO);
+   primitives->glyphQuadVerticesCount = 0;
+   primitives->glyphQuadsUploaded     = false;
+}
+
+void linePrimitivesDeInit(struct LinePrimitives *primitives)
+{
+   primitives->glyphQuadsUploaded     = false;
+   primitives->glyphQuadVerticesCount = 0;
+   glDeleteBuffers(1, &primitives->glyphQuadVerticesVBO);
+   glDeleteVertexArrays(1, &primitives->glyphQuadVerticesVAO);
+}
+
+void linePrimitivesUploadLayoutQuadsToGPU(struct LinePrimitives *primitives, struct LineLayout *layout)
+{
+   glBindVertexArray(primitives->glyphQuadVerticesVAO);
+   glBindBuffer(GL_ARRAY_BUFFER, primitives->glyphQuadVerticesVBO);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
+   primitives->glyphQuadVerticesCount = layout->glyphQuadVerticesCount;
+   primitives->glyphQuadsUploaded     = true;
+}
+
+void lineRendererRenderLine(struct LineRenderer *renderer, struct LineShader *shader)
+{
+   lineShaderUploadUniforms(shader, &renderer->uniforms);
+
+   if (renderer->primitives.glyphQuadsUploaded)
+      glDrawArrays(GL_TRIANGLES, 0, (i32) renderer->primitives.glyphQuadVerticesCount);
+}
+
+void lineShaderSetAttribLocations(struct LineShader *shader)
+{
+   u32 program               = shader->hbShaderProgram;
+   i32 attribLocation        = -1;
+   i32 glyphQuadObjectStride = sizeof(struct GlyphVertex);
+
+   attribLocation = glGetAttribLocation(program, "a_position");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, x));
+
+   attribLocation = glGetAttribLocation(program, "a_texcoord");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, tx));
+
+   attribLocation = glGetAttribLocation(program, "a_normal");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, nx));
+
+   attribLocation = glGetAttribLocation(program, "a_emPerPos");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribPointer((u32) attribLocation, 1, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, emPerPos));
+
+   attribLocation = glGetAttribLocation(program, "a_glyphLoc");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlasOffset));
+
+   attribLocation = glGetAttribLocation(program, "a_hasCursor");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, hasCursor));
+}
+
+void lineShaderInit(struct LineShader *shader)
+{
+   shader->hbShaderProgram  = _lineShaderCreate();
+   shader->uniformLocations = (struct LineShaderUniformLocations) {
+      .matViewProjectionLoc = -1,
+      .viewportLoc          = -1,
+      .scaleLoc             = -1,
+      .positionLoc          = -1,
+      .hbGpuAtlasLoc        = -1,
+      .gammaLoc             = -1,
+      .foregroundLoc        = -1,
+      .debugLoc             = -1,
+      .stemDarkeningLoc     = -1,
+   };
+}
+
+void lineShaderCacheUniformLocations(struct LineShader *shader)
+{
+   u32 program = shader->hbShaderProgram;
+
+   _rendererUseShaderProgram(program);
+   shader->uniformLocations = (struct LineShaderUniformLocations) {
+      .matViewProjectionLoc = glGetUniformLocation(program, "u_matViewProjection"),
+      .viewportLoc          = glGetUniformLocation(program, "u_viewport"),
+      .scaleLoc             = glGetUniformLocation(program, "u_scale"),
+      .positionLoc          = glGetUniformLocation(program, "u_position"),
+      .gammaLoc             = glGetUniformLocation(program, "u_gamma"),
+      .foregroundLoc        = glGetUniformLocation(program, "u_foreground"),
+      .debugLoc             = glGetUniformLocation(program, "u_debug"),
+      .stemDarkeningLoc     = glGetUniformLocation(program, "u_stem_darkening"),
+      .hbGpuAtlasLoc        = glGetUniformLocation(program, "hb_gpu_atlas"),
+   };
+}
+
+void lineShaderDeinit(struct LineShader *shader)
+{
+   glDeleteProgram(shader->hbShaderProgram);
+}
+
+void lineShaderUniformsInit(struct LineShaderUniforms *uniforms)
+{
+   *uniforms = (struct LineShaderUniforms) {
       .matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT },
       .viewport          = GLMS_IVEC4_ZERO,
       .scale             = 0,
@@ -38,62 +134,26 @@ void lineRendererInit(struct LineRenderer *renderer)
       .debug             = false,
       .stemDarkening     = false,
    };
-
-   /**************************
-    * renderer - layout data *
-    *************************/
-   glGenVertexArrays(1, &renderer->glyphQuadVerticesVAO);
-   glGenBuffers(1, &renderer->glyphQuadVerticesVBO);
-   renderer->glyphQuadVerticesCount = 0;
-   renderer->glyphQuadsUploaded     = false;
 }
 
-void lineRendererDeInit(struct LineRenderer *renderer)
+void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUniforms *uniforms)
 {
-   glDeleteBuffers(1, &renderer->glyphQuadVerticesVBO);
-   glDeleteVertexArrays(1, &renderer->glyphQuadVerticesVAO);
-   glDeleteProgram(renderer->hbShaderProgram);
+   u32 program = shader->hbShaderProgram;
+   _rendererUseShaderProgram(program);
+
+   struct LineShaderUniformLocations *locations = &shader->uniformLocations;
+   glUniformMatrix4fv(locations->matViewProjectionLoc, 1, GL_FALSE, uniforms->matViewProjection.col[0].raw);
+   glUniform4fv(locations->foregroundLoc, 1, uniforms->foreground.raw);
+   glUniform2fv(locations->positionLoc, 1, uniforms->position.raw);
+   glUniform2f(locations->viewportLoc, (f32) uniforms->viewport.raw[2], (f32) uniforms->viewport.raw[3]);
+   glUniform1f(locations->scaleLoc, (f32) uniforms->scale);
+   glUniform1f(locations->stemDarkeningLoc, uniforms->stemDarkening);
+   glUniform1f(locations->debugLoc, uniforms->debug);
+   glUniform1f(locations->gammaLoc, uniforms->gamma);
+   glUniform1i(locations->hbGpuAtlasLoc, (i32) uniforms->hbGpuAtlas);
 }
 
-void lineRendererCacheUniformLoc(struct LineRenderer *renderer)
-{
-   /******************************************
-    * opengl: cache shader uniform locations *
-    *****************************************/
-   _rendererUseShaderProgram(renderer->hbShaderProgram);
-   renderer->matViewProjectionLoc = glGetUniformLocation(renderer->hbShaderProgram, "u_matViewProjection");
-   renderer->viewportLoc          = glGetUniformLocation(renderer->hbShaderProgram, "u_viewport");
-   renderer->scaleLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_scale");
-   renderer->positionLoc          = glGetUniformLocation(renderer->hbShaderProgram, "u_position");
-   renderer->gammaLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_gamma");
-   renderer->foregroundLoc        = glGetUniformLocation(renderer->hbShaderProgram, "u_foreground");
-   renderer->debugLoc             = glGetUniformLocation(renderer->hbShaderProgram, "u_debug");
-   renderer->stemDarkeningLoc     = glGetUniformLocation(renderer->hbShaderProgram, "u_stem_darkening");
-   renderer->hbGpuAtlasLoc        = glGetUniformLocation(renderer->hbShaderProgram, "hb_gpu_atlas");
-}
-
-void lineRendererUploadUniforms(struct LineRenderer *renderer)
-{
-   _rendererUseShaderProgram(renderer->hbShaderProgram);
-   struct LineRendererOptions opts = renderer->rendererOpts;
-
-   glUniformMatrix4fv(renderer->matViewProjectionLoc, 1, GL_FALSE, opts.matViewProjection.col[0].raw);
-   glUniform4fv(renderer->foregroundLoc, 1, opts.foreground.raw);
-   glUniform2fv(renderer->positionLoc, 1, opts.position.raw);
-   glUniform2f(renderer->viewportLoc, (f32) opts.viewport.raw[2], (f32) opts.viewport.raw[3]);
-   glUniform1f(renderer->scaleLoc, (f32) opts.scale);
-   glUniform1f(renderer->stemDarkeningLoc, opts.stemDarkening);
-   glUniform1f(renderer->debugLoc, opts.debug);
-   glUniform1f(renderer->gammaLoc, opts.gamma);
-   glUniform1i(renderer->hbGpuAtlasLoc, (i32) opts.hbGpuAtlas);
-}
-
-void lineRendererRenderLine(struct LineRenderer *renderer)
-{
-   glDrawArrays(GL_TRIANGLES, 0, (i32) renderer->glyphQuadVerticesCount);
-}
-
-void lineRendererCreateShader(struct LineRenderer *renderer)
+static u32 _lineShaderCreate()
 {
    /******************************************************************
     * opengl: create a shader `hbShaderProgram` for rendering glyphs *
@@ -135,57 +195,27 @@ void lineRendererCreateShader(struct LineRenderer *renderer)
    if (!shaderGetCompileStatus(hbFragmentShader))
       perror("fragment shader compilation failed");
 
-   renderer->hbShaderProgram = glCreateProgram();
-   glAttachShader(renderer->hbShaderProgram, hbVertexShader);
-   glAttachShader(renderer->hbShaderProgram, hbFragmentShader);
-   glLinkProgram(renderer->hbShaderProgram);
-   if (!shaderGetLinkStatus(renderer->hbShaderProgram))
+   u32 program = glCreateProgram();
+   glAttachShader(program, hbVertexShader);
+   glAttachShader(program, hbFragmentShader);
+   glLinkProgram(program);
+   if (!shaderGetLinkStatus(program))
       perror("failed to link shader program");
 
    glDeleteShader(hbVertexShader);
    glDeleteShader(hbFragmentShader);
    free((void *) hbVertexMain);
    free((void *) hbFragmentMain);
+
+   return program;
 }
 
-void lineRendererSetupAttribLocations(struct LineRenderer *renderer)
+static void _rendererUseShaderProgram(u32 shaderProgram)
 {
-   /**********************************************************
-    * opengl: setup attribute locations in `hbShaderProgram` *
-    *********************************************************/
-   i32 glyphQuadObjectStride = sizeof(struct GlyphVertex);
-   i32 attribLocation        = -1;
-
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_position");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, x));
-
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_texcoord");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, tx));
-
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_normal");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, nx));
-
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_emPerPos");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribPointer((u32) attribLocation, 1, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, emPerPos));
-
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_glyphLoc");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlasOffset));
-
-   attribLocation = glGetAttribLocation(renderer->hbShaderProgram, "a_hasCursor");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, hasCursor));
-}
-
-void lineRendererUploadLayoutQuadsToGPU(struct LineRenderer *renderer, struct LineLayout *layout)
-{
-   glBindVertexArray(renderer->glyphQuadVerticesVAO);
-   glBindBuffer(GL_ARRAY_BUFFER, renderer->glyphQuadVerticesVBO);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
-   renderer->glyphQuadVerticesCount = layout->glyphQuadVerticesCount;
-   renderer->glyphQuadsUploaded     = true;
+   assert(shaderProgram != 0);
+   if (shaderProgram != CURRENT_SHADER_PROGRAM)
+   {
+      glUseProgram(shaderProgram);
+      CURRENT_SHADER_PROGRAM = shaderProgram;
+   }
 }
