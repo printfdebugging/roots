@@ -34,7 +34,7 @@ GLFWwindow *windowCreate()
 
    const i32 windowWidth   = 1600;
    const i32 windowHeight  = 800;
-   const char *windowTitle = "GLFWWindow";
+   const char *windowTitle = "GLFWwindow";
 
    GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
    glfwMakeContextCurrent(window);
