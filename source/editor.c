@@ -6,187 +6,184 @@
 
 #include "editor.h"
 
+/**!
+ * later:
+ * we don't need to support unicode this early, we are using utf8
+ * data structures, but from that to rendering unicode perfectly is
+ * a really long journey and we can do a lot of things before we nail
+ * that down and we should go this route..
+ */
 int main(int argc, char *argv[])
 {
    (void) argc;
    (void) argv;
-   /**************************************************************************
-    * NOTE: the code as of today breaks on scrolling when we have characters *
-    * which use more than one bytes... it's intentional, the goal is to get  *
-    * the rendering/scrolling working and then we fix these issues...        *
-    * see  window.c keyPress                                                 *
-    *************************************************************************/
 
-   struct Editor *editor             = NULL;
-   struct LineLayout *layout         = NULL;
-   struct LineRenderer *lineRenderer = NULL;
-
-   if (!(editor = calloc(1, sizeof(struct Editor))) ||
-       !(layout = calloc(1, sizeof(struct LineLayout))) ||
-       !(lineRenderer = calloc(1, sizeof(struct LineRenderer))))
-   {
-      perror("failed to allocate structs\n");
-   }
-
+   struct Editor *editor = calloc(1, sizeof(struct Editor));
    editorInit(editor);
 
-   u8 lineUTF8[]     = " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~";
-   struct Text *text = textLoadFromData((char *) lineUTF8, (u32) strlen((char *) lineUTF8));
-   editor->text      = text;
-   byte *lineBytes   = (byte *) textGetUTF8Line(text, 0);
-   u64 lineBytelen   = strlen((char *) lineBytes);
-
    /**!
-    * note: we need to initialize windowing before anything gpu
+    * warning: fixme:
+    * We need to initialize windowing before anything GPU
     * related because that is what loads the glad pointers.
+    *
+    * - FontManager
+    * - Shaders
     */
    GLFWwindow *window = windowCreate();
    windowSetUserDataPtr(window, editor);
    u32 xScrollOffset = 0;
 
-   lineLayoutInit(layout);
-   lineRendererInit(lineRenderer);
    fontManagerInit(editor->fontFilePath);
 
-   struct LineGlyphInfo lineGlyphInfo = {
-      .cursorLine   = textGetCursorLine(text),
-      .cursorColumn = textGetCursorColumn(text),
-   };
+   /**!
+    * `LineShader` is shared between all the renderers. It is mostly stateless
+    * and only stores the uniform locations, not the values themselves. The
+    * values live in `LineShaderUniforms` struct and the `lineShaderUploadUniforms`
+    * function uploads the uniforms before drawing a particular line.
+    */
+   struct LineShader *lineShader = calloc(1, sizeof(struct LineShader));
+   lineShaderInit(lineShader);
+   lineShaderCacheUniformLocations(lineShader);
 
-   /* todo: layouting should layout and also take care of the cursor line.. so line should be marked with it */
-   /* with multiple glyphs getting cursor flag, we can add multiple cursros to gui easily */
-   fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) lineBytes, lineBytelen);
-   /* layouting is where we add cursor etc information, to be sent to the gpu.. */
-   lineLayoutGlyphQuadsFromInfo(layout, &lineGlyphInfo);
-   lineRendererUploadLayoutQuadsToGPU(lineRenderer, layout);
+   struct Text *text = textLoadFromFile(ASSETS_DIR "test.md");
+   editor->text      = text;
+   u32 lineCount     = textGetLineCount(text);
 
-   lineRendererCreateShader(lineRenderer);
-   lineRendererSetupAttribLocations(lineRenderer);
-   lineRendererCacheUniformLoc(lineRenderer);
+   struct LineLayout *lineLayout     = calloc(lineCount, sizeof(struct LineLayout));
+   struct LineRenderer *lineRenderer = calloc(lineCount, sizeof(struct LineRenderer));
 
-   /*****************
-    * the main loop *
-    ****************/
+   if (!lineLayout || !lineRenderer)
+      perror("failed to allocate memory\n");
+
+   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
+   {
+      lineLayoutInit(&lineLayout[lineIdx]);
+      lineRendererInit(&lineRenderer[lineIdx]);
+
+      char *lineBytes = textGetUTF8Line(text, lineIdx);
+      u64 lineByteLen = strlen(lineBytes);
+
+      /* todo: this is definitely leaked, fix that in a better way*/
+      struct LineGlyphInfo lineGlyphInfo = {
+         .cursorLine   = textGetCursorLine(text),
+         .cursorColumn = textGetCursorColumn(text),
+      };
+
+      fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) lineBytes, lineByteLen);
+      lineLayoutGlyphQuadsFromInfo(&lineLayout[lineIdx], &lineGlyphInfo);
+      linePrimitivesUploadLayoutQuadsToGPU(&lineRenderer[lineIdx].primitives, &lineLayout[lineIdx]);
+   }
 
    /**!
-    * note: properly define a data flow pipeline, it exists
+    * note:
+    * properly define a data flow pipeline, it exists
     * but as of now is very loosely defined. this doesn't mean
     * create fancy abstractions, just keep in check what happens when..
     */
    while (!glfwWindowShouldClose(window))
    {
-      /*********************
-       * frame bookkeeping *
-       ********************/
-
-      f64 timeNow       = glfwGetTime();
-      editor->timeDelta = timeNow - editor->lastTime;
-      editor->lastTime  = timeNow;
+      editorCalcFrameTime(editor);
 
       i32 windowWidth, windowHeight;
       glfwGetWindowSize(window, &windowWidth, &windowHeight);
 
-      /*****************
-       * event polling *
-       ****************/
-
+      /**!
+       * note:
+       * This might change when we get more than one windows,
+       * how, we are not sure yet, would be able to tell only
+       * when the time comes.
+       *
+       * We would be sharing OpenGL context between the GLFW
+       * windows, possibly threading as well, so just the event
+       * polling would happen here and the rest key callbacks
+       * into their own modules called by each window via function
+       * pointers..
+       */
       glfwPollEvents();
       if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
          glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-      /* note: keep this a property of line. probably some way to map
-       * text -> LineLayout.., buffer would have it all
+      /**!
+       * note:
+       * calculate the line height and then use that to
+       * count the number of visible lines and then render
+       * those..
        */
-      if (editor->lineDirty)
-      {
-         /**!
-          * note: a single key presses goes through
-          * this quite a few times, that shouldn't happen.
-          * if the cursor is not moving, no reason to mark
-          * the line dirty for now (later we might have treesitter
-          * etc updating the lines, so that would be different.)
-          * fprintf(stderr, "dirty\n");
-          */
-         lineGlyphInfo = (struct LineGlyphInfo) {
-            .cursorLine   = textGetCursorLine(text),
-            .cursorColumn = textGetCursorColumn(text),
-         };
-
-         fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) lineBytes, lineBytelen);
-         lineLayoutGlyphQuadsFromInfo(layout, &lineGlyphInfo);
-         lineRendererUploadLayoutQuadsToGPU(lineRenderer, layout);
-      }
-
-      /******************************************
-       * calculate the horizontal scroll offset *
-       *****************************************/
-      struct Font *font = fontManagerGetDefaultFont();
-      u32 cursorColumn  = textGetCursorColumn(text);
-      u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[cursorColumn * 6].x * lineRenderer->rendererOpts.scale);
-      u32 cursorWidthPx = (u32) (font->glyphCache[cursorColumn].extents.xMax * lineRenderer->rendererOpts.scale);
-      u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
-
-      if (xScrollOffset + (u32) windowWidth < cursorRightPx)
-         xScrollOffset = cursorRightPx - (u32) windowWidth;
-      if (cursorLeftPx < xScrollOffset)
-         xScrollOffset = cursorLeftPx;
-
-      /***********************************
-       * calculate transformation matrix *
-       **********************************/
-      lineRenderer->rendererOpts.matViewProjection = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
-      lineRenderer->rendererOpts.matViewProjection = glms_translate(lineRenderer->rendererOpts.matViewProjection, (vec3s) { { -((f32) xScrollOffset), 0.0f, 0.0f } });
-
-      /********************
-       * update variables *
-       *******************/
-
-      glGetIntegerv(GL_VIEWPORT, lineRenderer->rendererOpts.viewport.raw);
-
       i32 xScale, yScale;
+      struct Font *font = fontManagerGetDefaultFont();
       hb_font_get_scale(font->hbFont, &xScale, &yScale);
-      lineRenderer->rendererOpts.scale = editor->fontSize / (f32) yScale;
+      f32 fontScale = editor->fontSize / (f32) yScale;
 
-      struct GlyphAtlas *atlas              = fontManagerGetGlyphAtlas();
-      lineRenderer->rendererOpts.position.y = ((f32) windowHeight - editor->fontSize) / 2;
-      lineRenderer->rendererOpts.gamma      = 1.0f;
-      lineRenderer->rendererOpts.debug      = false;
-      lineRenderer->rendererOpts.hbGpuAtlas = atlas->textureUnit;
+      struct GlyphAtlas *atlas = fontManagerGetGlyphAtlas();
 
-      /****************
-       * set uniforms *
-       ***************/
+      mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
+      mvp       = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
+      mvp       = glms_translate(mvp, (vec3s) { { -((f32) xScrollOffset), 0.0f, 0.0f } }); /* not set as of now */
 
-      glBindVertexArray(lineRenderer->glyphQuadVerticesVAO);
+      /**!
+       * warning: fixme: This is always 0. Not sure why.
+       * We call `glViewport` in windowResize, see window.c
+       */
+      int viewport[2] = { 0 };
+      glGetIntegerv(GL_VIEWPORT, viewport);
 
-      lineRendererUploadUniforms(lineRenderer);
-
-      /**********************
-       * opengl: draw calls *
-       *********************/
+      u32 visibleLineCount = (u32) windowHeight / (u32) editor->fontSize;
+      if (lineCount < visibleLineCount)
+         visibleLineCount = lineCount;
 
       glClearColor(ColorRGBAHex(0X282C33FF));
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      lineRendererRenderLine(lineRenderer);
+      for (u32 lineIdx = 0; lineIdx < visibleLineCount; ++lineIdx)
+      {
+         lineRenderer[lineIdx].uniforms = (struct LineShaderUniforms) {
+            .matViewProjection = mvp,
+            .viewport          = { { viewport[0], viewport[1] } },
+            .scale             = fontScale,
+            .position          = { .x = 0, .y = ((f32) windowHeight - (editor->fontSize * ((f32) lineIdx + 1))) },
+            .hbGpuAtlas        = atlas->textureUnit,
+            .gamma             = 1.0f,
+            .debug             = false,
+            .stemDarkening     = false,
+            .foreground        = (vec4s) { { ColorRGBAHex(0XD8DEE9FF) } },
+         };
+
+         glBindVertexArray(lineRenderer[lineIdx].primitives.glyphQuadVerticesVAO);
+         lineShaderSetAttribLocations(lineShader);
+         lineRendererRenderLine(&lineRenderer[lineIdx], lineShader);
+      }
 
       glfwSwapBuffers(window);
+
+      /**!
+       * later:
+       * let's ignore horizontal scrolling for now. we can always take care of it later on..
+       * same for vertical scrolling.. incremntal steps, let's show the lines first
+       */
+      // struct Font *font = fontManagerGetDefaultFont();
+      // u32 cursorColumn  = textGetCursorColumn(text);
+      // u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[cursorColumn * 6].x * lineRenderer->uniforms.scale);
+      // u32 cursorWidthPx = (u32) (font->glyphCache[cursorColumn].extents.xMax * lineRenderer->uniforms.scale);
+      // u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
+      //
+      // if (xScrollOffset + (u32) windowWidth < cursorRightPx)
+      //    xScrollOffset = cursorRightPx - (u32) windowWidth;
+      // if (cursorLeftPx < xScrollOffset)
+      //    xScrollOffset = cursorLeftPx;
    }
 
-   /***********
-    * cleanup *
-    **********/
+   /* I think here we can use struct of arrays rather than array of structs.. */
+   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
+   {
+      lineRendererDeInit(&lineRenderer[lineIdx]);
+      lineLayoutDeInit(&lineLayout[lineIdx]);
+   }
 
-   lineRendererDeInit(lineRenderer);
    editorDeInit(editor);
-   lineLayoutDeInit(layout);
    fontManagerDeInit();
-   windowDestroy(window);
 
-   free(layout);
-   free(lineRenderer);
+   windowDestroy(window);
    free(editor);
-   free(lineGlyphInfo.glyphInfo);
 
    return EXIT_SUCCESS;
 }
@@ -198,6 +195,13 @@ void editorInit(struct Editor *editor)
 
    editor->fontSize     = 48.0f;
    editor->fontFilePath = stringDuplicate(fontFilePath);
+}
+
+void editorCalcFrameTime(struct Editor *editor)
+{
+   f64 timeNow       = glfwGetTime();
+   editor->timeDelta = timeNow - editor->lastTime;
+   editor->lastTime  = timeNow;
 }
 
 void editorDeInit(struct Editor *editor)

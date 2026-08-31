@@ -1,6 +1,16 @@
 *log.txt*
 
 --------------------------------------------------------------------------
+@printfdebugging                           Mon Aug 31 12:04:26 AM IST 2026
+
+- Every once in a while, it helps to just read the whole codebase top to
+  bottom. All it's comments, all it's functions and structures to see the
+  whole of it as it is and hammer it a bit here and there, wherever you find
+  it out of shape. That way we cleanup/rewrite the expired comments & we see
+  the thing in it's entirety as it is, so it becomes easy to make decisions
+  about the next step.
+
+--------------------------------------------------------------------------
 @printfdebugging                           Fri Aug 21 11:49:02 PM IST 2026
 
     - https://github.com/google/sanitizers/wiki/AddressSanitizerLeakSanitizer

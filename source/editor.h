@@ -72,6 +72,10 @@ typedef float f32;
 typedef double f64;
 typedef int b32;
 
+/**!
+ * note: todo: this should have the primitives related to a glyph,
+ * like the foreground, the background etc... not the whole line..
+ */
 struct GlyphVertex
 {
    f32 x;
@@ -189,7 +193,7 @@ struct LineLayout
    u32 glyphQuadVerticesCount;
 };
 
-struct LineRendererOptions
+struct LineShaderUniforms
 {
    mat4s matViewProjection;
    ivec4s viewport;
@@ -202,12 +206,8 @@ struct LineRendererOptions
    bool stemDarkening;
 };
 
-struct LineRenderer
+struct LineShaderUniformLocations
 {
-   /*************************************
-    * renderer - draw uniform locations *
-    ************************************/
-   u32 hbShaderProgram;
    i32 matViewProjectionLoc;
    i32 viewportLoc;
    i32 scaleLoc;
@@ -217,16 +217,42 @@ struct LineRenderer
    i32 foregroundLoc;
    i32 debugLoc;
    i32 stemDarkeningLoc;
+};
 
-   struct LineRendererOptions rendererOpts;
+/**!
+ * A Line shader is shared between various line renderers. This
+ * does not contain any state, but allows one to quickly set
+ * the state using `LineShaderUniforms` and draw/redraw a line..
+ */
+struct LineShader
+{
+   u32 hbShaderProgram;
+   struct LineShaderUniformLocations uniformLocations;
+};
 
-   /**************************
-    * renderer - layout data *
-    *************************/
+struct LinePrimitives
+{
    u32 glyphQuadVerticesVAO;
-   u32 glyphQuadVerticesCount;
    u32 glyphQuadVerticesVBO;
+   u32 glyphQuadVerticesCount;
    b32 glyphQuadsUploaded;
+};
+
+/* note: todo: Is a renderer supposed to be stateless, if so
+ * then this LineRenderer naming is wrong*/
+struct LineRenderer
+{
+   /**!
+    * Uniforms of the line, like the position from where we start
+    * drawing, the MVP matrix, the scale, gpu atlas, so on..
+    */
+   struct LineShaderUniforms uniforms;
+
+   /**!
+    * These are the primitives of a line, glyph quads mostly. These
+    * do not change unless the line is edited.
+    */
+   struct LinePrimitives primitives;
 };
 
 /************
@@ -234,6 +260,7 @@ struct LineRenderer
  ***********/
 
 void editorInit(struct Editor *editor);
+void editorCalcFrameTime(struct Editor *editor);
 void editorDeInit(struct Editor *editor);
 
 /*****************
@@ -263,14 +290,39 @@ void lineLayoutDeInit(struct LineLayout *layout);
  * renderer.c *
  *************/
 
+/**!
+ * note:
+ * The line renderer as of now contains one line's primitives. That's
+ * fine, but one might want to do it on a per buffer basis, atleast
+ * on the renderer side.
+ *
+ * Uploading just a few quads is not that expensive.. but that's something
+ * to test.. just a note for later.. But there are both aspects.. With
+ * these being for the lines, multiple buffers (splits etc) can eassentially
+ * share the lines (unchanged) (with some kind of recounting)..
+ */
 void lineRendererInit(struct LineRenderer *renderer);
 void lineRendererDeInit(struct LineRenderer *renderer);
-void lineRendererCacheUniformLoc(struct LineRenderer *renderer);
-void lineRendererUploadUniforms(struct LineRenderer *renderer);
-void lineRendererRenderLine(struct LineRenderer *renderer);
-void lineRendererCreateShader(struct LineRenderer *renderer);
-void lineRendererSetupAttribLocations(struct LineRenderer *renderer);
-void lineRendererUploadLayoutQuadsToGPU(struct LineRenderer *renderer, struct LineLayout *layout);
+void lineRendererRenderLine(struct LineRenderer *renderer, struct LineShader *shader);
+
+void lineShaderInit(struct LineShader *shader);
+void lineShaderDeInit(struct LineShader *shader);
+void lineShaderCacheUniformLocations(struct LineShader *shader);
+
+/**!
+ * This function should be ran after we bind a VAO for the first time.
+ * It enables the attributes and associates the shader variables with
+ * them, so that we don't have to use (location = 0) etc in the shader
+ * code.
+ */
+void lineShaderSetAttribLocations(struct LineShader *shader);
+void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUniforms *uniforms);
+
+void lineShaderUniformsInit(struct LineShaderUniforms *uniforms);
+
+void linePrimitivesInit(struct LinePrimitives *primitives);
+void linePrimitivesDeInit(struct LinePrimitives *primitives);
+void linePrimitivesUploadLayoutQuadsToGPU(struct LinePrimitives *renderer, struct LineLayout *layout);
 
 /**********
  * text.c *
