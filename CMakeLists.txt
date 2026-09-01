@@ -65,10 +65,28 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
    )
 endif()
 
-add_definitions(-DTEXT_LINE_IMPLEMENTATION=1)
-target_compile_definitions(editor PRIVATE GLFW_INCLUDE_NONE ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets/")
-target_include_directories(editor PUBLIC include)
-target_link_libraries(editor PRIVATE harfbuzz-gpu harfbuzz glfw glad cglm unicode $<$<BOOL:${WIN32}>:dwmapi>)
+add_definitions(
+   -DTEXT_LINE_IMPLEMENTATION=1
+)
+
+target_compile_definitions(editor PRIVATE
+   GLFW_INCLUDE_NONE
+   ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets/"
+)
+
+target_include_directories(editor PUBLIC
+   include
+)
+
+target_link_libraries(editor PRIVATE
+   harfbuzz-gpu
+   harfbuzz
+   glfw
+   glad
+   cglm
+   unicode
+   $<$<BOOL:${WIN32}>:dwmapi>
+)
 
 install(
    TARGETS editor
