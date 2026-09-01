@@ -44,7 +44,7 @@ struct Text *textLoadFromFile(const char *filepath)
    char *data = readFileContents(filepath);
    if (!data)
       return NULL;
-   return textLoadFromData(file, (u32) strlen(file));
+   return textLoadFromData(data, (u32) strlen(data));
 
 #else
    FILE *file = NULL;
