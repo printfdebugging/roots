@@ -55,6 +55,7 @@ int main(int argc, char *argv[])
    if (!lineLayout || !lineRenderer)
       perror("failed to allocate memory\n");
 
+   struct LineGlyphInfo lineGlyphInfo = { 0 };
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
       lineLayoutInit(&lineLayout[lineIdx]);
@@ -63,16 +64,15 @@ int main(int argc, char *argv[])
       char *lineBytes = textGetUTF8Line(text, lineIdx);
       u64 lineByteLen = strlen(lineBytes);
 
-      /* todo: this is definitely leaked, fix that in a better way*/
-      struct LineGlyphInfo lineGlyphInfo = {
-         .cursorLine   = textGetCursorLine(text),
-         .cursorColumn = textGetCursorColumn(text),
-      };
+      lineGlyphInfo.cursorLine   = textGetCursorLine(text);
+      lineGlyphInfo.cursorColumn = textGetCursorColumn(text);
 
       fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) lineBytes, lineByteLen);
       lineLayoutGlyphQuadsFromInfo(&lineLayout[lineIdx], &lineGlyphInfo);
       linePrimitivesUploadLayoutQuadsToGPU(&lineRenderer[lineIdx].primitives, &lineLayout[lineIdx]);
    }
+
+   free(lineGlyphInfo.glyphInfo);
 
    /**!
     * note:
