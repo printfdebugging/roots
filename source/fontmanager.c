@@ -43,6 +43,19 @@ static struct FontManager fontManager = { 0 };
 void _fontManagerGlyphAtlasInit();
 void _fontManagerGlyphAtlasDeInit();
 
+/*
+#define NUL             0x00
+#define SPACE           0x20
+#define NEWLINE         0x0a
+#define HORIZONTAL_TAB  0x09
+#define CARRIAGE_RETURN 0x0d
+#define TABSTOP         3
+
+void _linePrintChars();
+void _lineSubstituteNewlines();
+void _lineSubstituteTabs();
+*/
+
 void fontManagerInit(char *editorFontPath)
 {
    if (fontManager.initialized)
