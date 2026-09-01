@@ -89,9 +89,6 @@ struct Text *textLoadFromData(const char *data, u32 dataLength)
 
    struct Text *text = calloc(1, sizeof(struct Text));
    if (!text) perror("failed to allcoate Text");
-   text->filePath  = NULL;
-   text->lines     = NULL;
-   text->lineCount = 0;
 
    while (index < dataLength)
    {
