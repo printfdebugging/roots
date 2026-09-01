@@ -2,6 +2,12 @@
 
 #include "editor.h"
 
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <dwmapi.h>
+#include "GLFW/glfw3native.h"
+#endif
+
 /*********************************************************
  * Unlike other init functions, this one creates         *
  * window, so it's deInit would destroy that window.     *
@@ -9,6 +15,22 @@
  * not much thought is put into it, so this might change *
  * in some time.                                         *
  ********************************************************/
+
+#ifdef _WIN32
+static bool _msIsDarkMode()
+{
+   HINSTANCE uxThemeLib = LoadLibraryExW(L"uxtheme.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+   if (!uxThemeLib)
+   {
+      fprintf(stderr, "failed to open uxtheme.dll\n");
+      return true; /* default to dark mode */
+   }
+
+   bool useDarkMode = GetProcAddress(uxThemeLib, MAKEINTRESOURCEA(132))();
+   FreeLibrary(uxThemeLib);
+   return useDarkMode;
+}
+#endif
 
 void windowSetUserDataPtr(GLFWwindow *window, void *userData)
 {
@@ -41,6 +63,12 @@ GLFWwindow *windowCreate()
    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
    glfwSwapInterval(1);
+
+#ifdef _WIN32
+   HWND hwnd   = glfwGetWin32Window(window);
+   DWORD value = _msIsDarkMode();
+   DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+#endif
 
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_MULTISAMPLE);
