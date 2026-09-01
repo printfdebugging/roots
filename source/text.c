@@ -142,6 +142,7 @@ void textDestroy(struct Text *text)
    for (u32 lineIdx = 0; lineIdx < text->lineCount; ++lineIdx)
       free(text->lines[lineIdx]);
    free(text->lines);
+   free(text->filePath);
 }
 
 bool textMoveCursorUp(struct Text *text)
