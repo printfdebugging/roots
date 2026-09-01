@@ -38,33 +38,30 @@ add_executable(editor
    source/sanitizers.c
 )
 
-target_compile_options(editor PRIVATE
-   -Wall
-   -Wextra
-   -Wundef
-   -Wshadow
-   -Wpointer-arith
-   -Wcast-align
-   -Wstrict-prototypes
-   -Wwrite-strings
-   -Wswitch-enum
-   -Wconversion
-   -Wunreachable-code
-   -Wpedantic
-   -Wno-override-init
-   -Werror=return-type
-   -Wno-double-promotion
-   -fno-omit-frame-pointer
-   # $<$<CONFIG:Debug>:-Og -g3>
-   $<$<CONFIG:Debug>:-O0>
-   $<$<CONFIG:Debug>:-fsanitize=undefined,address>
-)
-
-
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+   target_compile_options(editor PRIVATE
+      -Wall
+      -Wextra
+      -Wundef
+      -Wshadow
+      -Wpointer-arith
+      -Wcast-align
+      -Wstrict-prototypes
+      -Wwrite-strings
+      -Wswitch-enum
+      -Wconversion
+      -Wunreachable-code
+      -Wpedantic
+      -Wno-override-init
+      -Werror=return-type
+      -Wno-double-promotion
+      -fno-omit-frame-pointer
+      -O0
+      $<$<NOT:$<PLATFORM_ID:Windows>>:-fsanitize=undefined,address>
+   )
+
    target_link_options(editor PUBLIC
-      -fsanitize=undefined
-      -fsanitize=address
+      $<$<NOT:$<PLATFORM_ID:Windows>>:-fsanitize=undefined,address>
    )
 endif()
 
