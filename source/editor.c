@@ -67,8 +67,22 @@ int main(int argc, char *argv[])
       lineGlyphInfo.cursorLine   = textGetCursorLine(text);
       lineGlyphInfo.cursorColumn = textGetCursorColumn(text);
 
+      /**!
+       * note: todo:
+       * These two steps should be merged. Simply put, the font manager
+       * does shaping, so it knows how the shaped output maps to the input
+       * bytes.. Layouting code puts other information related to the text
+       * like the attributes and the cursor related information on the
+       * quads.. So no reason to separate the two.
+       *
+       * Infact merging the two would eliminate the existance of LineGlyphInfo
+       * since it's used for just that. We can define one struct with the info
+       * we want to pass to the Shaping/Layouting step and out we would get
+       * quads which we directly pass on to the renderer.
+       * */
       fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) lineBytes, lineByteLen);
       lineLayoutGlyphQuadsFromInfo(&lineLayout[lineIdx], &lineGlyphInfo);
+
       linePrimitivesUploadLayoutQuadsToGPU(&lineRenderer[lineIdx].primitives, &lineLayout[lineIdx]);
    }
 
