@@ -58,7 +58,7 @@ int main(int argc, char *argv[])
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
       lineLayoutInit(&lineLayout[lineIdx]);
-      lineRendererInit(&lineRenderer[lineIdx]);
+      lineRendererInit(&lineRenderer[lineIdx], lineShader);
 
       char *lineBytes = textGetUTF8Line(text, lineIdx);
       u64 lineByteLen = strlen(lineBytes);
@@ -148,8 +148,6 @@ int main(int argc, char *argv[])
             .foreground        = (vec4s) { { ColorRGBAHex(0XD8DEE9FF) } },
          };
 
-         glBindVertexArray(lineRenderer[lineIdx].primitives.glyphQuadVerticesVAO);
-         lineShaderSetAttribLocations(lineShader);
          lineRendererRenderLine(&lineRenderer[lineIdx], lineShader);
       }
 
