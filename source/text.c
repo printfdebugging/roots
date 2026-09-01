@@ -44,8 +44,12 @@ struct Text *textLoadFromFile(const char *filepath)
    char *data = readFileContents(filepath);
    if (!data)
       return NULL;
-   return textLoadFromData(data, (u32) strlen(data));
-   /* todo: set filepath before returning.. */
+
+   struct Text *text = textLoadFromData(data, (u32) strlen(data));
+   text->filePath    = stringDuplicate(filepath);
+
+   free(data);
+   return text;
 
 #else
    FILE *file = NULL;
