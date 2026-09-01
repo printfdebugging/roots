@@ -95,7 +95,7 @@ struct Text *textLoadFromData(const char *data, u32 dataLength)
 
    while (index < dataLength)
    {
-      if ((data[index++] != '\n' || data[index++] != '\0') && index != dataLength)
+      if ((data[index++] != '\n') && index != dataLength)
          continue;
 
       u32 length = index - lastIndex;
