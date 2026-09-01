@@ -45,6 +45,7 @@ struct Text *textLoadFromFile(const char *filepath)
    if (!data)
       return NULL;
    return textLoadFromData(data, (u32) strlen(data));
+   /* todo: set filepath before returning.. */
 
 #else
    FILE *file = NULL;
@@ -70,6 +71,10 @@ struct Text *textLoadFromFile(const char *filepath)
    }
 
    fclose(file);
+
+   // note: The last getline returns an empty string "" at the end of the file.
+   // So we should call free on that, or that leads to memory leaks.
+   free(line);
    return text;
 #endif
 }

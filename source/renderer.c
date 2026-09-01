@@ -121,6 +121,11 @@ void lineShaderInit(struct LineShader *shader)
    };
 }
 
+void lineShaderDeInit(struct LineShader *shader)
+{
+   glDeleteProgram(shader->hbShaderProgram);
+}
+
 void lineShaderCacheUniformLocations(struct LineShader *shader)
 {
    u32 program = shader->hbShaderProgram;
