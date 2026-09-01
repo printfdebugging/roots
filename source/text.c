@@ -31,9 +31,22 @@ struct Text
 
 struct Text *textLoadFromFile(const char *filepath)
 {
-   /*****************
-    * read the file *
-    ****************/
+   /**!
+    * warning: `getline` is a UNIX only function, so can't
+    * use that on Windows.
+    */
+#ifdef _WIN32
+   /**!
+    * fixme: strlen here can be avoided by returning a struct
+    * from readFileContents, or by passing an out variable for
+    * the data and returning the length.
+    */
+   char *data = readFileContents(filepath);
+   if (!data)
+      return NULL;
+   return textLoadFromData(file, (u32) strlen(file));
+
+#else
    FILE *file = NULL;
    if (!(file = fopen(filepath, "r")))
    {
@@ -58,6 +71,7 @@ struct Text *textLoadFromFile(const char *filepath)
 
    fclose(file);
    return text;
+#endif
 }
 
 struct Text *textLoadFromData(const char *data, u32 dataLength)
