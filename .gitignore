@@ -1,12 +1,12 @@
 # Tooling
-.cache
+**/.cache
 .vscode
 .clangd
 
 # CMake
-build
-install
-compile_commands.json
+**/build
+**/install
+**/compile_commands.json
 
 # Misc
 gdb.txt
