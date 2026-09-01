@@ -177,6 +177,11 @@ int main(int argc, char *argv[])
       lineLayoutDeInit(&lineLayout[lineIdx]);
    }
 
+   free(lineRenderer);
+   free(lineLayout);
+   lineShaderDeInit(lineShader);
+   free(lineShader);
+
    editorDeInit(editor);
    fontManagerDeInit();
 
@@ -205,4 +210,6 @@ void editorCalcFrameTime(struct Editor *editor)
 void editorDeInit(struct Editor *editor)
 {
    free(editor->fontFilePath);
+   textDestroy(editor->text);
+   free(editor->text);
 }
