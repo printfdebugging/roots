@@ -301,7 +301,7 @@ void lineLayoutDeInit(struct LineLayout *layout);
  * these being for the lines, multiple buffers (splits etc) can eassentially
  * share the lines (unchanged) (with some kind of recounting)..
  */
-void lineRendererInit(struct LineRenderer *renderer);
+void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader);
 void lineRendererDeInit(struct LineRenderer *renderer);
 void lineRendererRenderLine(struct LineRenderer *renderer, struct LineShader *shader);
 

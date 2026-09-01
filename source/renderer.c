@@ -7,10 +7,24 @@ static u32 CURRENT_SHADER_PROGRAM = 0;
 static u32 _lineShaderCreate();
 static void _rendererUseShaderProgram(u32 shaderProgram);
 
-void lineRendererInit(struct LineRenderer *renderer)
+void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
 {
    lineShaderUniformsInit(&renderer->uniforms);
    linePrimitivesInit(&renderer->primitives);
+
+   /**!
+    * note: We do this here because it is only done once per
+    * VAO and what best place could be to do it than the Init
+    * function?
+    *
+    * warn: Though this might change later if we decide to
+    * have struct of arrays rather than array of structs..
+    */
+   struct LinePrimitives *primitives = &renderer->primitives;
+   glBindVertexArray(primitives->glyphQuadVerticesVAO);
+   glBindBuffer(GL_ARRAY_BUFFER, primitives->glyphQuadVerticesVBO);
+
+   lineShaderSetAttribLocations(shader);
 }
 
 void lineRendererDeInit(struct LineRenderer *renderer)
@@ -48,9 +62,18 @@ void lineRendererRenderLine(struct LineRenderer *renderer, struct LineShader *sh
    lineShaderUploadUniforms(shader, &renderer->uniforms);
 
    if (renderer->primitives.glyphQuadsUploaded)
+   {
+      glBindVertexArray(renderer->primitives.glyphQuadVerticesVAO);
       glDrawArrays(GL_TRIANGLES, 0, (i32) renderer->primitives.glyphQuadVerticesCount);
+   }
 }
 
+/**!
+ * warning: This should be called only after the buffer object
+ * is bound to the array buffer, otherwise it can lead to bugs like all
+ * the vertex array buffers using the same vertex buffer object which
+ * was set when this function was called.
+ */
 void lineShaderSetAttribLocations(struct LineShader *shader)
 {
    u32 program               = shader->hbShaderProgram;
