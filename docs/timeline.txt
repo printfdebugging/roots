@@ -1,10 +1,31 @@
 *timeline.txt*
 
 ------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Fri Sep  4 05:23:32 AM IST 2026                  *timeline.txt-2026-09-04-0523*
+
+Week 36 ~
+   - [ ] Fix the font/line height issue, take into account the font metrics
+   - [ ] Unify LineRenderer & LineLayout, no need to separate those
+   - [ ] Add vertical scrolling & re-enable horizontal scrolling
+   - [ ] For now just test ascii text
+   - [ ] Substitute spaces, tabs, newlines etc. on the renderer side
+   - [ ] Add some performance testing constructs
+
+------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Fri Sep  4 05:13:59 AM IST 2026                  *timeline.txt-2026-09-04-0513*
+
+Week 35 ~
+   - [x] Remove b8 and use bool instead, bool doesn't mean 8 bytes necessarily
+   - [x] Move layouting/windowing out of editor (groundwork for later abstractions)
+   - [x] Render multiple lines, disable scrolling for now
+   - [x] Introduce text api for moving cursor over utf8 bytes
+   - [x] Fix windows build, text.c:textLoadFromFile used getline which was POSIX only
+   - [x] Fix memory leaks, disable sanitizers on windows (they don't work there, ASan specially)
+
+------------------------------------------------------------------------------------------------------------------------
 @printfdebugging                           Sun Aug 16 07:27:52 PM IST 2026                  *timeline.txt-2026-08-16-0727*
 
 Week 34                                                                                             *timeline.txt-week-34* ~
-
    - [x] Abstract away the layouting code from main to fontlayout
    - [x] Use fixed sized types backing the u8/u16.. type aliases
    - [x] Setup sanitizers - exclude glfw's leaks from the output
@@ -13,12 +34,8 @@ Week 34                                                                         
 @printfdebugging                           Sat Aug 22 01:22:04 AM IST 2026                  *timeline.txt-2026-08-22-0122*
 
 Tasks Bucketlist                                                                           *timeline.txt-tasks-bucketlist* ~
-
-   - [ ] Render multiple lines & add vertical scrolling
-   - [ ] Introduce text api for moving cursor over utf8 bytes
-   - [ ] Substitute spaces, tabs, newlines etc. on the renderer side
-   - [ ] Add some performance testing constructs
    - [ ] Inline image previews (single|centered|gallary|row)
+   - [ ] Introduce a Buffer/Frame & pipeline dataflow
    - [ ] Virtual Lines and Characters (Read Only)
    - [ ] Line Numbers Implementation
    - [ ] True Conceal Implementation
@@ -61,4 +78,4 @@ Tasks Bucketlist                                                                
    - [ ] A Web Browser?? Maybe that's too much :)
    - [ ] Daemon Client Mode? Maybe. -> P2P? Maybe.
 
-vim:ft=help:toc=no
+vim:set ft=help: toc=no
