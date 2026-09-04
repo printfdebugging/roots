@@ -38,29 +38,18 @@ void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
    glBindVertexArray(renderer->primitives.vao);
    glBindBuffer(GL_ARRAY_BUFFER, renderer->primitives.vbo);
 
-   lineShaderSetAttribLocations(shader);
-}
+   /* set attribute locations */
 
-void lineRendererDeInit(struct LineRenderer *renderer)
-{
-   /* primitives */
-   renderer->primitives.uploaded = false;
-   renderer->primitives.count    = 0;
-   glDeleteBuffers(1, &renderer->primitives.vbo);
-   glDeleteVertexArrays(1, &renderer->primitives.vao);
-}
-
-/**!
- * warning: This should be called only after the buffer object
- * is bound to the array buffer, otherwise it can lead to bugs like all
- * the vertex array buffers using the same vertex buffer object which
- * was set when this function was called.
- */
-void lineShaderSetAttribLocations(struct LineShader *shader)
-{
    u32 program               = shader->hbShaderProgram;
    i32 attribLocation        = -1;
    i32 glyphQuadObjectStride = sizeof(struct GlyphVertex);
+
+   /**!
+    * warning: These should be called only after the buffer object
+    * is bound to the array buffer, otherwise it can lead to bugs like all
+    * the vertex array buffers using the same vertex buffer object which
+    * was set when this function was called.
+    */
 
    attribLocation = glGetAttribLocation(program, "a_position");
    glEnableVertexAttribArray((u32) attribLocation);
@@ -85,6 +74,15 @@ void lineShaderSetAttribLocations(struct LineShader *shader)
    attribLocation = glGetAttribLocation(program, "a_hasCursor");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, hasCursor));
+}
+
+void lineRendererDeInit(struct LineRenderer *renderer)
+{
+   /* primitives */
+   renderer->primitives.uploaded = false;
+   renderer->primitives.count    = 0;
+   glDeleteBuffers(1, &renderer->primitives.vbo);
+   glDeleteVertexArrays(1, &renderer->primitives.vao);
 }
 
 void lineShaderInit(struct LineShader *shader)

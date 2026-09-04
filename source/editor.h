@@ -308,13 +308,6 @@ void lineShaderInit(struct LineShader *shader);
 void lineShaderDeInit(struct LineShader *shader);
 void lineShaderCacheUniformLocations(struct LineShader *shader);
 
-/**!
- * This function should be ran after we bind a VAO for the first time.
- * It enables the attributes and associates the shader variables with
- * them, so that we don't have to use (location = 0) etc in the shader
- * code.
- */
-void lineShaderSetAttribLocations(struct LineShader *shader);
 void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUniforms *uniforms);
 
 /**********
