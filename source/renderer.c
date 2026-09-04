@@ -9,7 +9,17 @@ static void _rendererUseShaderProgram(u32 shaderProgram);
 
 void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
 {
-   lineShaderUniformsInit(&renderer->uniforms);
+   renderer->uniforms = (struct LineShaderUniforms) {
+      .matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT },
+      .viewport          = GLMS_IVEC4_ZERO,
+      .scale             = 0,
+      .position          = GLMS_VEC2_ZERO,
+      .hbGpuAtlas        = 0,
+      .gamma             = 0,
+      .foreground        = (vec4s) { { ColorRGBAHex(0XD8DEE9FF) } },
+      .debug             = false,
+      .stemDarkening     = false,
+   };
 
    /* primitives */
    glGenVertexArrays(1, &renderer->primitives.vao);
@@ -119,21 +129,6 @@ void lineShaderCacheUniformLocations(struct LineShader *shader)
 void lineShaderDeinit(struct LineShader *shader)
 {
    glDeleteProgram(shader->hbShaderProgram);
-}
-
-void lineShaderUniformsInit(struct LineShaderUniforms *uniforms)
-{
-   *uniforms = (struct LineShaderUniforms) {
-      .matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT },
-      .viewport          = GLMS_IVEC4_ZERO,
-      .scale             = 0,
-      .position          = GLMS_VEC2_ZERO,
-      .hbGpuAtlas        = 0,
-      .gamma             = 0,
-      .foreground        = (vec4s) { { ColorRGBAHex(0XD8DEE9FF) } },
-      .debug             = false,
-      .stemDarkening     = false,
-   };
 }
 
 void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUniforms *uniforms)
