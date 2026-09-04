@@ -317,8 +317,6 @@ void lineShaderCacheUniformLocations(struct LineShader *shader);
 void lineShaderSetAttribLocations(struct LineShader *shader);
 void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUniforms *uniforms);
 
-void lineShaderUniformsInit(struct LineShaderUniforms *uniforms);
-
 /**********
  * text.c *
  *********/
