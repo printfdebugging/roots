@@ -7,7 +7,7 @@
 #if __has_feature(address_sanitizer) || defined(__SANITIZE_ADDRESS__)
 const char *__lsan_default_options()
 {
-   return "print_suppressions=1";
+   return "print_suppressions=0";
 }
 
 const char *__lsan_default_suppressions()
