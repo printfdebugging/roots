@@ -9,6 +9,10 @@ static void _rendererUseShaderProgram(u32 shaderProgram);
 
 void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
 {
+   /* layout */
+   renderer->vertices = NULL;
+
+   /* uniforms */
    renderer->uniforms = (struct LineShaderUniforms) {
       .matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT },
       .viewport          = GLMS_IVEC4_ZERO,
@@ -78,11 +82,78 @@ void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
 
 void lineRendererDeInit(struct LineRenderer *renderer)
 {
+   /* layout */
+   free(renderer->vertices);
+
    /* primitives */
    renderer->uploaded = false;
    renderer->count    = 0;
    glDeleteBuffers(1, &renderer->vbo);
    glDeleteVertexArrays(1, &renderer->vao);
+}
+
+/**!
+ * note: don't realayout the whole line, just the visible part + some more
+ */
+void lineRendererGlyphQuadsFromInfo(struct LineRenderer *renderer, struct LineGlyphInfo *lineGlyphInfo)
+{
+   renderer->count    = lineGlyphInfo->glyphCount * 6;
+   renderer->vertices = realloc(renderer->vertices, renderer->count * sizeof(struct GlyphVertex));
+
+   struct Point glyphPosition = { .x = 0, .y = 0 };
+   for (u32 glyphIdx = 0; glyphIdx < lineGlyphInfo->glyphCount; ++glyphIdx)
+   {
+      bool hasCursor              = lineGlyphInfo->cursorColumn == glyphIdx; /* naive approach */
+      struct GlyphInfo *glyphInfo = &lineGlyphInfo->glyphInfo[glyphIdx];
+
+      /**********************
+       * create glyph quads *
+       *********************/
+
+      glyphPosition.x += glyphInfo->extents.xMin;
+      glyphPosition.y += 0;
+
+      struct GlyphVertex glyphQuadCorners[4];
+      for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
+      {
+         i32 cx = (cornerIdx >> 1) & 1;
+         i32 cy = cornerIdx & 1;
+         f64 ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
+         f64 ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
+
+         glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
+            .x           = (f32) glyphPosition.x,
+            .y           = (f32) glyphPosition.y,
+            .tx          = (f32) ex,
+            .ty          = (f32) ey,
+            .nx          = cx ? 1.f : -1.f,
+            .ny          = cy ? -1.f : 1.f,
+            .emPerPos    = 1.0,
+            .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
+            .hasCursor   = hasCursor,
+         };
+      }
+
+      u32 glyphQuadOffset = glyphIdx * 6;
+
+      /* this is hardly of any use to us. this goes to OpenGL, so we better not keep this form
+       * untill we need to upload.. */
+      renderer->vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
+      renderer->vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
+      renderer->vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
+      renderer->vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
+      renderer->vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
+      renderer->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
+
+      glyphPosition.x += glyphInfo->extents.xMax;
+      glyphPosition.y += 0;
+   }
+
+   glBindVertexArray(renderer->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * renderer->count, renderer->vertices, GL_STATIC_DRAW);
+   renderer->count    = renderer->count;
+   renderer->uploaded = true;
 }
 
 void lineShaderInit(struct LineShader *shader)

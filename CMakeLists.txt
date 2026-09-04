@@ -30,7 +30,6 @@ add_executable(editor
    source/shader.c
    source/filesystem.c
    source/text.c
-   source/layout.c
    source/renderer.c
    source/window.c
    source/fontmanager.c

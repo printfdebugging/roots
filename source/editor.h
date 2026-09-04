@@ -182,17 +182,6 @@ struct Font
    struct GlyphInfo *glyphCache;
 };
 
-/**!
- * Font Layout doesn't need to even have the Font with it. Font
- * is just a brush and it's the FontManager (in fontmanager.c)
- * readily provides one for each font.
- */
-struct LineLayout
-{
-   struct GlyphVertex *glyphQuadVertices;
-   u32 glyphQuadVerticesCount;
-};
-
 struct LineShaderUniforms
 {
    mat4s matViewProjection;
@@ -240,6 +229,8 @@ struct LineRenderer
     */
    struct LineShaderUniforms uniforms;
 
+   struct GlyphVertex *vertices;
+
    /* OpenGL primitives */
    u32 vao;
    u32 vbo;
@@ -270,14 +261,6 @@ struct Font *fontManagerGetFontWithRune(rune codepoint);
 void fontInit(struct Font *font, const char *filePath);
 void fontDeInit(struct Font *font);
 
-/************
- * layout.c *
- ***********/
-
-void lineLayoutInit(struct LineLayout *layout);
-void lineLayoutGlyphQuadsFromInfo(struct LineLayout *layout, struct LineGlyphInfo *lineGlyphInfo);
-void lineLayoutDeInit(struct LineLayout *layout);
-
 /**************
  * renderer.c *
  *************/
@@ -296,6 +279,7 @@ void lineLayoutDeInit(struct LineLayout *layout);
 void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader);
 void lineRendererDeInit(struct LineRenderer *renderer);
 void lineRendererRenderLine(struct LineRenderer *renderer, struct LineShader *shader);
+void lineRendererGlyphQuadsFromInfo(struct LineRenderer *renderer, struct LineGlyphInfo *lineGlyphInfo);
 
 void lineShaderInit(struct LineShader *shader);
 void lineShaderDeInit(struct LineShader *shader);
