@@ -10,7 +10,12 @@ static void _rendererUseShaderProgram(u32 shaderProgram);
 void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
 {
    lineShaderUniformsInit(&renderer->uniforms);
-   linePrimitivesInit(&renderer->primitives);
+
+   /* primitives */
+   glGenVertexArrays(1, &renderer->primitives.vao);
+   glGenBuffers(1, &renderer->primitives.vbo);
+   renderer->primitives.count    = 0;
+   renderer->primitives.uploaded = false;
 
    /**!
     * note: We do this here because it is only done once per
@@ -20,52 +25,19 @@ void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
     * warn: Though this might change later if we decide to
     * have struct of arrays rather than array of structs..
     */
-   struct LinePrimitives *primitives = &renderer->primitives;
-   glBindVertexArray(primitives->glyphQuadVerticesVAO);
-   glBindBuffer(GL_ARRAY_BUFFER, primitives->glyphQuadVerticesVBO);
+   glBindVertexArray(renderer->primitives.vao);
+   glBindBuffer(GL_ARRAY_BUFFER, renderer->primitives.vbo);
 
    lineShaderSetAttribLocations(shader);
 }
 
 void lineRendererDeInit(struct LineRenderer *renderer)
 {
-   linePrimitivesDeInit(&renderer->primitives);
-}
-
-void linePrimitivesInit(struct LinePrimitives *primitives)
-{
-   glGenVertexArrays(1, &primitives->glyphQuadVerticesVAO);
-   glGenBuffers(1, &primitives->glyphQuadVerticesVBO);
-   primitives->glyphQuadVerticesCount = 0;
-   primitives->glyphQuadsUploaded     = false;
-}
-
-void linePrimitivesDeInit(struct LinePrimitives *primitives)
-{
-   primitives->glyphQuadsUploaded     = false;
-   primitives->glyphQuadVerticesCount = 0;
-   glDeleteBuffers(1, &primitives->glyphQuadVerticesVBO);
-   glDeleteVertexArrays(1, &primitives->glyphQuadVerticesVAO);
-}
-
-void linePrimitivesUploadLayoutQuadsToGPU(struct LinePrimitives *primitives, struct LineLayout *layout)
-{
-   glBindVertexArray(primitives->glyphQuadVerticesVAO);
-   glBindBuffer(GL_ARRAY_BUFFER, primitives->glyphQuadVerticesVBO);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
-   primitives->glyphQuadVerticesCount = layout->glyphQuadVerticesCount;
-   primitives->glyphQuadsUploaded     = true;
-}
-
-void lineRendererRenderLine(struct LineRenderer *renderer, struct LineShader *shader)
-{
-   lineShaderUploadUniforms(shader, &renderer->uniforms);
-
-   if (renderer->primitives.glyphQuadsUploaded)
-   {
-      glBindVertexArray(renderer->primitives.glyphQuadVerticesVAO);
-      glDrawArrays(GL_TRIANGLES, 0, (i32) renderer->primitives.glyphQuadVerticesCount);
-   }
+   /* primitives */
+   renderer->primitives.uploaded = false;
+   renderer->primitives.count    = 0;
+   glDeleteBuffers(1, &renderer->primitives.vbo);
+   glDeleteVertexArrays(1, &renderer->primitives.vao);
 }
 
 /**!

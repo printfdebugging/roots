@@ -83,7 +83,14 @@ int main(int argc, char *argv[])
       fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) lineBytes, lineByteLen);
       lineLayoutGlyphQuadsFromInfo(&lineLayout[lineIdx], &lineGlyphInfo);
 
-      linePrimitivesUploadLayoutQuadsToGPU(&lineRenderer[lineIdx].primitives, &lineLayout[lineIdx]);
+      struct LineRenderer *renderer = &lineRenderer[lineIdx];
+      struct LineLayout *layout     = &lineLayout[lineIdx];
+
+      glBindVertexArray(renderer->primitives.vao);
+      glBindBuffer(GL_ARRAY_BUFFER, renderer->primitives.vbo);
+      glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
+      renderer->primitives.count    = layout->glyphQuadVerticesCount;
+      renderer->primitives.uploaded = true;
    }
 
    free(lineGlyphInfo.glyphInfo);
@@ -171,7 +178,14 @@ int main(int argc, char *argv[])
             .foreground        = (vec4s) { { ColorRGBAHex(0X839496FF) } },
          };
 
-         lineRendererRenderLine(&lineRenderer[lineIdx], lineShader);
+         struct LineRenderer *renderer = &lineRenderer[lineIdx];
+         lineShaderUploadUniforms(lineShader, &renderer->uniforms);
+
+         if (renderer->primitives.uploaded)
+         {
+            glBindVertexArray(renderer->primitives.vao);
+            glDrawArrays(GL_TRIANGLES, 0, (i32) renderer->primitives.count);
+         }
       }
 
       glfwSwapBuffers(window);

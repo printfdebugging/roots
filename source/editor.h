@@ -230,14 +230,6 @@ struct LineShader
    struct LineShaderUniformLocations uniformLocations;
 };
 
-struct LinePrimitives
-{
-   u32 glyphQuadVerticesVAO;
-   u32 glyphQuadVerticesVBO;
-   u32 glyphQuadVerticesCount;
-   b32 glyphQuadsUploaded;
-};
-
 /* note: todo: Is a renderer supposed to be stateless, if so
  * then this LineRenderer naming is wrong*/
 struct LineRenderer
@@ -252,7 +244,14 @@ struct LineRenderer
     * These are the primitives of a line, glyph quads mostly. These
     * do not change unless the line is edited.
     */
-   struct LinePrimitives primitives;
+
+   struct
+   {
+      u32 vao;
+      u32 vbo;
+      u32 count;
+      bool uploaded;
+   } primitives;
 };
 
 /************
@@ -319,10 +318,6 @@ void lineShaderSetAttribLocations(struct LineShader *shader);
 void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUniforms *uniforms);
 
 void lineShaderUniformsInit(struct LineShaderUniforms *uniforms);
-
-void linePrimitivesInit(struct LinePrimitives *primitives);
-void linePrimitivesDeInit(struct LinePrimitives *primitives);
-void linePrimitivesUploadLayoutQuadsToGPU(struct LinePrimitives *renderer, struct LineLayout *layout);
 
 /**********
  * text.c *
