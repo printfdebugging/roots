@@ -145,7 +145,8 @@ int main(int argc, char *argv[])
       if (lineCount < visibleLineCount)
          visibleLineCount = lineCount;
 
-      glClearColor(ColorRGBAHex(0X282C33FF));
+      glClearColor(ColorRGBAHex(0X002b36FF));
+
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
       for (u32 lineIdx = 0; lineIdx < visibleLineCount; ++lineIdx)
@@ -159,7 +160,7 @@ int main(int argc, char *argv[])
             .gamma             = 1.0f,
             .debug             = false,
             .stemDarkening     = false,
-            .foreground        = (vec4s) { { ColorRGBAHex(0XD8DEE9FF) } },
+            .foreground        = (vec4s) { { ColorRGBAHex(0X839496FF) } },
          };
 
          lineRendererRenderLine(&lineRenderer[lineIdx], lineShader);
@@ -210,7 +211,7 @@ void editorInit(struct Editor *editor)
    const char *fontFilePath = ASSETS_DIR "LilexNerdFont-Regular.ttf";
    editor->lineDirty        = false;
 
-   editor->fontSize     = 48.0f;
+   editor->fontSize     = 24.0f;
    editor->fontFilePath = stringDuplicate(fontFilePath);
 }
 
