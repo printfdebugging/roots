@@ -99,18 +99,10 @@ void lineShaderInit(struct LineShader *shader)
       .debugLoc             = -1,
       .stemDarkeningLoc     = -1,
    };
-}
 
-void lineShaderDeInit(struct LineShader *shader)
-{
-   glDeleteProgram(shader->hbShaderProgram);
-}
-
-void lineShaderCacheUniformLocations(struct LineShader *shader)
-{
    u32 program = shader->hbShaderProgram;
-
    _rendererUseShaderProgram(program);
+
    shader->uniformLocations = (struct LineShaderUniformLocations) {
       .matViewProjectionLoc = glGetUniformLocation(program, "u_matViewProjection"),
       .viewportLoc          = glGetUniformLocation(program, "u_viewport"),
@@ -122,6 +114,11 @@ void lineShaderCacheUniformLocations(struct LineShader *shader)
       .stemDarkeningLoc     = glGetUniformLocation(program, "u_stem_darkening"),
       .hbGpuAtlasLoc        = glGetUniformLocation(program, "hb_gpu_atlas"),
    };
+}
+
+void lineShaderDeInit(struct LineShader *shader)
+{
+   glDeleteProgram(shader->hbShaderProgram);
 }
 
 void lineShaderDeinit(struct LineShader *shader)

@@ -43,7 +43,6 @@ int main(int argc, char *argv[])
     */
    struct LineShader *lineShader = calloc(1, sizeof(struct LineShader));
    lineShaderInit(lineShader);
-   lineShaderCacheUniformLocations(lineShader);
 
    struct Text *text = textLoadFromFile(ASSETS_DIR "test.md");
    editor->text      = text;
