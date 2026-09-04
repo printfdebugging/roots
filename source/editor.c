@@ -48,16 +48,14 @@ int main(int argc, char *argv[])
    editor->text      = text;
    u32 lineCount     = textGetLineCount(text);
 
-   struct LineLayout *lineLayout     = calloc(lineCount, sizeof(struct LineLayout));
    struct LineRenderer *lineRenderer = calloc(lineCount, sizeof(struct LineRenderer));
 
-   if (!lineLayout || !lineRenderer)
+   if (!lineRenderer)
       perror("failed to allocate memory\n");
 
    struct LineGlyphInfo lineGlyphInfo = { 0 };
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
-      lineLayoutInit(&lineLayout[lineIdx]);
       lineRendererInit(&lineRenderer[lineIdx], lineShader);
 
       char *lineBytes = textGetUTF8Line(text, lineIdx);
@@ -80,16 +78,7 @@ int main(int argc, char *argv[])
        * quads which we directly pass on to the renderer.
        * */
       fontManagerMakeLineGlyphInfoSpec(&lineGlyphInfo, (char *) lineBytes, lineByteLen);
-      lineLayoutGlyphQuadsFromInfo(&lineLayout[lineIdx], &lineGlyphInfo);
-
-      struct LineRenderer *renderer = &lineRenderer[lineIdx];
-      struct LineLayout *layout     = &lineLayout[lineIdx];
-
-      glBindVertexArray(renderer->vao);
-      glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
-      glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
-      renderer->count    = layout->glyphQuadVerticesCount;
-      renderer->uploaded = true;
+      lineRendererGlyphQuadsFromInfo(&lineRenderer[lineIdx], &lineGlyphInfo);
    }
 
    free(lineGlyphInfo.glyphInfo);
@@ -210,11 +199,9 @@ int main(int argc, char *argv[])
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
       lineRendererDeInit(&lineRenderer[lineIdx]);
-      lineLayoutDeInit(&lineLayout[lineIdx]);
    }
 
    free(lineRenderer);
-   free(lineLayout);
    lineShaderDeInit(lineShader);
    free(lineShader);
 

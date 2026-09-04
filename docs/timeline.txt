@@ -7,8 +7,7 @@ Week 36 ~
    - [x] Fix the font/line height issue, take into account the font metrics
       - https://blog.krzyzanowskim.com/2020/07/10/coretext-swift-academy-part-2/ says lineHeight = ascent + descent
       - scale = fontSize/yScale is the scale which should then be used to interpret all font metrics.
-
-   - [ ] Unify LineRenderer & LineLayout, no need to separate those
+   - [x] Unify LineRenderer & LineLayout, no need to separate those
    - [ ] Add vertical scrolling & re-enable horizontal scrolling
    - [ ] For now just test ascii text
    - [ ] Substitute spaces, tabs, newlines etc. on the renderer side
