@@ -141,7 +141,15 @@ int main(int argc, char *argv[])
       int viewport[2] = { 0 };
       glGetIntegerv(GL_VIEWPORT, viewport);
 
-      u32 visibleLineCount = (u32) windowHeight / (u32) editor->fontSize;
+      /**!
+       * warn: let's not complicate things thinking about multiple fonts and
+       * different line heights, single heights single font is fine for now.
+       * let's make that work first.
+       */
+      f32 lineHeight = (f32) font->hbAscent - (f32) font->hbDescent;
+      lineHeight *= (f32) fontScale;
+
+      u32 visibleLineCount = (u32) windowHeight / (u32) lineHeight;
       if (lineCount < visibleLineCount)
          visibleLineCount = lineCount;
 
@@ -155,7 +163,7 @@ int main(int argc, char *argv[])
             .matViewProjection = mvp,
             .viewport          = { { viewport[0], viewport[1] } },
             .scale             = fontScale,
-            .position          = { .x = 0, .y = ((f32) windowHeight - (editor->fontSize * ((f32) lineIdx + 1))) },
+            .position          = { .x = 0, .y = ((f32) windowHeight - ((f32) lineHeight * ((f32) lineIdx + 1))) },
             .hbGpuAtlas        = atlas->textureUnit,
             .gamma             = 1.0f,
             .debug             = false,
