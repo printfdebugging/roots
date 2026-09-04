@@ -240,18 +240,11 @@ struct LineRenderer
     */
    struct LineShaderUniforms uniforms;
 
-   /**!
-    * These are the primitives of a line, glyph quads mostly. These
-    * do not change unless the line is edited.
-    */
-
-   struct
-   {
-      u32 vao;
-      u32 vbo;
-      u32 count;
-      bool uploaded;
-   } primitives;
+   /* OpenGL primitives */
+   u32 vao;
+   u32 vbo;
+   u32 count;
+   bool uploaded;
 };
 
 /************
