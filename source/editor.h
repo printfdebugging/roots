@@ -306,7 +306,6 @@ void lineRendererRenderLine(struct LineRenderer *renderer, struct LineShader *sh
 
 void lineShaderInit(struct LineShader *shader);
 void lineShaderDeInit(struct LineShader *shader);
-void lineShaderCacheUniformLocations(struct LineShader *shader);
 
 void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUniforms *uniforms);
 
