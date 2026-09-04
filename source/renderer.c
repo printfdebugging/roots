@@ -22,10 +22,10 @@ void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
    };
 
    /* primitives */
-   glGenVertexArrays(1, &renderer->primitives.vao);
-   glGenBuffers(1, &renderer->primitives.vbo);
-   renderer->primitives.count    = 0;
-   renderer->primitives.uploaded = false;
+   glGenVertexArrays(1, &renderer->vao);
+   glGenBuffers(1, &renderer->vbo);
+   renderer->count    = 0;
+   renderer->uploaded = false;
 
    /**!
     * note: We do this here because it is only done once per
@@ -35,8 +35,8 @@ void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
     * warn: Though this might change later if we decide to
     * have struct of arrays rather than array of structs..
     */
-   glBindVertexArray(renderer->primitives.vao);
-   glBindBuffer(GL_ARRAY_BUFFER, renderer->primitives.vbo);
+   glBindVertexArray(renderer->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
 
    /* set attribute locations */
 
@@ -79,10 +79,10 @@ void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
 void lineRendererDeInit(struct LineRenderer *renderer)
 {
    /* primitives */
-   renderer->primitives.uploaded = false;
-   renderer->primitives.count    = 0;
-   glDeleteBuffers(1, &renderer->primitives.vbo);
-   glDeleteVertexArrays(1, &renderer->primitives.vao);
+   renderer->uploaded = false;
+   renderer->count    = 0;
+   glDeleteBuffers(1, &renderer->vbo);
+   glDeleteVertexArrays(1, &renderer->vao);
 }
 
 void lineShaderInit(struct LineShader *shader)

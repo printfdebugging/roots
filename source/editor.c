@@ -85,11 +85,11 @@ int main(int argc, char *argv[])
       struct LineRenderer *renderer = &lineRenderer[lineIdx];
       struct LineLayout *layout     = &lineLayout[lineIdx];
 
-      glBindVertexArray(renderer->primitives.vao);
-      glBindBuffer(GL_ARRAY_BUFFER, renderer->primitives.vbo);
+      glBindVertexArray(renderer->vao);
+      glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
       glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->glyphQuadVerticesCount, layout->glyphQuadVertices, GL_STATIC_DRAW);
-      renderer->primitives.count    = layout->glyphQuadVerticesCount;
-      renderer->primitives.uploaded = true;
+      renderer->count    = layout->glyphQuadVerticesCount;
+      renderer->uploaded = true;
    }
 
    free(lineGlyphInfo.glyphInfo);
@@ -180,10 +180,10 @@ int main(int argc, char *argv[])
          struct LineRenderer *renderer = &lineRenderer[lineIdx];
          lineShaderUploadUniforms(lineShader, &renderer->uniforms);
 
-         if (renderer->primitives.uploaded)
+         if (renderer->uploaded)
          {
-            glBindVertexArray(renderer->primitives.vao);
-            glDrawArrays(GL_TRIANGLES, 0, (i32) renderer->primitives.count);
+            glBindVertexArray(renderer->vao);
+            glDrawArrays(GL_TRIANGLES, 0, (i32) renderer->count);
          }
       }
 
