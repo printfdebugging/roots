@@ -265,6 +265,7 @@ struct LineRenderer
 /* editor.c */
 void editorInit(struct Editor *editor);
 void editorCalcFrameTime(struct Editor *editor);
+void editorRun(struct Editor *editor);
 void editorDeInit(struct Editor *editor);
 
 /* fontmanager.c */
