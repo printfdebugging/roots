@@ -6,19 +6,8 @@
 
 #include "editor.h"
 
-/**!
- * later:
- * we don't need to support unicode this early, we are using utf8
- * data structures, but from that to rendering unicode perfectly is
- * a really long journey and we can do a lot of things before we nail
- * that down and we should go this route..
- */
-int main(int argc, char *argv[])
+void editorRun(struct Editor *editor)
 {
-   (void) argc;
-   (void) argv;
-
-   struct Editor *editor = calloc(1, sizeof(struct Editor));
    editorInit(editor);
 
    /**!
@@ -188,8 +177,6 @@ int main(int argc, char *argv[])
 
    windowDestroy(window);
    free(editor);
-
-   return EXIT_SUCCESS;
 }
 
 void editorInit(struct Editor *editor)

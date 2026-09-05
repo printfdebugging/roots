@@ -26,6 +26,7 @@ set(CMAKE_C_STANDARD 23)
 add_compile_options(-std=gnu2x)
 
 add_executable(editor
+   source/main.c
    source/editor.c
    source/shader.c
    source/filesystem.c
