@@ -131,11 +131,56 @@ struct GlyphAtlas
  */
 struct Text;
 
+struct Buffer
+{
+   u32 windowId;
+   u32 rendererId;
+   u32 textId;
+
+   /* Buffer specific state. */
+
+   /**!
+    * These are not to be overwritten directly. Only
+    * return values from a Text object's API calls should
+    * be assifned to these.
+    */
+   u32 cursorLine;
+   u32 cursorColumn;
+
+   /**!
+    * The horizontal and vertical scroll offsets of a buffer.
+    * These are used to construct the MVP matrix for the buffer.
+    */
+   u32 hOffset;
+   u32 vOffset;
+
+   /**!
+    * The `Editor` holds the objects and the buffers just have
+    * the IDs of their objects in Editor's arrays.
+    */
+   struct Editor *editor;
+};
+
 struct Editor
 {
+   /* arrays */
+   struct Text *text;
+   struct GLFWwindow *window;
+   struct LineRenderer *lineRenderer;
+   struct LineShader *lineShader; /* shared among Buffer objects */
+   struct Buffer *textBuffer;     /* just a bunch of indices into Editor's object arrays */
+
+   /* counts */
+   u32 textCount;
+   u32 lineRendererCount;
+   u32 windowCount;
+   u32 bufferCount;
+
+   /* config */
    f32 fontSize;
    char *fontFilePath;
 
+   /* frame book-keeping */
    f64 lastTime;
    f64 timeDelta;
 };
@@ -194,8 +239,6 @@ struct LineShader
    struct LineShaderUniformLocations uniformLocations;
 };
 
-/* note: todo: Is a renderer supposed to be stateless, if so
- * then this LineRenderer naming is wrong*/
 struct LineRenderer
 {
    /**!
