@@ -55,6 +55,7 @@
 #define ArraySize(t) (sizeof(t) / sizeof(*t))
 
 #define DEFAULT_FONT_FILE_PATH ASSETS_DIR "LilexNerdFont-Regular.ttf"
+#define DEFAULT_FONT_SIZE      24
 
 /* type aliases */
 typedef uint8_t u8;
@@ -179,6 +180,7 @@ struct Editor
    /* config */
    f32 fontSize;
    char *fontFilePath;
+   bool initialized;
 
    /* frame book-keeping */
    f64 lastTime;

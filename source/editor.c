@@ -195,8 +195,10 @@ int main(int argc, char *argv[])
 void editorInit(struct Editor *editor)
 {
    /* todo: config should overwrite this */
-   editor->fontSize     = 24.0f;
+   editor->fontSize     = DEFAULT_FONT_SIZE;
    editor->fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH);
+
+   editor->initialized = true;
 }
 
 void editorCalcFrameTime(struct Editor *editor)
