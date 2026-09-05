@@ -103,7 +103,7 @@ void lineRendererGlyphQuadsFromInfo(struct LineRenderer *renderer, struct LineGl
    struct Point glyphPosition = { .x = 0, .y = 0 };
    for (u32 glyphIdx = 0; glyphIdx < lineGlyphInfo->glyphCount; ++glyphIdx)
    {
-      bool hasCursor              = lineGlyphInfo->cursorColumn == glyphIdx; /* naive approach */
+      [[maybe_unused]] bool hasCursor;
       struct GlyphInfo *glyphInfo = &lineGlyphInfo->glyphInfo[glyphIdx];
 
       /**********************
@@ -130,7 +130,8 @@ void lineRendererGlyphQuadsFromInfo(struct LineRenderer *renderer, struct LineGl
             .ny          = cy ? -1.f : 1.f,
             .emPerPos    = 1.0,
             .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
-            .hasCursor   = hasCursor,
+            .hasCursor   = false,
+            /* next: fix this. for now, nothing has a cursor */
          };
       }
 

@@ -162,10 +162,6 @@ struct LineGlyphInfo
 {
    struct GlyphInfo *glyphInfo;
    u32 glyphCount;
-
-   /* note: naive implementation for now */
-   u32 cursorLine;
-   u32 cursorColumn;
 };
 
 struct Font
