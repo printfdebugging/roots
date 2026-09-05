@@ -85,7 +85,7 @@ void fontManagerDeInit()
    fontManager.initialized = false;
 }
 
-void fontManagerMakeLineGlyphInfoSpec(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen)
+void fontManagerLayoutLine(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen)
 {
    (void) lineByteLen;
    if (!fontManager.initialized)
