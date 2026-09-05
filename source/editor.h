@@ -165,7 +165,7 @@ struct Buffer
 struct Editor
 {
    /* arrays */
-   struct Text *text;
+   struct Text **text;
    struct GLFWwindow *window;
    struct LineRenderer *lineRenderer;
    struct LineShader *lineShader; /* shared among Buffer objects */
@@ -267,6 +267,7 @@ bool editorInit(struct Editor *editor);
 void editorCalcFrameTime(struct Editor *editor);
 bool editorRun(struct Editor *editor);
 bool editorDeInit(struct Editor *editor);
+i32 editorLoadFile(struct Editor *editor, const char *filePath);
 
 /* fontmanager.c */
 void fontManagerInit(char *editorFontPath);
