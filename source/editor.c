@@ -204,13 +204,12 @@ i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
       return -1;
 
    struct Text *text = textLoadFromFile(filePath);
-
    if (!text)
       return -1;
 
-   u32 count    = editor->textCount++;
-   editor->text = realloc(editor->text, sizeof(struct Text *) * (count + 1));
+   u32 count = editor->textCount++;
 
+   editor->text = realloc(editor->text, sizeof(struct Text *) * (count + 1));
    if (!editor->text)
       return -1;
 
