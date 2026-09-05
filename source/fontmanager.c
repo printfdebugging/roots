@@ -39,6 +39,7 @@ struct FontManager
 };
 
 static struct FontManager fontManager = { 0 };
+struct GlyphInfo *_glyphInfo          = NULL;
 
 void _fontManagerGlyphAtlasInit();
 void _fontManagerGlyphAtlasDeInit();
@@ -84,7 +85,7 @@ void fontManagerDeInit()
    fontManager.initialized = false;
 }
 
-void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char *lineUTF8, u64 lineByteLen)
+void fontManagerMakeLineGlyphInfoSpec(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen)
 {
    (void) lineByteLen;
    if (!fontManager.initialized)
@@ -98,14 +99,13 @@ void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char 
    hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
    hb_shape(font->hbFont, buffer, NULL, 0);
 
-   u32 glyphCount              = 0;
-   hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &glyphCount);
+   u32 hbGlyphCount            = 0;
+   hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
 
-   lineGlyphInfo->glyphInfo  = realloc(lineGlyphInfo->glyphInfo, glyphCount * sizeof(struct GlyphInfo));
-   lineGlyphInfo->glyphCount = glyphCount;
-   memset(lineGlyphInfo->glyphInfo, 0, glyphCount * sizeof(struct GlyphInfo));
+   _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct GlyphInfo));
+   memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct GlyphInfo));
 
-   for (u32 glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
+   for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
    {
       hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
       struct GlyphInfo *glyph   = &font->glyphCache[glyphIndex];
@@ -147,10 +147,67 @@ void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char 
          }
       }
 
-      lineGlyphInfo->glyphInfo[glyphIdx] = *glyph;
+      _glyphInfo[glyphIdx] = *glyph;
    }
 
    hb_buffer_destroy(buffer);
+
+   renderer->count    = hbGlyphCount * 6;
+   renderer->vertices = realloc(renderer->vertices, renderer->count * sizeof(struct GlyphVertex));
+
+   struct Point glyphPosition = { .x = 0, .y = 0 };
+   for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
+   {
+      [[maybe_unused]] bool hasCursor;
+      struct GlyphInfo *glyphInfo = &_glyphInfo[glyphIdx];
+
+      /**********************
+       * create glyph quads *
+       *********************/
+
+      glyphPosition.x += glyphInfo->extents.xMin;
+      glyphPosition.y += 0;
+
+      struct GlyphVertex glyphQuadCorners[4];
+      for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
+      {
+         i32 cx = (cornerIdx >> 1) & 1;
+         i32 cy = cornerIdx & 1;
+         f64 ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
+         f64 ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
+
+         glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
+            .x           = (f32) glyphPosition.x,
+            .y           = (f32) glyphPosition.y,
+            .tx          = (f32) ex,
+            .ty          = (f32) ey,
+            .nx          = cx ? 1.f : -1.f,
+            .ny          = cy ? -1.f : 1.f,
+            .emPerPos    = 1.0,
+            .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
+            .hasCursor   = false,
+            /* next: fix this. for now, nothing has a cursor */
+         };
+      }
+
+      u32 glyphQuadOffset = glyphIdx * 6;
+
+      renderer->vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
+      renderer->vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
+      renderer->vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
+      renderer->vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
+      renderer->vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
+      renderer->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
+
+      glyphPosition.x += glyphInfo->extents.xMax;
+      glyphPosition.y += 0;
+   }
+
+   glBindVertexArray(renderer->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * renderer->count, renderer->vertices, GL_STATIC_DRAW);
+   renderer->count    = renderer->count;
+   renderer->uploaded = true;
 }
 
 struct GlyphAtlas *fontManagerGetGlyphAtlas()

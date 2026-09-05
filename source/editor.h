@@ -158,12 +158,6 @@ struct Editor
    f64 timeDelta;
 };
 
-struct LineGlyphInfo
-{
-   struct GlyphInfo *glyphInfo;
-   u32 glyphCount;
-};
-
 struct Font
 {
    char *fontPath;
@@ -255,7 +249,7 @@ void editorDeInit(struct Editor *editor);
 
 void fontManagerInit(char *editorFontPath);
 void fontManagerDeInit();
-void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char *lineUTF8, u64 lineByteLen);
+void fontManagerMakeLineGlyphInfoSpec(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen);
 struct GlyphAtlas *fontManagerGetGlyphAtlas();
 struct Font *fontManagerGetFont(const char *filePath);
 struct Font *fontManagerGetDefaultFont();
@@ -282,7 +276,6 @@ void fontDeInit(struct Font *font);
 void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader);
 void lineRendererDeInit(struct LineRenderer *renderer);
 void lineRendererRenderLine(struct LineRenderer *renderer, struct LineShader *shader);
-void lineRendererGlyphQuadsFromInfo(struct LineRenderer *renderer, struct LineGlyphInfo *lineGlyphInfo);
 
 void lineShaderInit(struct LineShader *shader);
 void lineShaderDeInit(struct LineShader *shader);
