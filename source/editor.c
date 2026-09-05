@@ -32,7 +32,9 @@ bool editorRun(struct Editor *editor)
    struct LineShader *lineShader = calloc(1, sizeof(struct LineShader));
    lineShaderInit(lineShader);
 
-   struct Text *text = textLoadFromFile(ASSETS_DIR "test.md");
+   i32 textId = editorLoadFile(editor, ASSETS_DIR "test.md");
+
+   struct Text *text = editor->text[textId];
    u32 lineCount     = textGetLineCount(text);
 
    struct LineRenderer *lineRenderer = calloc(lineCount, sizeof(struct LineRenderer));
@@ -152,9 +154,6 @@ bool editorRun(struct Editor *editor)
    lineShaderDeInit(lineShader);
    free(lineShader);
 
-   textDestroy(text);
-   free(text);
-
    fontManagerDeInit();
    windowDestroy(window);
 
@@ -184,5 +183,37 @@ void editorCalcFrameTime(struct Editor *editor)
 bool editorDeInit(struct Editor *editor)
 {
    free(editor->fontFilePath);
+   for (u32 idx = 0; idx < editor->textCount; ++idx)
+   {
+      textDestroy(editor->text[idx]);
+      free(editor->text[idx]);
+   }
+
+   free(editor->text);
+
    return true;
+}
+
+/**!
+ * Loads the text file from `filePath` into a `Text` object,
+ * and returns an index to it, or `-1` on error.
+ */
+i32 editorLoadFile(struct Editor *editor, const char *filePath)
+{
+   if (!filePath)
+      return -1;
+
+   struct Text *text = textLoadFromFile(filePath);
+
+   if (!text)
+      return -1;
+
+   u32 count    = editor->textCount++;
+   editor->text = realloc(editor->text, sizeof(struct Text *) * (count + 1));
+
+   if (!editor->text)
+      return -1;
+
+   editor->text[count] = text;
+   return (i32) count;
 }
