@@ -18,9 +18,9 @@ bool editorRun(struct Editor *editor)
       .visible     = true,
       .fbResizeFn  = windowResize,
       .keyFn       = keyPress,
+      .userdata    = editor,
    });
 
-   windowSetUserDataPtr(window, editor);
    fontManagerInit(editor->fontFilePath);
 
    /**!
