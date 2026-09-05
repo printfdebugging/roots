@@ -186,18 +186,17 @@ void editorCalcFrameTime(struct Editor *editor)
 
 bool editorDeInit(struct Editor *editor)
 {
-   free(editor->fontFilePath);
    for (u32 idx = 0; idx < editor->textCount; ++idx)
-   {
       textDestroy(editor->text[idx]);
+   for (u32 idx = 0; idx < editor->textCount; ++idx)
       free(editor->text[idx]);
-   }
 
    for (u32 idx = 0; idx < editor->windowCount; ++idx)
       glfwDestroyWindow(editor->window[idx]);
 
    free(editor->text);
    free(editor->window);
+   free(editor->fontFilePath);
 
    return true;
 }
