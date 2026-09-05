@@ -12,6 +12,7 @@ Week 36 ~
    - [ ] For now just test ascii text
    - [ ] Substitute spaces, tabs, newlines etc. on the renderer side
    - [ ] Add some performance testing constructs
+   - [ ] Only layout/render what's visible..
 
 ------------------------------------------------------------------------------------------------------------------------
 @printfdebugging                           Fri Sep  4 05:13:59 AM IST 2026                  *timeline.txt-2026-09-04-0513*
@@ -37,6 +38,7 @@ Week 34                                                                         
 
 Tasks Bucketlist                                                                           *timeline.txt-tasks-bucketlist* ~
    - [ ] Inline image previews (single|centered|gallary|row)
+   - [ ] Think from the `struct of Arrays` Arcitecture POV (dod)
    - [ ] Introduce a Buffer/Frame & pipeline dataflow
    - [ ] Virtual Lines and Characters (Read Only)
    - [ ] Line Numbers Implementation
