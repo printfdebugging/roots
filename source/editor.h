@@ -119,6 +119,13 @@ struct GlyphAtlas
    i32 textureUnit;
    u32 textureBufferObject;
    u32 capacityBytes;
+
+   /**!
+    * note: This doesn't start at 0, but at `TEXEL_SIZE`. Empty glyphs
+    * don't have any glyph data, so their `GlyphInfo.atlasOffset` is set
+    * to 0, and if we start at 0 here, that would then use the first uploaded
+    * glyph for the spaces..
+    */
    u32 cursorOffsetBytes;
 };
 
