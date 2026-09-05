@@ -194,10 +194,9 @@ int main(int argc, char *argv[])
 
 void editorInit(struct Editor *editor)
 {
-   const char *fontFilePath = ASSETS_DIR "LilexNerdFont-Regular.ttf";
-
+   /* todo: config should overwrite this */
    editor->fontSize     = 24.0f;
-   editor->fontFilePath = stringDuplicate(fontFilePath);
+   editor->fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH);
 }
 
 void editorCalcFrameTime(struct Editor *editor)
