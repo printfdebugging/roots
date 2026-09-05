@@ -61,9 +61,6 @@ int main(int argc, char *argv[])
       char *lineBytes = textGetUTF8Line(text, lineIdx);
       u64 lineByteLen = strlen(lineBytes);
 
-      lineGlyphInfo.cursorLine   = textGetCursorLine(text);
-      lineGlyphInfo.cursorColumn = textGetCursorColumn(text);
-
       /**!
        * note: todo:
        * These two steps should be merged. Simply put, the font manager
