@@ -129,12 +129,8 @@ int main(int argc, char *argv[])
       mvp       = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
       mvp       = glms_translate(mvp, (vec3s) { { -((f32) xScrollOffset), 0.0f, 0.0f } }); /* not set as of now */
 
-      /**!
-       * warning: fixme: This is always 0. Not sure why.
-       * We call `glViewport` in windowResize, see window.c
-       */
-      int viewport[2] = { 0 };
-      glGetIntegerv(GL_VIEWPORT, viewport);
+      ivec4s viewport = { 0 };
+      glGetIntegerv(GL_VIEWPORT, viewport.raw);
 
       /**!
        * warn: let's not complicate things thinking about multiple fonts and
@@ -156,7 +152,7 @@ int main(int argc, char *argv[])
       {
          lineRenderer[lineIdx].uniforms = (struct LineShaderUniforms) {
             .matViewProjection = mvp,
-            .viewport          = { { viewport[0], viewport[1] } },
+            .viewport          = viewport,
             .scale             = fontScale,
             .position          = { .x = 0, .y = ((f32) windowHeight - ((f32) lineHeight * ((f32) lineIdx + 1))) },
             .hbGpuAtlas        = atlas->textureUnit,
