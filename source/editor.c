@@ -10,15 +10,16 @@ bool editorRun(struct Editor *editor)
 {
    editorInit(editor);
 
-   /**!
-    * warning: fixme:
-    * We need to initialize windowing before anything GPU
-    * related because that is what loads the glad pointers.
-    *
-    * - FontManager
-    * - Shaders
-    */
-   GLFWwindow *window = windowCreate();
+   GLFWwindow *window = windowCreate((struct GLFWwindowOptions) {
+      .width       = 800,
+      .height      = 600,
+      .title       = "GLFWwindow",
+      .transparent = true,
+      .visible     = true,
+      .fbResizeFn  = windowResize,
+      .keyFn       = keyPress,
+   });
+
    windowSetUserDataPtr(window, editor);
    u32 xScrollOffset = 0;
 

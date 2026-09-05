@@ -37,7 +37,7 @@ void windowSetUserDataPtr(GLFWwindow *window, void *userData)
    glfwSetWindowUserPointer(window, userData);
 }
 
-GLFWwindow *windowCreate()
+GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
 {
    /*************************
     * window initialization *
@@ -46,19 +46,19 @@ GLFWwindow *windowCreate()
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-   glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, GLFW_TRUE);
+   glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, opts.transparent);
    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-   glfwWindowHint(GLFW_VISIBLE, GLFW_TRUE);
+   glfwWindowHint(GLFW_VISIBLE, opts.visible);
    glfwWindowHint(GLFW_SAMPLES, 4);
 #ifdef __APPLE__
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
 
-   const i32 windowWidth   = 1600;
-   const i32 windowHeight  = 800;
-   const char *windowTitle = "GLFWwindow";
+   const i32 windowWidth   = opts.width ? opts.width : 1600;
+   const i32 windowHeight  = opts.height ? opts.height : 800;
+   const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
 
-   GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, NULL);
+   GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, opts.shared);
    glfwMakeContextCurrent(window);
    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -76,10 +76,12 @@ GLFWwindow *windowCreate()
    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    glLineWidth(2);
 
-   glfwSetCursorPosCallback(window, mouseMove);
-   glfwSetScrollCallback(window, mouseScroll);
-   glfwSetFramebufferSizeCallback(window, windowResize);
-   glfwSetKeyCallback(window, keyPress);
+   if (opts.curPosFn) glfwSetCursorPosCallback(window, opts.curPosFn);
+   if (opts.scrollFn) glfwSetScrollCallback(window, opts.scrollFn);
+   if (opts.fbResizeFn) glfwSetFramebufferSizeCallback(window, opts.fbResizeFn);
+   if (opts.keyFn) glfwSetKeyCallback(window, opts.keyFn);
+   if (opts.userdata) glfwSetWindowUserPointer(window, opts.userdata);
+
    return window;
 }
 

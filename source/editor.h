@@ -308,8 +308,24 @@ char *readFileContents(const char *filPath);
 bool shaderGetCompileStatus(u32 shaderObject);
 bool shaderGetLinkStatus(u32 shaderProgram);
 
+struct GLFWwindowOptions
+{
+   bool visible;
+   bool transparent;
+   i32 width;
+   i32 height;
+   const char *title;
+   GLFWwindow *shared;
+   void *userdata;
+
+   GLFWframebuffersizefun fbResizeFn;
+   GLFWscrollfun scrollFn;
+   GLFWcursorposfun curPosFn;
+   GLFWkeyfun keyFn;
+};
+
 /* window.c */
-GLFWwindow *windowCreate();
+GLFWwindow *windowCreate(struct GLFWwindowOptions opts);
 void windowDestroy(GLFWwindow *window);
 void windowSetUserDataPtr(GLFWwindow *window, void *userData);
 void mouseScroll(GLFWwindow *window, f64 x, f64 y);
