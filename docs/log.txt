@@ -1,5 +1,21 @@
 *log.txt*
 
+------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Sun Sep  6 02:21:09 AM IST 2026                       *log.txt-2026-09-06-0221*
+
+   The codebase evolves gradually, and if you as a developer are able to see 10 steps ahead where the code is in a
+   much better condition/arcitecture, then there's this temptation to just put the existing code away in a temporary
+   file and start afresh. That's not how it works. That often leads to messy commits where you break things and
+   then spend time figuring out what went wrong.. And this is in general part of a larger tendency of running away
+   from things, from a mess which you created in the first place (usually).
+
+   The way out of it is to beat the codebase into shape one hammer at a time, one bend at a time.. One who can see
+   10 steps ahead, with some effort, can also put down 10 simple steps to reach there. All 10 steps might not come
+   to you in one go, but all you need is a direction and 1-2 steps in vision..
+
+   This way, the code still works at the end of each step. The throw away approach is bad because doing 10 things
+   at the same time creates another mess, often much worst than what you had before that..
+
 --------------------------------------------------------------------------
 @printfdebugging                           Mon Aug 31 12:04:26 AM IST 2026
 
