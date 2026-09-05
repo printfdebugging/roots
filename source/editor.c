@@ -45,7 +45,6 @@ int main(int argc, char *argv[])
    lineShaderInit(lineShader);
 
    struct Text *text = textLoadFromFile(ASSETS_DIR "test.md");
-   editor->text      = text;
    u32 lineCount     = textGetLineCount(text);
 
    struct LineRenderer *lineRenderer = calloc(lineCount, sizeof(struct LineRenderer));
@@ -181,6 +180,9 @@ int main(int argc, char *argv[])
    lineShaderDeInit(lineShader);
    free(lineShader);
 
+   textDestroy(text);
+   free(text);
+
    editorDeInit(editor);
    fontManagerDeInit();
 
@@ -193,7 +195,6 @@ int main(int argc, char *argv[])
 void editorInit(struct Editor *editor)
 {
    const char *fontFilePath = ASSETS_DIR "LilexNerdFont-Regular.ttf";
-   editor->lineDirty        = false;
 
    editor->fontSize     = 24.0f;
    editor->fontFilePath = stringDuplicate(fontFilePath);
@@ -209,6 +210,4 @@ void editorCalcFrameTime(struct Editor *editor)
 void editorDeInit(struct Editor *editor)
 {
    free(editor->fontFilePath);
-   textDestroy(editor->text);
-   free(editor->text);
 }

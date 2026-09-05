@@ -131,11 +131,6 @@ struct Text;
 
 struct Editor
 {
-   bool lineDirty;
-
-   /* note: add text here temporarily to access in window */
-   struct Text *text;
-
    /***********************
     * editor - core state *
     **********************/
