@@ -32,7 +32,7 @@ bool editorRun(struct Editor *editor)
    struct LineShader *lineShader = calloc(1, sizeof(struct LineShader));
    lineShaderInit(lineShader);
 
-   i32 textId = editorLoadFile(editor, ASSETS_DIR "test.md");
+   i32 textId = editorLoadTextFile(editor, ASSETS_DIR "test.md");
 
    struct Text *text = editor->text[textId];
    u32 lineCount     = textGetLineCount(text);
@@ -198,7 +198,7 @@ bool editorDeInit(struct Editor *editor)
  * Loads the text file from `filePath` into a `Text` object,
  * and returns an index to it, or `-1` on error.
  */
-i32 editorLoadFile(struct Editor *editor, const char *filePath)
+i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
 {
    if (!filePath)
       return -1;

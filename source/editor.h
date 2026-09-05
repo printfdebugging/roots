@@ -267,7 +267,7 @@ bool editorInit(struct Editor *editor);
 void editorCalcFrameTime(struct Editor *editor);
 bool editorRun(struct Editor *editor);
 bool editorDeInit(struct Editor *editor);
-i32 editorLoadFile(struct Editor *editor, const char *filePath);
+i32 editorLoadTextFile(struct Editor *editor, const char *filePath);
 
 /* fontmanager.c */
 void fontManagerInit(char *editorFontPath);
