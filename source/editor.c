@@ -21,8 +21,6 @@ bool editorRun(struct Editor *editor)
    });
 
    windowSetUserDataPtr(window, editor);
-   u32 xScrollOffset = 0;
-
    fontManagerInit(editor->fontFilePath);
 
    /**!
@@ -96,7 +94,7 @@ bool editorRun(struct Editor *editor)
 
       mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
       mvp       = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
-      mvp       = glms_translate(mvp, (vec3s) { { -((f32) xScrollOffset), 0.0f, 0.0f } }); /* not set as of now */
+      mvp       = glms_translate(mvp, (vec3s) { { 0.0f, 0.0f, 0.0f } }); /* not set as of now */
 
       ivec4s viewport = { 0 };
       glGetIntegerv(GL_VIEWPORT, viewport.raw);
@@ -142,22 +140,6 @@ bool editorRun(struct Editor *editor)
       }
 
       glfwSwapBuffers(window);
-
-      /**!
-       * later:
-       * let's ignore horizontal scrolling for now. we can always take care of it later on..
-       * same for vertical scrolling.. incremntal steps, let's show the lines first
-       */
-      // struct Font *font = fontManagerGetDefaultFont();
-      // u32 cursorColumn  = textGetCursorColumn(text);
-      // u32 cursorLeftPx  = (u32) (layout->glyphQuadVertices[cursorColumn * 6].x * lineRenderer->uniforms.scale);
-      // u32 cursorWidthPx = (u32) (font->glyphCache[cursorColumn].extents.xMax * lineRenderer->uniforms.scale);
-      // u32 cursorRightPx = cursorLeftPx + cursorWidthPx;
-      //
-      // if (xScrollOffset + (u32) windowWidth < cursorRightPx)
-      //    xScrollOffset = cursorRightPx - (u32) windowWidth;
-      // if (cursorLeftPx < xScrollOffset)
-      //    xScrollOffset = cursorLeftPx;
    }
 
    /* I think here we can use struct of arrays rather than array of structs.. */
