@@ -8,6 +8,7 @@ int main(int argc, char *argv[])
    (void) argv;
 
    struct Editor editor;
-   editorRun(&editor);
-   return 0;
+   if (!editorInit(&editor) || !editorRun(&editor) || !editorDeInit(&editor))
+      return EXIT_FAILURE;
+   return EXIT_SUCCESS;
 }

@@ -263,10 +263,10 @@ struct LineRenderer
 };
 
 /* editor.c */
-void editorInit(struct Editor *editor);
+bool editorInit(struct Editor *editor);
 void editorCalcFrameTime(struct Editor *editor);
-void editorRun(struct Editor *editor);
-void editorDeInit(struct Editor *editor);
+bool editorRun(struct Editor *editor);
+bool editorDeInit(struct Editor *editor);
 
 /* fontmanager.c */
 void fontManagerInit(char *editorFontPath);
