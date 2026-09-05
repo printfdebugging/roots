@@ -113,24 +113,5 @@ void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
    (void) scancode;
    (void) mods;
-   struct Editor *editor = glfwGetWindowUserPointer(window);
-
-   bool dirty = false;
-
-   /**!
-    * later:
-    * There should be a way to connect callbacks to the particular text buffer
-    * which triggered those. So either we connect these to the buffer
-    * object itself, such that these callbacks have access to the text object
-    * like they do at the moment, or more appropriately we have a frame which
-    * would get these events and then pass on to the buffer's ??keymap layer??
-    * and then that would handle the input ??somehow??
-    */
-   if (key == GLFW_KEY_LEFT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-      dirty |= textMoveCursorLeft(editor->text);
-
-   if (key == GLFW_KEY_RIGHT && (action == GLFW_PRESS || action == GLFW_REPEAT))
-      dirty |= textMoveCursorRight(editor->text);
-
-   editor->lineDirty = dirty;
+   [[maybe_unused]] struct Editor *editor = glfwGetWindowUserPointer(window);
 }

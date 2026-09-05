@@ -2,6 +2,13 @@
 
 #include "editor.h"
 
+/**!
+ * Duplicates the string, i.e. allocates memory for the bytes and a `\0`,
+ * and then uses `strcpy` to copy the string to the allocated memory.
+ *
+ * The caller is responsible for managing the `lifetime` of the returned
+ * string i.e. freeing it. Returns `NULL` on error.
+ */
 char *stringDuplicate(const char *str)
 {
    u64 strLen = strlen(str);

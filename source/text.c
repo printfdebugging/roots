@@ -12,6 +12,13 @@ struct Text
    char **lines;
    u32 lineCount;
 
+   /*!
+    * next: move these outside, a cursor
+    * is a property of the gui buffer, not the text
+    * itself. it's an abstraction on top of text and
+    * therefore doesn't belong here
+    */
+
    /**!
     * note: It is assumed that whatever chanes these variables
     * takes them from one consistent state to another.. they
