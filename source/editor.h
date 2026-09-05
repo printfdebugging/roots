@@ -162,6 +162,22 @@ struct Buffer
    struct Editor *editor;
 };
 
+struct GLFWwindowOptions
+{
+   bool visible;
+   bool transparent;
+   i32 width;
+   i32 height;
+   const char *title;
+   GLFWwindow *shared;
+   void *userdata;
+
+   GLFWframebuffersizefun fbResizeFn;
+   GLFWscrollfun scrollFn;
+   GLFWcursorposfun curPosFn;
+   GLFWkeyfun keyFn;
+};
+
 struct Editor
 {
    /* arrays */
@@ -268,6 +284,7 @@ void editorCalcFrameTime(struct Editor *editor);
 bool editorRun(struct Editor *editor);
 bool editorDeInit(struct Editor *editor);
 i32 editorLoadTextFile(struct Editor *editor, const char *filePath);
+i32 editorCreateWindow(struct Editor *editor, struct GLFWwindowOptions opts);
 
 /* fontmanager.c */
 void fontManagerInit(char *editorFontPath);
@@ -308,22 +325,6 @@ char *readFileContents(const char *filPath);
 /* shader.c */
 bool shaderGetCompileStatus(u32 shaderObject);
 bool shaderGetLinkStatus(u32 shaderProgram);
-
-struct GLFWwindowOptions
-{
-   bool visible;
-   bool transparent;
-   i32 width;
-   i32 height;
-   const char *title;
-   GLFWwindow *shared;
-   void *userdata;
-
-   GLFWframebuffersizefun fbResizeFn;
-   GLFWscrollfun scrollFn;
-   GLFWcursorposfun curPosFn;
-   GLFWkeyfun keyFn;
-};
 
 /* window.c */
 GLFWwindow *windowCreate(struct GLFWwindowOptions opts);
