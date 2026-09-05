@@ -249,7 +249,7 @@ void editorDeInit(struct Editor *editor);
 
 void fontManagerInit(char *editorFontPath);
 void fontManagerDeInit();
-void fontManagerMakeLineGlyphInfoSpec(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen);
+void fontManagerLayoutLine(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen);
 struct GlyphAtlas *fontManagerGetGlyphAtlas();
 struct Font *fontManagerGetFont(const char *filePath);
 struct Font *fontManagerGetDefaultFont();

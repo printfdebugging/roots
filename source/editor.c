@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
       char *lineBytes = textGetUTF8Line(text, lineIdx);
       u64 lineByteLen = strlen(lineBytes);
 
-      fontManagerMakeLineGlyphInfoSpec(&lineRenderer[lineIdx], (char *) lineBytes, lineByteLen);
+      fontManagerLayoutLine(&lineRenderer[lineIdx], (char *) lineBytes, lineByteLen);
    }
 
    /**!
