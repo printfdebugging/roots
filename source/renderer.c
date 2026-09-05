@@ -136,8 +136,6 @@ void lineRendererGlyphQuadsFromInfo(struct LineRenderer *renderer, struct LineGl
 
       u32 glyphQuadOffset = glyphIdx * 6;
 
-      /* this is hardly of any use to us. this goes to OpenGL, so we better not keep this form
-       * untill we need to upload.. */
       renderer->vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
       renderer->vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
       renderer->vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
