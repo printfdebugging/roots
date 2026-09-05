@@ -6,7 +6,7 @@
 
 #include "editor.h"
 
-void editorRun(struct Editor *editor)
+bool editorRun(struct Editor *editor)
 {
    editorInit(editor);
 
@@ -172,20 +172,23 @@ void editorRun(struct Editor *editor)
    textDestroy(text);
    free(text);
 
-   editorDeInit(editor);
    fontManagerDeInit();
-
    windowDestroy(window);
-   free(editor);
+
+   return true;
 }
 
-void editorInit(struct Editor *editor)
+bool editorInit(struct Editor *editor)
 {
-   /* todo: config should overwrite this */
-   editor->fontSize     = DEFAULT_FONT_SIZE;
-   editor->fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH);
+   if (editor->initialized)
+      return true;
+
+   editor->fontSize = DEFAULT_FONT_SIZE;
+   if (!(editor->fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH)))
+      return false;
 
    editor->initialized = true;
+   return true;
 }
 
 void editorCalcFrameTime(struct Editor *editor)
@@ -195,7 +198,8 @@ void editorCalcFrameTime(struct Editor *editor)
    editor->lastTime  = timeNow;
 }
 
-void editorDeInit(struct Editor *editor)
+bool editorDeInit(struct Editor *editor)
 {
    free(editor->fontFilePath);
+   return true;
 }
