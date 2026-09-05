@@ -229,7 +229,7 @@ void _fontManagerGlyphAtlasInit()
    struct GlyphAtlas *glyphAtlas = &fontManager.glyphAtlas;
 
    glyphAtlas->capacityBytes     = ATLAS_PAGE_SIZE;
-   glyphAtlas->cursorOffsetBytes = 0;
+   glyphAtlas->cursorOffsetBytes = TEXEL_SIZE;
    glyphAtlas->textureUnit       = 0;
    glGenBuffers(1, &glyphAtlas->textureBufferObject);
    glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
