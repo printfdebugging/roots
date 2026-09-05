@@ -82,4 +82,7 @@ Tasks Bucketlist                                                                
    - [ ] A Web Browser?? Maybe that's too much :)
    - [ ] Daemon Client Mode? Maybe. -> P2P? Maybe.
 
+Meta Tasks ~
+   - [ ] Read https://gcc.gnu.org/onlinedocs/gcc/Common-Attributes.html#Common-Function-Attributes
+
 vim:set ft=help: toc=no
