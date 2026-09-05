@@ -10,17 +10,21 @@ bool editorRun(struct Editor *editor)
 {
    editorInit(editor);
 
-   GLFWwindow *window = windowCreate((struct GLFWwindowOptions) {
-      .width       = 800,
-      .height      = 600,
-      .title       = "GLFWwindow",
-      .transparent = true,
-      .visible     = true,
-      .fbResizeFn  = windowResize,
-      .keyFn       = keyPress,
-      .userdata    = editor,
-   });
+   i32 windowId = editorCreateWindow(
+       editor,
+       (struct GLFWwindowOptions) {
+          .width       = 800,
+          .height      = 600,
+          .title       = "GLFWwindow",
+          .transparent = true,
+          .visible     = true,
+          .fbResizeFn  = windowResize,
+          .keyFn       = keyPress,
+          .userdata    = editor,
+       }
+   );
 
+   GLFWwindow *window = editor->window[windowId];
    fontManagerInit(editor->fontFilePath);
 
    /**!
@@ -189,7 +193,11 @@ bool editorDeInit(struct Editor *editor)
       free(editor->text[idx]);
    }
 
+   for (u32 idx = 0; idx < editor->windowCount; ++idx)
+      glfwDestroyWindow(editor->window[idx]);
+
    free(editor->text);
+   free(editor->window);
 
    return true;
 }
@@ -213,4 +221,18 @@ i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
 
    editor->text[editor->textCount] = text;
    return (i32) editor->textCount++;
+}
+
+i32 editorCreateWindow(struct Editor *editor, struct GLFWwindowOptions opts)
+{
+   GLFWwindow *window = windowCreate(opts);
+   if (!window)
+      return -1;
+
+   editor->window = realloc(editor->window, sizeof(GLFWwindow *) * (editor->windowCount + 1));
+   if (!editor->window)
+      return -1;
+
+   editor->window[editor->windowCount] = window;
+   return (i32) editor->windowCount++;
 }
