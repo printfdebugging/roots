@@ -57,6 +57,11 @@ void _lineSubstituteNewlines();
 void _lineSubstituteTabs();
 */
 
+/**!
+ * note: FontManager is just a wrapper around harfbuzz & OpenGL functions,
+ * and manages shared objects.. So the OpenGL function pointers should be
+ * loaded before this function is called. That's done by GLFW.
+ */
 void fontManagerInit(char *editorFontPath)
 {
    if (fontManager.initialized)
