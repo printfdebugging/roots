@@ -16,6 +16,16 @@ out vec4 fragColor;
 
 void main()
 {
+   /* glyphLoc start at 1, 0 means empty character, usually used for whitespaces */
+   if (v_glyphLoc == 0.0)
+   {
+      if (v_hasCursor == 0.0f)
+         fragColor = vec4(0.0f);
+      else
+         fragColor = vec4(vec3(0.0f), 1.0f);
+      return;
+   }
+
    float cov;
 #ifdef HB_GPU_DEMO_DRAW
    cov    = hb_gpu_draw(v_texcoord, v_glyphLoc);
