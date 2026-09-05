@@ -61,11 +61,7 @@ void fontManagerInit(char *editorFontPath)
    if (fontManager.initialized)
       return;
 
-   /**!
-    * `fontManagerGetFont` checks the `initialized` flag and
-    * returns early if not, so we should mark it early for the
-    * below call load/return the font
-    */
+   /* `fontManagerGetFont` checks this and returns early if false (default) */
    fontManager.initialized = true;
 
    _fontManagerGlyphAtlasInit();
@@ -125,16 +121,6 @@ void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char 
          hbBlob           = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
          u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
 
-         /******************************************************************
-          * todo: check if we got an empty glyph and if we did then        *
-          * find a font either in the `fontManager.fonts` or on the system *
-          * (using `fontconfig`) and cache that font.                      *
-          *****************************************************************/
-
-         /*****************************
-          * cache the glyph quad info *
-          ****************************/
-
          font->glyphCache[glyphIndex] = (struct GlyphInfo) {
             .extents.xMin = 0,
             .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
@@ -146,10 +132,7 @@ void fontManagerMakeLineGlyphInfoSpec(struct LineGlyphInfo *lineGlyphInfo, char 
             .cached       = true,
          };
 
-         /*********************************************************
-          * upload glyph primitives to the gpu & store the offset *
-          ********************************************************/
-
+         /* upload glyph data to glyph atlas */
          struct GlyphAtlas *glyphAtlas = fontManagerGetGlyphAtlas();
          if (!font->glyphCache[glyphIndex].empty)
          {
@@ -211,10 +194,6 @@ void fontInit(struct Font *font, const char *filePath)
    font->fontPath   = stringDuplicate(filePath);
    font->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
 
-   /*********************************************************
-    * harfbuzz: font loading & shape encoder initialization *
-    ********************************************************/
-
    hb_blob_t *hbBlob = NULL;
    if (!(hbBlob = hb_blob_create_from_file(font->fontPath)) ||
        !(font->hbFace = hb_face_create(hbBlob, 0)) ||
@@ -246,9 +225,6 @@ void fontDeInit(struct Font *font)
 
 void _fontManagerGlyphAtlasInit()
 {
-   /************************************************************
-    * opengl: create an atlas texture to upload the glyph data *
-    ***********************************************************/
    struct GlyphAtlas *glyphAtlas = &fontManager.glyphAtlas;
 
    glyphAtlas->capacityBytes     = ATLAS_PAGE_SIZE;
