@@ -62,7 +62,7 @@ bool editorRun(struct Editor *editor)
     * but as of now is very loosely defined. this doesn't mean
     * create fancy abstractions, just keep in check what happens when..
     */
-   while (!glfwWindowShouldClose(window))
+   while (!editorShouldClose(editor))
    {
       editorCalcFrameTime(editor);
 
@@ -154,6 +154,19 @@ bool editorRun(struct Editor *editor)
    fontManagerDeInit();
 
    return true;
+}
+
+bool editorShouldClose(struct Editor *editor)
+{
+   if (!editor->initialized)
+      return true;
+
+   bool shouldClose = true;
+   for (i32 winId = 0; winId < (i32) editor->windowCount; ++winId)
+      if (winId != editor->sharedWindowId)
+         shouldClose &= glfwWindowShouldClose(editor->window[winId]);
+
+   return shouldClose;
 }
 
 bool editorInit(struct Editor *editor)
