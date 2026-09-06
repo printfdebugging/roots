@@ -60,8 +60,7 @@ GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
 
    GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, opts.shared);
    glfwMakeContextCurrent(window);
-   if (!opts.shared)
-      gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+   gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
    glfwSwapInterval(1);
 

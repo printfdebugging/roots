@@ -8,135 +8,20 @@
 
 void _glfwErrFn(int code, const char *description);
 
+/* next: create editor API to operate over the ID rather than having to
+ * -> and then index with ID again and agian, that's unsafe.
+ */
 bool editorRun(struct Editor *editor)
 {
-   GLFWwindow *sharedWindow = NULL;
-   if (editor->sharedWindowId != -1)
-      sharedWindow = editor->window[editor->sharedWindowId];
+   i32 bufId = editorOpenFile(editor, ASSETS_DIR "test.md");
 
-   i32 windowId = editorCreateWindow(
-       editor,
-       (struct GLFWwindowOptions) {
-          .width       = 800,
-          .height      = 600,
-          .title       = "GLFWwindow",
-          .transparent = true,
-          .visible     = true,
-          .fbResizeFn  = windowResize,
-          .keyFn       = keyPress,
-          .userdata    = editor,
-          .shared      = sharedWindow,
-       }
-   );
-
-   GLFWwindow *window = editor->window[windowId];
-
-   /* todo: move these to editorInit */
-   fontManagerInit(editor->fontFilePath);
-   lineShaderInit(editor->lineShader);
-
-   i32 textId = editorLoadTextFile(editor, ASSETS_DIR "test.md");
-
-   struct Text *text = editor->text[textId];
-   u32 lineCount     = textGetLineCount(text);
-
-   i32 *lineRenderers = calloc(lineCount, sizeof(i32));
-   if (!lineRenderers)
-      perror("failed to allocate memory\n");
-   memset(lineRenderers, -1, sizeof(i32) * lineCount);
-
-   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
-   {
-      lineRenderers[lineIdx] = editorCreateLine(
-          editor,
-          (struct LineOptions) {
-             .lineIdx = lineIdx,
-             .textId  = textId,
-          }
-      );
-   }
-
-   /**!
-    * note:
-    * properly define a data flow pipeline, it exists
-    * but as of now is very loosely defined. this doesn't mean
-    * create fancy abstractions, just keep in check what happens when..
-    */
    while (!editorShouldClose(editor))
    {
       editorCalcFrameTime(editor);
       glfwPollEvents();
 
-      i32 windowWidth, windowHeight;
-      glfwGetWindowSize(window, &windowWidth, &windowHeight);
-
-      /**!
-       * note:
-       * calculate the line height and then use that to
-       * count the number of visible lines and then render
-       * those..
-       */
-      i32 xScale, yScale;
-      struct Font *font = fontManagerGetDefaultFont();
-      hb_font_get_scale(font->hbFont, &xScale, &yScale);
-      f32 fontScale = editor->fontSize / (f32) yScale;
-
-      struct GlyphAtlas *atlas = fontManagerGetGlyphAtlas();
-
-      mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
-      mvp       = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
-      mvp       = glms_translate(mvp, (vec3s) { { 0.0f, 0.0f, 0.0f } }); /* not set as of now */
-
-      ivec4s viewport = { 0 };
-      glGetIntegerv(GL_VIEWPORT, viewport.raw);
-
-      /**!
-       * warn: let's not complicate things thinking about multiple fonts and
-       * different line heights, single heights single font is fine for now.
-       * let's make that work first.
-       */
-      f32 lineHeight = (f32) font->hbAscent - (f32) font->hbDescent;
-      lineHeight *= (f32) fontScale;
-
-      u32 visibleLineCount = (u32) windowHeight / (u32) lineHeight;
-      if (lineCount < visibleLineCount)
-         visibleLineCount = lineCount;
-
-      glClearColor(ColorRGBAHex(0X002b36FF));
-
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      for (u32 lineIdx = 0; lineIdx < visibleLineCount; ++lineIdx)
-      {
-         i32 lineId                        = lineRenderers[lineIdx];
-         struct LineRenderer *lineRenderer = editor->lineRenderer[lineId];
-
-         lineRenderer->uniforms = (struct LineShaderUniforms) {
-            .matViewProjection = mvp,
-            .viewport          = viewport,
-            .scale             = fontScale,
-            .position          = { .x = 0, .y = ((f32) windowHeight - ((f32) lineHeight * ((f32) lineIdx + 1))) },
-            .hbGpuAtlas        = atlas->textureUnit,
-            .gamma             = 1.0f,
-            .debug             = false,
-            .stemDarkening     = false,
-            .foreground        = (vec4s) { { ColorRGBAHex(0X839496FF) } },
-         };
-
-         lineShaderUploadUniforms(editor->lineShader, &lineRenderer->uniforms);
-
-         if (lineRenderer->uploaded)
-         {
-            glBindVertexArray(lineRenderer->vao);
-            glDrawArrays(GL_TRIANGLES, 0, (i32) lineRenderer->count);
-         }
-      }
-
-      glfwSwapBuffers(window);
+      editorDrawBuffer(editor, bufId);
    }
-
-   free(lineRenderers);
-   fontManagerDeInit();
 
    return true;
 }
@@ -214,7 +99,9 @@ bool editorDeInit(struct Editor *editor)
    for (u32 idx = 0; idx < editor->windowCount; ++idx)
       glfwDestroyWindow(editor->window[idx]);
 
+   /* note: todo: maybe this should be above the window destruction sequence */
    lineShaderDeInit(editor->lineShader);
+   fontManagerDeInit();
 
    free(editor->text);
    free(editor->window);

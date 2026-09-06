@@ -134,9 +134,11 @@ struct Text;
 
 struct Buffer
 {
-   u32 windowId;
-   u32 rendererId;
-   u32 textId;
+   i32 winId;
+   i32 txtId;
+
+   i32 *visLineRenderers;
+   u32 visLineCount;
 
    /* Buffer specific state. */
 
@@ -320,6 +322,8 @@ bool editorDeInit(struct Editor *editor);
 i32 editorLoadTextFile(struct Editor *editor, const char *filePath);
 i32 editorCreateWindow(struct Editor *editor, struct GLFWwindowOptions opts);
 i32 editorCreateLine(struct Editor *editor, struct LineOptions opts);
+i32 editorOpenFile(struct Editor *editor, const char *path);
+void editorDrawBuffer(struct Editor *editor, i32 bufId);
 
 /* fontmanager.c */
 void fontManagerInit(char *editorFontPath);
