@@ -39,10 +39,12 @@ void windowSetUserDataPtr(GLFWwindow *window, void *userData)
 
 GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
 {
-   /*************************
-    * window initialization *
-    ************************/
-   glfwInit();
+   GLFWwindow *window = NULL;
+   GLFWimage *iconImg = NULL;
+
+   if (!glfwInit())
+      goto failure;
+
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -58,7 +60,9 @@ GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
    const i32 windowHeight  = opts.height ? opts.height : 800;
    const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
 
-   GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, opts.shared);
+   if (!(window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, opts.shared)))
+      goto failure;
+
    glfwMakeContextCurrent(window);
    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -76,12 +80,24 @@ GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    glLineWidth(2);
 
+   const char *iconPath = opts.icon ? opts.icon : DEFAULT_WINDOW_ICON;
+   if (!(iconImg = imageLoadFromFile(iconPath)))
+      goto failure;
+
+   glfwSetWindowIcon(window, 1, iconImg);
+
    if (opts.curPosFn) glfwSetCursorPosCallback(window, opts.curPosFn);
    if (opts.scrollFn) glfwSetScrollCallback(window, opts.scrollFn);
    if (opts.fbResizeFn) glfwSetFramebufferSizeCallback(window, opts.fbResizeFn);
    if (opts.keyFn) glfwSetKeyCallback(window, opts.keyFn);
    if (opts.userdata) glfwSetWindowUserPointer(window, opts.userdata);
 
+   imageDestroy(iconImg);
+   return window;
+
+failure:
+   imageDestroy(iconImg);
+   glfwDestroyWindow(window);
    return window;
 }
 

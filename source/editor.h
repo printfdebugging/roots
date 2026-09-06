@@ -56,6 +56,7 @@
 
 #define DEFAULT_FONT_FILE_PATH ASSETS_DIR "LilexNerdFont-Regular.ttf"
 #define DEFAULT_FONT_SIZE      24
+#define DEFAULT_WINDOW_ICON    ASSETS_DIR "icon.png"
 
 /* type aliases */
 typedef uint8_t u8;
@@ -171,6 +172,7 @@ struct GLFWwindowOptions
    i32 width;
    i32 height;
    const char *title;
+   const char *icon;
    GLFWwindow *shared;
    void *userdata;
 
@@ -376,5 +378,7 @@ void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 /* utils.c */
 char *stringDuplicate(const char *str);
+GLFWimage *imageLoadFromFile(const char *filepath);
+void imageDestroy(GLFWimage *image);
 
 #endif
