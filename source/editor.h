@@ -184,8 +184,8 @@ struct Editor
    struct Text **text;
    struct GLFWwindow **window;
    struct LineRenderer **lineRenderer;
-   struct LineShader **lineShader; /* shared among Buffer objects */
-   struct Buffer **textBuffer;     /* just a bunch of indices into Editor's object arrays */
+   struct LineShader *lineShader; /* shared among Buffer objects */
+   struct Buffer **textBuffer;    /* just a bunch of indices into Editor's object arrays */
 
    /* counts */
    u32 textCount;
