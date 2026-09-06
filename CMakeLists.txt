@@ -21,6 +21,7 @@ add_subdirectory(harfbuzz)
 add_subdirectory(unicode)
 add_subdirectory(glad)
 add_subdirectory(cglm)
+add_subdirectory(stb)
 
 set(CMAKE_C_STANDARD 23)
 add_compile_options(-std=gnu2x)
@@ -85,6 +86,7 @@ target_link_libraries(editor PRIVATE
    glfw
    glad
    cglm
+   stb
    unicode
    $<$<BOOL:${WIN32}>:dwmapi>
 )
