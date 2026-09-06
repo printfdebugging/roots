@@ -115,8 +115,9 @@ void mouseMove(GLFWwindow *window, f64 x, f64 y)
 void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
    (void) scancode;
-   (void) key;
-   (void) action;
-   (void) mods;
    [[maybe_unused]] struct Editor *editor = glfwGetWindowUserPointer(window);
+
+   bool shiftQPress = (mods & GLFW_MOD_SHIFT) && (key == GLFW_KEY_Q) && (action == GLFW_PRESS);
+   if (shiftQPress)
+      glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
