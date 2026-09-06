@@ -37,25 +37,27 @@ bool editorRun(struct Editor *editor)
     */
    struct LineShader *lineShader = calloc(1, sizeof(struct LineShader));
    lineShaderInit(lineShader);
+   editor->lineShader = lineShader;
 
    i32 textId = editorLoadTextFile(editor, ASSETS_DIR "test.md");
 
    struct Text *text = editor->text[textId];
    u32 lineCount     = textGetLineCount(text);
 
-   struct LineRenderer *lineRenderer = calloc(lineCount, sizeof(struct LineRenderer));
-
-   if (!lineRenderer)
+   i32 *lineRenderers = calloc(lineCount, sizeof(i32));
+   if (!lineRenderers)
       perror("failed to allocate memory\n");
+   memset(lineRenderers, -1, sizeof(i32) * lineCount);
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
-      lineRendererInit(&lineRenderer[lineIdx], lineShader);
-
-      char *lineBytes = textGetUTF8Line(text, lineIdx);
-      u64 lineByteLen = strlen(lineBytes);
-
-      fontManagerLayoutLine(&lineRenderer[lineIdx], (char *) lineBytes, lineByteLen);
+      lineRenderers[lineIdx] = editorCreateLine(
+          editor,
+          (struct LineOptions) {
+             .lineIdx = lineIdx,
+             .textId  = textId,
+          }
+      );
    }
 
    /**!
@@ -125,7 +127,10 @@ bool editorRun(struct Editor *editor)
 
       for (u32 lineIdx = 0; lineIdx < visibleLineCount; ++lineIdx)
       {
-         lineRenderer[lineIdx].uniforms = (struct LineShaderUniforms) {
+         i32 lineId                        = lineRenderers[lineIdx];
+         struct LineRenderer *lineRenderer = editor->lineRenderer[lineId];
+
+         lineRenderer->uniforms = (struct LineShaderUniforms) {
             .matViewProjection = mvp,
             .viewport          = viewport,
             .scale             = fontScale,
@@ -137,27 +142,20 @@ bool editorRun(struct Editor *editor)
             .foreground        = (vec4s) { { ColorRGBAHex(0X839496FF) } },
          };
 
-         struct LineRenderer *renderer = &lineRenderer[lineIdx];
-         lineShaderUploadUniforms(lineShader, &renderer->uniforms);
+         lineShaderUploadUniforms(lineShader, &lineRenderer->uniforms);
 
-         if (renderer->uploaded)
+         if (lineRenderer->uploaded)
          {
-            glBindVertexArray(renderer->vao);
-            glDrawArrays(GL_TRIANGLES, 0, (i32) renderer->count);
+            glBindVertexArray(lineRenderer->vao);
+            glDrawArrays(GL_TRIANGLES, 0, (i32) lineRenderer->count);
          }
       }
 
       glfwSwapBuffers(window);
    }
 
-   /* I think here we can use struct of arrays rather than array of structs.. */
-   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
-   {
-      lineRendererDeInit(&lineRenderer[lineIdx]);
-   }
-
-   free(lineRenderer);
    lineShaderDeInit(lineShader);
+   free(lineRenderers);
    free(lineShader);
 
    fontManagerDeInit();
@@ -192,11 +190,21 @@ bool editorDeInit(struct Editor *editor)
    for (u32 idx = 0; idx < editor->textCount; ++idx)
       free(editor->text[idx]);
 
+   for (u32 idx = 0; idx < editor->lineRendererCount; ++idx)
+      lineRendererDeInit(editor->lineRenderer[idx]);
+   for (u32 idx = 0; idx < editor->lineRendererCount; ++idx)
+      free(editor->lineRenderer[idx]);
+
+   /**!
+    * note: Till we have a shared hidden window which
+    * is destroyed at the end, we need to do this last
+    */
    for (u32 idx = 0; idx < editor->windowCount; ++idx)
       glfwDestroyWindow(editor->window[idx]);
 
    free(editor->text);
    free(editor->window);
+   free(editor->lineRenderer);
    free(editor->fontFilePath);
 
    return true;
@@ -235,4 +243,45 @@ i32 editorCreateWindow(struct Editor *editor, struct GLFWwindowOptions opts)
 
    editor->window[editor->windowCount] = window;
    return (i32) editor->windowCount++;
+}
+
+/**!
+ * A sane argument against this per line approach is to do it for
+ * all the visible lines at the same time. That makes sense, though
+ * is not actionable at the moment as that would require doing many
+ * things at the same time.. so listing that as a todo: here.
+ *
+ * For now this works because we would have to relayout each line as they
+ * are marked dirty and there are less things to manage here.. But as
+ * it gets in shape, we would move these to one large function, maybe...
+ * intuition says we would still need to keep the per line thing..
+ */
+i32 editorCreateLine(struct Editor *editor, struct LineOptions opts)
+{
+   if (!editor->lineShader)
+      return -1;
+   if (opts.textId == -1 /*  && !opts.isVirtual */)
+      return -1;
+
+   struct LineRenderer *renderer = calloc(1, sizeof(struct LineRenderer));
+   if (!renderer)
+      return -1;
+
+   lineRendererInit(renderer, editor->lineShader);
+
+   /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
+   struct Text *text = editor->text[opts.textId];
+   char *lineBytes   = textGetUTF8Line(text, opts.lineIdx);
+   u64 lineByteLen   = strlen(lineBytes);
+   fontManagerLayoutLine(renderer, lineBytes, lineByteLen);
+
+   if (!(editor->lineRenderer = realloc(editor->lineRenderer, sizeof(struct LineRenderer *) * (editor->lineRendererCount + 1))))
+   {
+      lineRendererDeInit(renderer);
+      free(renderer);
+      return -1;
+   }
+
+   editor->lineRenderer[editor->lineRendererCount] = renderer;
+   return (i32) editor->lineRendererCount++;
 }
