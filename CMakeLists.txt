@@ -33,6 +33,7 @@ add_executable(editor
    source/text.c
    source/renderer.c
    source/window.c
+   source/buffer.c
    source/fontmanager.c
    source/utils.c
    source/sanitizers.c
