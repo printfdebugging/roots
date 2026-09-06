@@ -6,6 +6,8 @@
 
 #include "editor.h"
 
+void _glfwErrFn(int code, const char *description);
+
 bool editorRun(struct Editor *editor)
 {
    GLFWwindow *sharedWindow = NULL;
@@ -177,6 +179,8 @@ bool editorInit(struct Editor *editor)
        }
    );
 
+   glfwSetErrorCallback(_glfwErrFn);
+
    // fontManagerInit(editor->fontFilePath);
    if (!(editor->lineShader = calloc(1, sizeof(struct LineShader))))
       return false;
@@ -297,4 +301,9 @@ i32 editorCreateLine(struct Editor *editor, struct LineOptions opts)
 
    editor->lineRenderer[editor->lineRendererCount] = renderer;
    return (i32) editor->lineRendererCount++;
+}
+
+void _glfwErrFn(int code, const char *description)
+{
+   fprintf(stderr, "_glfwErrFun: code: %i, msg: %s\n", code, description);
 }
