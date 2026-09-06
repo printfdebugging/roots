@@ -40,3 +40,6 @@ clean:
 
 update:
 	git submodule update --remote --merge
+
+init:
+	git submodule update --init --recursive
