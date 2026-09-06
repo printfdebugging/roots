@@ -65,25 +65,10 @@ bool editorRun(struct Editor *editor)
    while (!editorShouldClose(editor))
    {
       editorCalcFrameTime(editor);
+      glfwPollEvents();
 
       i32 windowWidth, windowHeight;
       glfwGetWindowSize(window, &windowWidth, &windowHeight);
-
-      /**!
-       * note:
-       * This might change when we get more than one windows,
-       * how, we are not sure yet, would be able to tell only
-       * when the time comes.
-       *
-       * We would be sharing OpenGL context between the GLFW
-       * windows, possibly threading as well, so just the event
-       * polling would happen here and the rest key callbacks
-       * into their own modules called by each window via function
-       * pointers..
-       */
-      glfwPollEvents();
-      if (glfwGetKey(window, GLFW_KEY_CAPS_LOCK) == GLFW_PRESS)
-         glfwSetWindowShouldClose(window, GLFW_TRUE);
 
       /**!
        * note:
