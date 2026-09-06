@@ -8,16 +8,15 @@
 /* returns a buffer id.. todo: write nicely later, let's first make it work */
 i32 editorOpenFile(struct Editor *editor, const char *path)
 {
+   struct Buffer *buf = NULL;
+   i32 textId;
+
    if (!editor->initialized)
-      return -1;
-
-   i32 textId = editorLoadTextFile(editor, path);
-   if (textId == -1)
-      return -1;
-
-   struct Buffer *buf = calloc(1, sizeof(struct Buffer));
-   if (!buf)
-      return -1;
+      goto failure;
+   if ((textId = editorLoadTextFile(editor, path)) == -1)
+      goto failure;
+   if (!(buf = calloc(1, sizeof(struct Buffer))))
+      goto failure;
 
    *buf = (struct Buffer) {
       .winId            = -1,
@@ -76,19 +75,14 @@ i32 editorOpenFile(struct Editor *editor, const char *path)
    }
 
    if (!(editor->textBuffer = realloc(editor->textBuffer, sizeof(struct Buffer *) * (editor->bufferCount + 1))))
-   {
-      // todo: cleanup, probably with a macro? or just leave it as we can then just exit and the editor will cleanup
-      // everything anywahs :). no.. we still create a buffer.. we should split that part so we have one
-      // function which just creates and inits a buffer. that way if something fails it can quickly free that
-      // one thing it's responsible for creating and return.. rest all can then just return -1 and not care as
-      // cleanup happens at the end anyways.
-      //
-      // -1 is not a sign for us to return failure, but either handle the error, for this specific object (by
-      // marking it dirty or something), or just for returning early so that we reach editorDeInit..
-      return -1;
-   }
+      goto failure;
+
    editor->textBuffer[editor->bufferCount] = buf;
    return (i32) editor->bufferCount++;
+
+failure:
+   free(buf);
+   return -1;
 }
 
 void editorDrawBuffer(struct Editor *editor, i32 bufId)

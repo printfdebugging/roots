@@ -92,6 +92,12 @@ bool editorDeInit(struct Editor *editor)
    for (u32 idx = 0; idx < editor->lineRendererCount; ++idx)
       free(editor->lineRenderer[idx]);
 
+   for (u32 idx = 0; idx < editor->bufferCount; ++idx)
+   {
+      free(editor->textBuffer[idx]->visLineRenderers);
+      free(editor->textBuffer);
+   }
+
    /**!
     * note: Till we have a shared hidden window which
     * is destroyed at the end, we need to do this last
