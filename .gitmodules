@@ -15,4 +15,4 @@
 	url = https://github.com/harfbuzz/harfbuzz
 [submodule "stb"]
 	path = libs/stb
-	url = git@github.com:printfdebugging/stb.git
+	url = https://github.com/printfdebugging/stb
