@@ -187,6 +187,13 @@ struct Editor
    struct LineShader *lineShader; /* shared among Buffer objects */
    struct Buffer **textBuffer;    /* just a bunch of indices into Editor's object arrays */
 
+   /**!
+    * Always 0 as it's the first window created in `editorInit`. This
+    * is just to put the assumption in code so that we are not accessing
+    * the window with [0] everywhere.
+    */
+   i32 sharedWindowId;
+
    /* counts */
    u32 textCount;
    u32 lineRendererCount;

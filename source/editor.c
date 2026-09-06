@@ -8,6 +8,10 @@
 
 bool editorRun(struct Editor *editor)
 {
+   GLFWwindow *sharedWindow = NULL;
+   if (editor->sharedWindowId != -1)
+      sharedWindow = editor->window[editor->sharedWindowId];
+
    i32 windowId = editorCreateWindow(
        editor,
        (struct GLFWwindowOptions) {
@@ -19,6 +23,7 @@ bool editorRun(struct Editor *editor)
           .fbResizeFn  = windowResize,
           .keyFn       = keyPress,
           .userdata    = editor,
+          .shared      = sharedWindow,
        }
    );
 
@@ -169,6 +174,20 @@ bool editorInit(struct Editor *editor)
    editor->fontSize = DEFAULT_FONT_SIZE;
    if (!(editor->fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH)))
       return false;
+
+   editor->sharedWindowId = editorCreateWindow(
+       editor,
+       (struct GLFWwindowOptions) {
+          .width       = 800,
+          .height      = 600,
+          .title       = "GLFWwindow",
+          .transparent = false,
+          .visible     = false,
+          .fbResizeFn  = windowResize,
+          .keyFn       = keyPress,
+          .userdata    = editor,
+       }
+   );
 
    editor->initialized = true;
    return true;
