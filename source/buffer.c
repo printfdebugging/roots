@@ -56,9 +56,10 @@ i32 editorOpenFile(struct Editor *editor, const char *path)
    struct Text *text = editor->text[textId];
    u32 lineCount     = textGetLineCount(text);
 
-   buf->visLineRenderers = calloc(lineCount, sizeof(i32));
-   if (!buf->visLineRenderers)
-      perror("failed to allocate memory\n");
+   /* todo: allocate these just for the visible lines, not for all the lines. */
+   if (!(buf->visLineRenderers = calloc(lineCount, sizeof(i32))))
+      goto failure;
+
    memset(buf->visLineRenderers, -1, sizeof(i32) * lineCount);
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
@@ -81,7 +82,10 @@ i32 editorOpenFile(struct Editor *editor, const char *path)
    return (i32) editor->bufferCount++;
 
 failure:
+   if (buf)
+      free(buf->visLineRenderers);
    free(buf);
+
    return -1;
 }
 

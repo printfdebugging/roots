@@ -95,6 +95,7 @@ bool editorDeInit(struct Editor *editor)
    for (u32 idx = 0; idx < editor->bufferCount; ++idx)
    {
       free(editor->textBuffer[idx]->visLineRenderers);
+      free(editor->textBuffer[idx]);
       free(editor->textBuffer);
    }
 
