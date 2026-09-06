@@ -177,8 +177,10 @@ bool editorInit(struct Editor *editor)
        }
    );
 
+   // fontManagerInit(editor->fontFilePath);
    if (!(editor->lineShader = calloc(1, sizeof(struct LineShader))))
       return false;
+   // lineShaderInit(editor->lineShader);
 
    editor->initialized = true;
    return true;
