@@ -28,19 +28,10 @@ bool editorRun(struct Editor *editor)
    );
 
    GLFWwindow *window = editor->window[windowId];
-   /* todo: move this to editorInit. Also windowing with a hidden
-    * window to share context with */
-   fontManagerInit(editor->fontFilePath);
 
-   /**!
-    * `LineShader` is shared between all the renderers. It is mostly stateless
-    * and only stores the uniform locations, not the values themselves. The
-    * values live in `LineShaderUniforms` struct and the `lineShaderUploadUniforms`
-    * function uploads the uniforms before drawing a particular line.
-    */
-   struct LineShader *lineShader = calloc(1, sizeof(struct LineShader));
-   lineShaderInit(lineShader);
-   editor->lineShader = lineShader;
+   /* todo: move these to editorInit */
+   fontManagerInit(editor->fontFilePath);
+   lineShaderInit(editor->lineShader);
 
    i32 textId = editorLoadTextFile(editor, ASSETS_DIR "test.md");
 
@@ -145,7 +136,7 @@ bool editorRun(struct Editor *editor)
             .foreground        = (vec4s) { { ColorRGBAHex(0X839496FF) } },
          };
 
-         lineShaderUploadUniforms(lineShader, &lineRenderer->uniforms);
+         lineShaderUploadUniforms(editor->lineShader, &lineRenderer->uniforms);
 
          if (lineRenderer->uploaded)
          {
@@ -157,10 +148,7 @@ bool editorRun(struct Editor *editor)
       glfwSwapBuffers(window);
    }
 
-   lineShaderDeInit(lineShader);
    free(lineRenderers);
-   free(lineShader);
-
    fontManagerDeInit();
 
    return true;
@@ -188,6 +176,9 @@ bool editorInit(struct Editor *editor)
           .userdata    = editor,
        }
    );
+
+   if (!(editor->lineShader = calloc(1, sizeof(struct LineShader))))
+      return false;
 
    editor->initialized = true;
    return true;
@@ -219,9 +210,12 @@ bool editorDeInit(struct Editor *editor)
    for (u32 idx = 0; idx < editor->windowCount; ++idx)
       glfwDestroyWindow(editor->window[idx]);
 
+   lineShaderDeInit(editor->lineShader);
+
    free(editor->text);
    free(editor->window);
    free(editor->lineRenderer);
+   free(editor->lineShader);
    free(editor->fontFilePath);
 
    return true;
