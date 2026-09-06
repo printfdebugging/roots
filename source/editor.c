@@ -8,8 +8,6 @@
 
 bool editorRun(struct Editor *editor)
 {
-   editorInit(editor);
-
    i32 windowId = editorCreateWindow(
        editor,
        (struct GLFWwindowOptions) {
