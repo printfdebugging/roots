@@ -1,18 +1,18 @@
 [submodule "glfw"]
-	path = glfw
+	path = libs/glfw
 	url = https://github.com/glfw/glfw
 [submodule "cglm"]
-	path = cglm
+	path = libs/cglm
 	url = https://github.com/recp/cglm
 [submodule "glad"]
-	path = glad
+	path = libs/glad
 	url = https://github.com/printfdebugging/glad
 [submodule "unicode"]
-	path = unicode
+	path = libs/unicode
 	url = https://github.com/printfdebugging/unicode
 [submodule "harfbuzz"]
-	path = harfbuzz
+	path = libs/harfbuzz
 	url = https://github.com/harfbuzz/harfbuzz
 [submodule "stb"]
-	path = stb
+	path = libs/stb
 	url = git@github.com:printfdebugging/stb.git
