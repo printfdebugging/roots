@@ -25,6 +25,8 @@ bool editorRun(struct Editor *editor)
    );
 
    GLFWwindow *window = editor->window[windowId];
+   /* todo: move this to editorInit. Also windowing with a hidden
+    * window to share context with */
    fontManagerInit(editor->fontFilePath);
 
    /**!
@@ -159,7 +161,6 @@ bool editorRun(struct Editor *editor)
    free(lineShader);
 
    fontManagerDeInit();
-   windowDestroy(window);
 
    return true;
 }
