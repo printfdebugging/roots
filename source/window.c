@@ -1,6 +1,7 @@
 #include "glad/glad.h"
 
 #include "editor.h"
+#include "stb_image.h"
 
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -39,10 +40,9 @@ void windowSetUserDataPtr(GLFWwindow *window, void *userData)
 
 GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
 {
-   /*************************
-    * window initialization *
-    ************************/
-   glfwInit();
+   if (!glfwInit())
+      return NULL;
+
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
@@ -59,10 +59,27 @@ GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
    const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
 
    GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, opts.shared);
+   if (!window)
+      return NULL;
+
    glfwMakeContextCurrent(window);
    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
    glfwSwapInterval(1);
+
+   GLFWimage img;
+   int chanCount;
+   opts.icon  = opts.icon ? opts.icon : DEFAULT_WINDOW_ICON;
+   img.pixels = stbi_load(opts.icon, &img.width, &img.height, &chanCount, 0);
+
+   if (!img.pixels)
+   {
+      glfwDestroyWindow(window);
+      return NULL;
+   }
+
+   glfwSetWindowIcon(window, 1, &img);
+   free(img.pixels);
 
 #ifdef _WIN32
    HWND hwnd   = glfwGetWin32Window(window);
