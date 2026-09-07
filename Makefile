@@ -43,3 +43,7 @@ update:
 
 init:
 	git submodule update --init --recursive
+
+.PHONY: vscode
+vscode:
+	./scripts/vscode.sh

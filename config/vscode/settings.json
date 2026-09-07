@@ -1,0 +1,6 @@
+{
+	"keyboard.dispatch": "keyCode",
+	"window.titleBarStyle": "custom",
+	"update.mode": "none",
+	"extensions.ignoreRecommendations": false 
+}
