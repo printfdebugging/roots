@@ -1,18 +1,25 @@
 *timeline.txt*
 
 ------------------------------------------------------------------------------------------------------------------------
-@printfdebugging                           Fri Sep  4 05:23:32 AM IST 2026                  *timeline.txt-2026-09-04-0523*
+@printfdebugging                           Mon Sep  7 08:11:00 PM IST 2026                  *timeline.txt-2026-09-07-2011*
 
-Week 36 ~
-   - [x] Fix the font/line height issue, take into account the font metrics
-      - https://blog.krzyzanowskim.com/2020/07/10/coretext-swift-academy-part-2/ says lineHeight = ascent + descent
-      - scale = fontSize/yScale is the scale which should then be used to interpret all font metrics.
-   - [x] Unify LineRenderer & LineLayout, no need to separate those
+Week 37 ~
    - [ ] Add vertical scrolling & re-enable horizontal scrolling
    - [ ] For now just test ascii text
    - [ ] Substitute spaces, tabs, newlines etc. on the renderer side
    - [ ] Add some performance testing constructs
-   - [ ] Only layout/render what's visible..
+
+------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Fri Sep  4 05:23:32 AM IST 2026                  *timeline.txt-2026-09-04-0523*
+
+Week 36 ~
+   - [x] Fix the font/line height issue, take into account the font metrics, lineHeight = ascent + descent
+   - [x] Unify LineRenderer & LineLayout, no need to separate those
+   - [x] Create a buffer & use IDs to refer to everything (managed by editor)
+   - [x] Whitespace rendering, start the atlas at TEXEL_SIZE offset & skip fragment shader for atlasOffset 0 pixels
+   - [x] Get started with GLFW & shared contexts https://discourse.glfw.org/t/can-you-please-explain-what-context-sharing-then-means/3023/3
+   - [x] Code/comment cleanup
+   - [x] Build harfbuzz statically (https://github.com/harfbuzz/harfbuzz/issues/5683) , add stb, draw window icon
 
 ------------------------------------------------------------------------------------------------------------------------
 @printfdebugging                           Fri Sep  4 05:13:59 AM IST 2026                  *timeline.txt-2026-09-04-0513*
@@ -37,11 +44,14 @@ Week 34                                                                         
 @printfdebugging                           Sat Aug 22 01:22:04 AM IST 2026                  *timeline.txt-2026-08-22-0122*
 
 Tasks Bucketlist                                                                           *timeline.txt-tasks-bucketlist* ~
+   - [ ] Only layout/render what's visible..
    - [ ] Inline image previews (single|centered|gallary|row)
    - [ ] Think from the `struct of Arrays` Arcitecture POV (dod)
    - [ ] Introduce a Buffer/Frame & pipeline dataflow
    - [ ] Virtual Lines and Characters (Read Only)
    - [ ] Line Numbers Implementation
+   - [ ] Upgrade from ASCII to Unicode, fully
+   - [ ] Use fontconfig to fallback to system fonts for missing glyphs in the default font
    - [ ] True Conceal Implementation
    - [ ] Implement text editing - single line text interface
    - [ ] Implement text selection
