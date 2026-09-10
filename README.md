@@ -19,7 +19,9 @@ if ($env:Path -notlike "*C:\msys64\clang64\bin*") { [Environment]::SetEnvironmen
 # MSYS2
 pacman -Sy --noconfirm clang64/mingw-w64-clang-x86_64-{gdb,cmake,ninja,clang,clang-tools-extra,ccache,git,vulkan-headers,vulkan-loader} make
 # Arch Linux
-sudo pacman -S --noconfirm cmake make clang gdb ccache vulkan-devel libasan
+sudo pacman -S --noconfirm cmake make ninja clang gdb ccache vulkan-devel libasan git
+# macOS
+brew install cmake ninja ccache git vulkan-headers vulkan-loader molten-vk
 ```
 
 ## Bulid Steps
