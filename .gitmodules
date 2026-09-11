@@ -16,3 +16,6 @@
 [submodule "stb"]
 	path = libs/stb
 	url = https://github.com/printfdebugging/stb
+[submodule "libs/lua"]
+	path = libs/lua
+	url = https://github.com/printfdebugging/lua

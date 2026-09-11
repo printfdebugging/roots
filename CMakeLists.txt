@@ -22,6 +22,7 @@ add_subdirectory(libs/unicode)
 add_subdirectory(libs/glad)
 add_subdirectory(libs/cglm)
 add_subdirectory(libs/stb)
+add_subdirectory(libs/lua)
 
 set(CMAKE_C_STANDARD 23)
 
@@ -86,6 +87,7 @@ target_link_libraries(editor PRIVATE
    glad
    cglm
    stb
+   lua::lua
    unicode
    $<$<BOOL:${WIN32}>:dwmapi>
 )
