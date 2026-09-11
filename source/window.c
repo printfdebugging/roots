@@ -67,6 +67,7 @@ GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
    glfwSwapInterval(1);
 
+#ifndef __APPLE__
    GLFWimage img;
    int chanCount;
    opts.icon  = opts.icon ? opts.icon : DEFAULT_WINDOW_ICON;
@@ -80,6 +81,7 @@ GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
 
    glfwSetWindowIcon(window, 1, &img);
    free(img.pixels);
+#endif
 
 #ifdef _WIN32
    HWND hwnd   = glfwGetWin32Window(window);
