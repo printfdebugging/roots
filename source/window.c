@@ -54,6 +54,10 @@ GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
 
+#ifdef NDEBUG
+   glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
+#endif
+
    const i32 windowWidth   = opts.width ? opts.width : 1600;
    const i32 windowHeight  = opts.height ? opts.height : 800;
    const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
