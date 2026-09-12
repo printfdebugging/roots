@@ -57,6 +57,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
       -Wno-override-init
       -Werror=return-type
       -Wno-double-promotion
+      -Wno-empty-translation-unit
       -fno-omit-frame-pointer
       -O0
       $<$<NOT:$<PLATFORM_ID:Windows>>:-fsanitize=undefined,address>
