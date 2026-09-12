@@ -74,8 +74,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
    )
 endif()
 
-add_definitions(
-   -DTEXT_LINE_IMPLEMENTATION=1
+
+target_compile_definitions(editor PRIVATE
+   TEXT_LINE_IMPLEMENTATION=1
 )
 
 target_compile_definitions(editor PRIVATE
