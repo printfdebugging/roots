@@ -2,6 +2,7 @@
 #define TYPES_H
 
 #include <stdint.h>
+#include <assert.h>
 
 #include "hb.h"
 #include "hb-gpu.h"

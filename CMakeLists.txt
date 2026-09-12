@@ -66,6 +66,12 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
    target_link_options(editor PUBLIC
       $<$<NOT:$<PLATFORM_ID:Windows>>:-fsanitize=undefined,address>
    )
+
+   target_compile_definitions(editor PRIVATE
+      DEBUG=1
+      NDEBUG=1
+      _DEBUG=1
+   )
 endif()
 
 add_definitions(
