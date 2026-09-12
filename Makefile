@@ -37,6 +37,7 @@ clean:
 	rm -rf perf*
 	rm -rf roots.tar.gz
 	rm -rf tags
+	rm -rf .clangd
 
 update:
 	git submodule update --remote --merge

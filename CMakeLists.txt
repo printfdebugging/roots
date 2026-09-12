@@ -72,6 +72,14 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
       NDEBUG=1
       _DEBUG=1
    )
+
+   set(CLANGD_COMPLETION_HEADER_INSERTION Never)
+   set(CLANGD_DIAGNOSTICS_UNUSED_INCLUDES None)
+
+   configure_file(
+      ${CMAKE_CURRENT_SOURCE_DIR}/config/clangd.in
+      ${CMAKE_CURRENT_SOURCE_DIR}/.clangd @ONLY
+   )
 endif()
 
 

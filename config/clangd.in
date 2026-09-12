@@ -1,0 +1,4 @@
+Diagnostics:
+   UnusedIncludes: @CLANGD_DIAGNOSTICS_UNUSED_INCLUDES@
+Completion:
+  HeaderInsertion: @CLANGD_COMPLETION_HEADER_INSERTION@
