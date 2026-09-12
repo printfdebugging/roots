@@ -31,6 +31,14 @@ perf: debug
 
 	@[ -f `which hotspot` ] && hotspot
 
+reformat:
+	find \
+		source/* \
+		-iname '*.h' -o \
+		-iname '*.c' -o \
+		-iname '*.vert' -o \
+		-iname '*.frag' | xargs clang-format -i
+
 clean:
 	rm -rf build
 	rm -rf install
