@@ -41,8 +41,8 @@ i32 editorOpenFile(struct Editor *editor, const char *path)
           .title       = "GLFWwindow",
           .transparent = true,
           .visible     = true,
-          .fbResizeFn  = windowResize,
-          .keyFn       = keyPress,
+          .fbResizeFn  = fbResizeFn,
+          .keyFn       = keyFn,
           .shared      = sharedWin,
        }
    );

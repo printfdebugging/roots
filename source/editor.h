@@ -335,10 +335,10 @@ i32 editorCreateLine(struct Editor *editor, struct LineOptions opts);  // not re
 i32 editorOpenFile(struct Editor *editor, const char *path);
 void editorDrawBuffer(struct Editor *editor, i32 bufId);
 
-void mouseScroll(GLFWwindow *window, f64 x, f64 y);
-void windowResize(GLFWwindow *window, i32 width, i32 height);
-void mouseMove(GLFWwindow *window, f64 x, f64 y);
-void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
+void scrollFn(GLFWwindow *window, f64 x, f64 y);
+void fbResizeFn(GLFWwindow *window, i32 width, i32 height);
+void curPosFn(GLFWwindow *window, f64 x, f64 y);
+void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 /* fontmanager.c */
 void fontManagerInit(char *editorFontPath);

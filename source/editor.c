@@ -67,8 +67,8 @@ bool editorInit()
           .title       = "GLFWwindow",
           .transparent = false,
           .visible     = false,
-          .fbResizeFn  = windowResize,
-          .keyFn       = keyPress,
+          .fbResizeFn  = fbResizeFn,
+          .keyFn       = keyFn,
        }
    );
 
@@ -290,27 +290,27 @@ static bool _msIsDarkMode()
 }
 #endif
 
-void windowResize(GLFWwindow *window, i32 width, i32 height)
+void fbResizeFn(GLFWwindow *window, i32 width, i32 height)
 {
    (void) window;
    glViewport(0, 0, width, height);
 }
 
-void mouseScroll(GLFWwindow *window, f64 x, f64 y)
+void scrollFn(GLFWwindow *window, f64 x, f64 y)
 {
    (void) window;
    (void) x;
    (void) y;
 }
 
-void mouseMove(GLFWwindow *window, f64 x, f64 y)
+void curPosFn(GLFWwindow *window, f64 x, f64 y)
 {
    (void) window;
    (void) x;
    (void) y;
 }
 
-void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods)
+void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
    (void) scancode;
    [[maybe_unused]] struct Editor *editor = glfwGetWindowUserPointer(window);
