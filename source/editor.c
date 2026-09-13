@@ -17,21 +17,15 @@ static struct Editor E = { 0 };
 
 void _glfwErrFn(int code, const char *description);
 
-/* next: create editor API to operate over the ID rather than having to
- * -> and then index with ID again and agian, that's unsafe.
- */
 bool editorRun()
 {
-   /* next: use E internally */
-   i32 bufId = editorOpenFile(ASSETS_DIR "test.md");
+   [[maybe_unused]] i32 bufId = editorOpenFile(ASSETS_DIR "test.md");
 
    while (!editorShouldClose())
    {
       editorCalcFrameTime();
       glfwPollEvents();
-
-      /* handle internally */
-      editorDrawBuffer(&E, bufId);
+      editorRender();
    }
 
    return true;
@@ -59,7 +53,6 @@ bool editorInit()
    if (!(E.fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH)))
       return false;
 
-   /* next: 1: direclty use Editor inside editorCreateWindow  */
    E.sharedWindowId = editorCreateWindow(
        (struct GLFWwindowOptions) {
           .width       = 800,
@@ -132,6 +125,12 @@ bool editorDeInit()
    glfwTerminate();
 
    return true;
+}
+
+void editorRender()
+{
+   for (i32 bufId = 0; bufId < E.bufferCount; ++bufId)
+      editorDrawBuffer(&E, bufId);
 }
 
 /**!

@@ -328,6 +328,7 @@ void editorCalcFrameTime();
 bool editorRun();
 bool editorShouldClose();
 bool editorDeInit();
+void editorRender();
 
 i32 editorCreateWindow(struct GLFWwindowOptions opts);
 i32 editorOpenFile(const char *path);
