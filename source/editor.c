@@ -23,7 +23,7 @@ void _glfwErrFn(int code, const char *description);
 bool editorRun()
 {
    /* next: use E internally */
-   i32 bufId = editorOpenFile(&E, ASSETS_DIR "test.md");
+   i32 bufId = editorOpenFile(ASSETS_DIR "test.md");
 
    while (!editorShouldClose())
    {
@@ -149,6 +149,89 @@ i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
 
    editor->text[editor->textCount] = text;
    return (i32) editor->textCount++;
+}
+
+/* warn: todo: add cleanup at some later stage when it works */
+/* returns a buffer id.. todo: write nicely later, let's first make it work */
+i32 editorOpenFile(const char *path)
+{
+   struct Buffer *buf = NULL;
+   i32 textId;
+
+   if (!E.initialized)
+      goto failure;
+   if ((textId = editorLoadTextFile(&E, path)) == -1)
+      goto failure;
+   if (!(buf = calloc(1, sizeof(struct Buffer))))
+      goto failure;
+
+   *buf = (struct Buffer) {
+      .winId            = -1,
+      .txtId            = textId,
+      .editor           = NULL,
+      .cursorColumn     = 0,
+      .cursorLine       = 0,
+      .hOffset          = 0,
+      .vOffset          = 0,
+      .visLineRenderers = NULL,
+      .visLineCount     = 0,
+   };
+
+   GLFWwindow *sharedWin = NULL;
+   if (E.sharedWindowId != -1)
+      sharedWin = E.window[E.sharedWindowId];
+
+   buf->winId = editorCreateWindow(
+       (struct GLFWwindowOptions) {
+          .width       = 800,
+          .height      = 600,
+          .title       = "GLFWwindow",
+          .transparent = true,
+          .visible     = true,
+          .fbResizeFn  = fbResizeFn,
+          .keyFn       = keyFn,
+          .shared      = sharedWin,
+       }
+   );
+
+   /* todo: move these to editorInit */
+   fontManagerInit(E.fontFilePath);
+   lineShaderInit(E.lineShader);
+
+   struct Text *text = E.text[textId];
+   u32 lineCount     = textGetLineCount(text);
+
+   /* todo: allocate these just for the visible lines, not for all the lines. */
+   if (!(buf->visLineRenderers = calloc(lineCount, sizeof(i32))))
+      goto failure;
+
+   memset(buf->visLineRenderers, -1, sizeof(i32) * lineCount);
+
+   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
+   {
+      /* todo: a line should hold a text id and a line number
+       * just to be more aware of where it is coming from.. */
+      buf->visLineRenderers[lineIdx] = editorCreateLine(
+          &E,
+          (struct LineOptions) {
+             .lineIdx = lineIdx,
+             .textId  = textId,
+          }
+      );
+   }
+
+   if (!(E.textBuffer = realloc(E.textBuffer, sizeof(struct Buffer *) * (E.bufferCount + 1))))
+      goto failure;
+
+   E.textBuffer[E.bufferCount] = buf;
+   return (i32) E.bufferCount++;
+
+failure:
+   if (buf)
+      free(buf->visLineRenderers);
+   free(buf);
+
+   return INVALID_ID;
 }
 
 i32 editorCreateWindow(struct GLFWwindowOptions opts)
