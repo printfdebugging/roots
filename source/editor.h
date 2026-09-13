@@ -103,6 +103,19 @@ struct Point
    f64 y;
 };
 
+/**!
+ * @brief Integers are used intentionally here. We won't be doing floating
+ * point anything when it comes to layouting etc. We just don't want that
+ * hassle. So we would do all the layouting in screen space coordinates.
+ */
+struct Rectangle
+{
+   i64 x;
+   i64 y;
+   i64 w;
+   i64 h;
+};
+
 struct GlyphInfo
 {
    f64 advance;
