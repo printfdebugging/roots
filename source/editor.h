@@ -176,7 +176,8 @@ struct GLFWwindowOptions
    i32 height;
    const char *title;
    const char *icon;
-   GLFWwindow *shared;
+   i32 sharedWinId;
+
    GLFWframebuffersizefun fbResizeFn;
    GLFWscrollfun scrollFn;
    GLFWcursorposfun curPosFn;

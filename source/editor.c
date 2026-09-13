@@ -177,10 +177,6 @@ i32 editorOpenFile(const char *path)
       .visLineCount     = 0,
    };
 
-   GLFWwindow *sharedWin = NULL;
-   if (E.sharedWindowId != -1)
-      sharedWin = E.window[E.sharedWindowId];
-
    buf->winId = editorCreateWindow(
        (struct GLFWwindowOptions) {
           .width       = 800,
@@ -190,7 +186,7 @@ i32 editorOpenFile(const char *path)
           .visible     = true,
           .fbResizeFn  = fbResizeFn,
           .keyFn       = keyFn,
-          .shared      = sharedWin,
+          .sharedWinId = E.sharedWindowId,
        }
    );
 
@@ -258,7 +254,11 @@ i32 editorCreateWindow(struct GLFWwindowOptions opts)
    const i32 windowHeight  = opts.height ? opts.height : 800;
    const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
 
-   GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, opts.shared);
+   GLFWwindow *sharedWindow = NULL;
+   if (opts.sharedWinId != INVALID_ID && opts.sharedWinId < (i32) E.windowCount)
+      sharedWindow = E.window[opts.sharedWinId];
+
+   GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, sharedWindow);
    if (!window)
       return INVALID_ID;
 
