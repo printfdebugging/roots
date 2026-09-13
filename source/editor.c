@@ -13,50 +13,55 @@
 
 #include "editor.h"
 
+static struct Editor E = { 0 };
+
 void _glfwErrFn(int code, const char *description);
 
 /* next: create editor API to operate over the ID rather than having to
  * -> and then index with ID again and agian, that's unsafe.
  */
-bool editorRun(struct Editor *editor)
+bool editorRun()
 {
-   i32 bufId = editorOpenFile(editor, ASSETS_DIR "test.md");
+   /* next: use E internally */
+   i32 bufId = editorOpenFile(&E, ASSETS_DIR "test.md");
 
-   while (!editorShouldClose(editor))
+   while (!editorShouldClose())
    {
-      editorCalcFrameTime(editor);
+      editorCalcFrameTime();
       glfwPollEvents();
 
-      editorDrawBuffer(editor, bufId);
+      /* handle internally */
+      editorDrawBuffer(&E, bufId);
    }
 
    return true;
 }
 
-bool editorShouldClose(struct Editor *editor)
+bool editorShouldClose()
 {
-   if (!editor->initialized)
+   if (!E.initialized)
       return true;
 
    bool shouldClose = true;
-   for (i32 winId = 0; winId < (i32) editor->windowCount; ++winId)
-      if (winId != editor->sharedWindowId)
-         shouldClose &= glfwWindowShouldClose(editor->window[winId]);
+   for (i32 winId = 0; winId < (i32) E.windowCount; ++winId)
+      if (winId != E.sharedWindowId)
+         shouldClose &= glfwWindowShouldClose(E.window[winId]);
 
    return shouldClose;
 }
 
-bool editorInit(struct Editor *editor)
+bool editorInit()
 {
-   if (editor->initialized)
+   if (E.initialized)
       return true;
 
-   editor->fontSize = DEFAULT_FONT_SIZE;
-   if (!(editor->fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH)))
+   E.fontSize = DEFAULT_FONT_SIZE;
+   if (!(E.fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH)))
       return false;
 
-   editor->sharedWindowId = editorCreateWindow(
-       editor,
+   /* next: 1: direclty use Editor inside editorCreateWindow  */
+   E.sharedWindowId = editorCreateWindow(
+       &E,
        (struct GLFWwindowOptions) {
           .width       = 800,
           .height      = 600,
@@ -65,63 +70,63 @@ bool editorInit(struct Editor *editor)
           .visible     = false,
           .fbResizeFn  = windowResize,
           .keyFn       = keyPress,
-          .userdata    = editor,
+          .userdata    = &E,
        }
    );
 
    glfwSetErrorCallback(_glfwErrFn);
 
-   // fontManagerInit(editor->fontFilePath);
-   if (!(editor->lineShader = calloc(1, sizeof(struct LineShader))))
+   // fontManagerInit(E.fontFilePath);
+   if (!(E.lineShader = calloc(1, sizeof(struct LineShader))))
       return false;
-   // lineShaderInit(editor->lineShader);
+   // lineShaderInit(E.lineShader);
 
-   editor->initialized = true;
+   E.initialized = true;
    return true;
 }
 
-void editorCalcFrameTime(struct Editor *editor)
+void editorCalcFrameTime()
 {
-   f64 timeNow       = glfwGetTime();
-   editor->timeDelta = timeNow - editor->lastTime;
-   editor->lastTime  = timeNow;
+   f64 timeNow = glfwGetTime();
+   E.timeDelta = timeNow - E.lastTime;
+   E.lastTime  = timeNow;
 }
 
-bool editorDeInit(struct Editor *editor)
+bool editorDeInit()
 {
-   for (u32 idx = 0; idx < editor->textCount; ++idx)
-      textDestroy(editor->text[idx]);
-   for (u32 idx = 0; idx < editor->textCount; ++idx)
-      free(editor->text[idx]);
+   for (u32 idx = 0; idx < E.textCount; ++idx)
+      textDestroy(E.text[idx]);
+   for (u32 idx = 0; idx < E.textCount; ++idx)
+      free(E.text[idx]);
 
-   for (u32 idx = 0; idx < editor->lineRendererCount; ++idx)
-      lineRendererDeInit(editor->lineRenderer[idx]);
-   for (u32 idx = 0; idx < editor->lineRendererCount; ++idx)
-      free(editor->lineRenderer[idx]);
+   for (u32 idx = 0; idx < E.lineRendererCount; ++idx)
+      lineRendererDeInit(E.lineRenderer[idx]);
+   for (u32 idx = 0; idx < E.lineRendererCount; ++idx)
+      free(E.lineRenderer[idx]);
 
-   for (u32 idx = 0; idx < editor->bufferCount; ++idx)
+   for (u32 idx = 0; idx < E.bufferCount; ++idx)
    {
-      free(editor->textBuffer[idx]->visLineRenderers);
-      free(editor->textBuffer[idx]);
-      free(editor->textBuffer);
+      free(E.textBuffer[idx]->visLineRenderers);
+      free(E.textBuffer[idx]);
+      free(E.textBuffer);
    }
 
    /**!
     * note: Till we have a shared hidden window which
     * is destroyed at the end, we need to do this last
     */
-   for (u32 idx = 0; idx < editor->windowCount; ++idx)
-      glfwDestroyWindow(editor->window[idx]);
+   for (u32 idx = 0; idx < E.windowCount; ++idx)
+      glfwDestroyWindow(E.window[idx]);
 
    /* note: todo: maybe this should be above the window destruction sequence */
-   lineShaderDeInit(editor->lineShader);
+   lineShaderDeInit(E.lineShader);
    fontManagerDeInit();
 
-   free(editor->text);
-   free(editor->window);
-   free(editor->lineRenderer);
-   free(editor->lineShader);
-   free(editor->fontFilePath);
+   free(E.text);
+   free(E.window);
+   free(E.lineRenderer);
+   free(E.lineShader);
+   free(E.fontFilePath);
 
    return true;
 }

@@ -317,11 +317,17 @@ struct LineOptions
 };
 
 /* editor.c */
-bool editorInit(struct Editor *editor);
-void editorCalcFrameTime(struct Editor *editor);
-bool editorRun(struct Editor *editor);
-bool editorShouldClose(struct Editor *editor);
-bool editorDeInit(struct Editor *editor);
+
+/**!
+ * These are the core editor functions, so they can access the editor
+ * directly.
+ */
+bool editorInit();
+void editorCalcFrameTime();
+bool editorRun();
+bool editorShouldClose();
+bool editorDeInit();
+
 i32 editorLoadTextFile(struct Editor *editor, const char *filePath);
 i32 editorCreateWindow(struct Editor *editor, struct GLFWwindowOptions opts);
 i32 editorCreateLine(struct Editor *editor, struct LineOptions opts);
