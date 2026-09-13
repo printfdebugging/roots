@@ -96,17 +96,17 @@ void editorCalcFrameTime()
 
 bool editorDeInit()
 {
-   for (u32 idx = 0; idx < E.textCount; ++idx)
+   for (i32 idx = 0; idx < E.textCount; ++idx)
       textDestroy(E.text[idx]);
-   for (u32 idx = 0; idx < E.textCount; ++idx)
+   for (i32 idx = 0; idx < E.textCount; ++idx)
       free(E.text[idx]);
 
-   for (u32 idx = 0; idx < E.lineRendererCount; ++idx)
+   for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
       lineRendererDeInit(E.lineRenderer[idx]);
-   for (u32 idx = 0; idx < E.lineRendererCount; ++idx)
+   for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
       free(E.lineRenderer[idx]);
 
-   for (u32 idx = 0; idx < E.bufferCount; ++idx)
+   for (i32 idx = 0; idx < E.bufferCount; ++idx)
    {
       free(E.textBuffer[idx]->visLineRenderers);
       free(E.textBuffer[idx]);
@@ -117,7 +117,7 @@ bool editorDeInit()
     * note: Till we have a shared hidden window which
     * is destroyed at the end, we need to do this last
     */
-   for (u32 idx = 0; idx < E.windowCount; ++idx)
+   for (i32 idx = 0; idx < E.windowCount; ++idx)
       glfwDestroyWindow(E.window[idx]);
 
    /* note: todo: maybe this should be above the window destruction sequence */
@@ -147,7 +147,7 @@ i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
    if (!text)
       return INVALID_ID;
 
-   editor->text = realloc(editor->text, sizeof(struct Text *) * (editor->textCount + 1));
+   editor->text = realloc(editor->text, sizeof(struct Text *) * ((u32) editor->textCount + 1));
    if (!editor->text)
       return INVALID_ID;
 
@@ -223,7 +223,7 @@ i32 editorOpenFile(const char *path)
       );
    }
 
-   if (!(E.textBuffer = realloc(E.textBuffer, sizeof(struct Buffer *) * (E.bufferCount + 1))))
+   if (!(E.textBuffer = realloc(E.textBuffer, sizeof(struct Buffer *) * ((u32) E.bufferCount + 1))))
       goto failure;
 
    E.textBuffer[E.bufferCount] = buf;
@@ -310,7 +310,7 @@ i32 editorCreateWindow(struct GLFWwindowOptions opts)
    if (!window)
       return INVALID_ID;
 
-   E.window = realloc(E.window, sizeof(GLFWwindow *) * (E.windowCount + 1));
+   E.window = realloc(E.window, sizeof(GLFWwindow *) * ((u32) E.windowCount + 1));
    if (!E.window)
       return INVALID_ID;
 
@@ -348,7 +348,7 @@ i32 editorCreateLine(struct Editor *editor, struct LineOptions opts)
    u64 lineByteLen   = strlen(lineBytes);
    fontManagerLayoutLine(renderer, lineBytes, lineByteLen);
 
-   if (!(editor->lineRenderer = realloc(editor->lineRenderer, sizeof(struct LineRenderer *) * (editor->lineRendererCount + 1))))
+   if (!(editor->lineRenderer = realloc(editor->lineRenderer, sizeof(struct LineRenderer *) * ((u32) editor->lineRendererCount + 1))))
    {
       lineRendererDeInit(renderer);
       free(renderer);

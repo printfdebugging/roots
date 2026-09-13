@@ -201,10 +201,10 @@ struct Editor
    i32 sharedWindowId;
 
    /* counts */
-   u32 textCount;
-   u32 lineRendererCount;
-   u32 windowCount;
-   u32 bufferCount;
+   i32 textCount;
+   i32 lineRendererCount;
+   i32 windowCount;
+   i32 bufferCount;
 
    /* config */
    f32 fontSize;
