@@ -254,8 +254,8 @@ struct Editor
    bool initialized;
 
    /* frame book-keeping */
-   f64 lastTime;
-   f64 timeDelta;
+   f64 tLast;
+   f64 tDelta;
 };
 
 struct Font

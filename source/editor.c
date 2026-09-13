@@ -82,9 +82,9 @@ bool init()
 
 void calcFrameTime()
 {
-   f64 timeNow = glfwGetTime();
-   E.timeDelta = timeNow - E.lastTime;
-   E.lastTime  = timeNow;
+   f64 tNow = glfwGetTime();
+   E.tDelta = tNow - E.tLast;
+   E.tLast  = tNow;
 }
 
 bool deInit()
