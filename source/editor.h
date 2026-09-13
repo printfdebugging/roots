@@ -149,6 +149,15 @@ struct GlyphAtlas
  */
 struct Text;
 
+/**!
+ * @brief Usually it's said that buffers are shared between frames, but the
+ * sharing is in terms of attributes, like two buffers might share a frame,
+ * or two buffers might not share a frame but share the text they are showing.
+ *
+ * This does not mean that they are the same buffers. They can have different
+ * cursor positions, different state that they are rendering, different visibility.
+ * So they are not at all the same thing. Don't tell the user about this ;).
+ */
 struct Buffer
 {
    i32 winId;

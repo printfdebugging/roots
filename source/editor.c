@@ -127,7 +127,7 @@ bool editorDeInit()
    return true;
 }
 
-void editorRender()
+void render()
 {
    for (i32 bufId = 0; bufId < E.bufferCount; ++bufId)
       editorDrawBuffer(&E, bufId);
