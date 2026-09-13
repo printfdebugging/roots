@@ -69,7 +69,6 @@ bool editorInit()
           .visible     = false,
           .fbResizeFn  = windowResize,
           .keyFn       = keyPress,
-          .userdata    = &E,
        }
    );
 
@@ -297,7 +296,6 @@ GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
    if (opts.scrollFn) glfwSetScrollCallback(window, opts.scrollFn);
    if (opts.fbResizeFn) glfwSetFramebufferSizeCallback(window, opts.fbResizeFn);
    if (opts.keyFn) glfwSetKeyCallback(window, opts.keyFn);
-   if (opts.userdata) glfwSetWindowUserPointer(window, opts.userdata);
 
    return window;
 }

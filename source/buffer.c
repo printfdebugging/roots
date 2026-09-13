@@ -43,7 +43,6 @@ i32 editorOpenFile(struct Editor *editor, const char *path)
           .visible     = true,
           .fbResizeFn  = windowResize,
           .keyFn       = keyPress,
-          .userdata    = editor,
           .shared      = sharedWin,
        }
    );

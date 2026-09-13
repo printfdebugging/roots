@@ -175,8 +175,6 @@ struct GLFWwindowOptions
    const char *title;
    const char *icon;
    GLFWwindow *shared;
-   void *userdata;
-
    GLFWframebuffersizefun fbResizeFn;
    GLFWscrollfun scrollFn;
    GLFWcursorposfun curPosFn;
