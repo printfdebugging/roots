@@ -130,7 +130,7 @@ bool deInit()
 void render()
 {
    for (i32 bufId = 0; bufId < E.bufferCount; ++bufId)
-      drawBuffer(&E, bufId);
+      drawBuffer(bufId);
 }
 
 /**!
@@ -234,6 +234,87 @@ failure:
    free(buf);
 
    return INVALID_ID;
+}
+
+/* todo: remove editor from here */
+void drawBuffer(i32 bufId)
+{
+   /* todo: move to a new api */
+   /* todo: fix this with new API over IDs */
+   GLFWwindow *window = E.window[E.textBuffer[bufId]->winId];
+   /* todo: move to render function */
+   i32 windowWidth, windowHeight;
+   glfwGetWindowSize(window, &windowWidth, &windowHeight);
+
+   /**!
+    * note:
+    * calculate the line height and then use that to
+    * count the number of visible lines and then render
+    * those..
+    */
+   i32 xScale, yScale;
+   struct Font *font = fontManagerGetDefaultFont();
+   hb_font_get_scale(font->hbFont, &xScale, &yScale);
+   f32 fontScale = E.fontSize / (f32) yScale;
+
+   struct GlyphAtlas *atlas = fontManagerGetGlyphAtlas();
+
+   mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
+   mvp       = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
+   mvp       = glms_translate(mvp, (vec3s) { { 0.0f, 0.0f, 0.0f } }); /* not set as of now */
+
+   ivec4s viewport = { 0 };
+   glGetIntegerv(GL_VIEWPORT, viewport.raw);
+
+   /**!
+    * warn: let's not complicate things thinking about multiple fonts and
+    * different line heights, single heights single font is fine for now.
+    * let's make that work first.
+    */
+   f32 lineHeight = (f32) font->hbAscent - (f32) font->hbDescent;
+   lineHeight *= (f32) fontScale;
+
+   struct Buffer *buf = E.textBuffer[bufId];
+
+   glClearColor(ColorRGBAHex(0X002b36FF));
+
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   struct Text *text = E.text[buf->txtId];
+   u32 lineCount     = textGetLineCount(text);
+
+   buf->visLineCount = (u32) windowHeight / (u32) lineHeight;
+   if (lineCount < buf->visLineCount)
+      buf->visLineCount = lineCount;
+
+   for (u32 lineIdx = 0; lineIdx < buf->visLineCount; ++lineIdx)
+   {
+      i32 lineId = buf->visLineRenderers[lineIdx];
+
+      struct LineRenderer *lineRenderer = E.lineRenderer[lineId];
+
+      lineRenderer->uniforms = (struct LineShaderUniforms) {
+         .matViewProjection = mvp,
+         .viewport          = viewport,
+         .scale             = fontScale,
+         .position          = { .x = 0, .y = ((f32) windowHeight - ((f32) lineHeight * ((f32) lineIdx + 1))) },
+         .hbGpuAtlas        = atlas->textureUnit,
+         .gamma             = 1.0f,
+         .debug             = false,
+         .stemDarkening     = false,
+         .foreground        = (vec4s) { { ColorRGBAHex(0X839496FF) } },
+      };
+
+      lineShaderUploadUniforms(E.lineShader, &lineRenderer->uniforms);
+
+      if (lineRenderer->uploaded)
+      {
+         glBindVertexArray(lineRenderer->vao);
+         glDrawArrays(GL_TRIANGLES, 0, (i32) lineRenderer->count);
+      }
+   }
+
+   glfwSwapBuffers(window);
 }
 
 i32 createWindow(struct GLFWwindowOptions opts)
