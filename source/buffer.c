@@ -35,7 +35,6 @@ i32 editorOpenFile(struct Editor *editor, const char *path)
       sharedWin = editor->window[editor->sharedWindowId];
 
    buf->winId = editorCreateWindow(
-       editor,
        (struct GLFWwindowOptions) {
           .width       = 800,
           .height      = 600,

@@ -327,10 +327,10 @@ void editorCalcFrameTime();
 bool editorRun();
 bool editorShouldClose();
 bool editorDeInit();
+i32 editorCreateWindow(struct GLFWwindowOptions opts);
 
 i32 editorLoadTextFile(struct Editor *editor, const char *filePath);
-i32 editorCreateWindow(struct Editor *editor, struct GLFWwindowOptions opts);
-i32 editorCreateLine(struct Editor *editor, struct LineOptions opts);
+i32 editorCreateLine(struct Editor *editor, struct LineOptions opts);  // not really an editor function, move to buffer or layouting or font manager..
 i32 editorOpenFile(struct Editor *editor, const char *path);
 void editorDrawBuffer(struct Editor *editor, i32 bufId);
 

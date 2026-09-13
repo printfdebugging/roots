@@ -61,7 +61,6 @@ bool editorInit()
 
    /* next: 1: direclty use Editor inside editorCreateWindow  */
    E.sharedWindowId = editorCreateWindow(
-       &E,
        (struct GLFWwindowOptions) {
           .width       = 800,
           .height      = 600,
@@ -152,18 +151,18 @@ i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
    return (i32) editor->textCount++;
 }
 
-i32 editorCreateWindow(struct Editor *editor, struct GLFWwindowOptions opts)
+i32 editorCreateWindow(struct GLFWwindowOptions opts)
 {
    GLFWwindow *window = windowCreate(opts);
    if (!window)
       return -1;
 
-   editor->window = realloc(editor->window, sizeof(GLFWwindow *) * (editor->windowCount + 1));
-   if (!editor->window)
+   E.window = realloc(E.window, sizeof(GLFWwindow *) * (E.windowCount + 1));
+   if (!E.window)
       return -1;
 
-   editor->window[editor->windowCount] = window;
-   return (i32) editor->windowCount++;
+   E.window[E.windowCount] = window;
+   return (i32) E.windowCount++;
 }
 
 /**!
