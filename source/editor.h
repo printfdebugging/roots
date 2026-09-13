@@ -55,6 +55,10 @@
 
 #define ArraySize(t) (sizeof(t) / sizeof(*t))
 
+/*
+ * Config. This would be the first block to be exposed to a scripting
+ * language. Probably with an EditorConfig struct.
+ */
 #define DEFAULT_FONT_FILE_PATH ASSETS_DIR "LilexNerdFont-Regular.ttf"
 #define DEFAULT_FONT_SIZE      24
 #define DEFAULT_WINDOW_ICON    ASSETS_DIR "icon.png"
@@ -226,6 +230,39 @@ struct GLFWwindowOptions
    GLFWkeyfun keyFn;
 };
 
+/**!
+ * Font manager is a subsystem we request for the font objects.
+ * This way, we don't have to manage the lifetime of these objects. And
+ * since these objects are shared, so is the glyphCache.
+ */
+
+struct FontManager
+{
+   struct Font *font;
+   u32 fontCount;
+
+   /**!
+    * Path the default editor font.
+    */
+   const char *editorFontPath;
+
+   /**!
+    * The default font of the editor. Every rune is first shaped
+    * with this font and if it doesn't have a glyph, we check other
+    * cached fonts then the system fonts using fontconfig.
+    */
+   struct Font *editorFont;
+
+   /**!
+    * OpenGL textures with the glyph data. `GlyphInfo.atlasOffset` is an
+    * offset into this texture. We only cache the glyphs being used, so
+    * even if we are using a few fonts, it should be fine for the most part.
+    */
+   struct GlyphAtlas glyphAtlas;
+
+   bool initialized;
+};
+
 struct Editor
 {
    /* arrays */
@@ -256,6 +293,9 @@ struct Editor
    /* frame book-keeping */
    f64 tLast;
    f64 tDelta;
+
+   /* subsystems */
+   struct FontManager fm;
 };
 
 struct Font
@@ -385,15 +425,22 @@ void curPosFn(GLFWwindow *window, f64 x, f64 y);
 void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 /* fontmanager.c */
-void fontManagerInit(char *editorFontPath);
-void fontManagerDeInit();
-void fontManagerLayoutLine(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen);
-struct GlyphAtlas *fontManagerGetGlyphAtlas();
-struct Font *fontManagerGetFont(const char *filePath);
-struct Font *fontManagerGetDefaultFont();
-struct Font *fontManagerGetFontWithRune(rune codepoint);
-void fontInit(struct Font *font, const char *filePath);
-void fontDeInit(struct Font *font);
+void fmInit(char *editorFontPath);
+void fmDeInit();
+void fmLayoutLine(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen);
+struct GlyphAtlas *fmGetAtlas();
+struct Font *fmGetFont(const char *filePath);
+struct Font *fmGetDefaultFont();
+struct Font *fmGetFontWithRune(rune codepoint);
+void fntInit(struct Font *font, const char *filePath);
+void fntDeInit(struct Font *font);
+
+void _fmAtlasInit();
+void _fmAtlasDeInit();
+
+// void _linePrintChars();
+// void _lineSubstituteNewlines();
+// void _lineSubstituteTabs();
 
 /* renderer.c */
 void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader);

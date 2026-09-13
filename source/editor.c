@@ -4,6 +4,7 @@
 
 #include "glad/glad.h"
 #include "stb_image.h"
+#include "hb-ot.h"
 
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
@@ -115,7 +116,7 @@ bool deInit()
 
    /* note: todo: maybe this should be above the window destruction sequence */
    lineShaderDeInit(E.lineShader);
-   fontManagerDeInit();
+   fmDeInit();
 
    free(E.text);
    free(E.window);
@@ -197,7 +198,7 @@ i32 openFile(const char *path)
    );
 
    /* todo: move these to editorInit */
-   fontManagerInit(E.fontFilePath);
+   fmInit(E.fontFilePath);
    lineShaderInit(E.lineShader);
 
    struct Text *text = E.text[textId];
@@ -253,11 +254,11 @@ void drawBuffer(i32 bufId)
     * those..
     */
    i32 xScale, yScale;
-   struct Font *font = fontManagerGetDefaultFont();
+   struct Font *font = fmGetDefaultFont();
    hb_font_get_scale(font->hbFont, &xScale, &yScale);
    f32 fontScale = E.fontSize / (f32) yScale;
 
-   struct GlyphAtlas *atlas = fontManagerGetGlyphAtlas();
+   struct GlyphAtlas *atlas = fmGetAtlas();
 
    mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
    mvp       = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
@@ -425,7 +426,7 @@ i32 createLine(struct Editor *editor, struct LineOptions opts)
    struct Text *text = editor->text[opts.textId];
    char *lineBytes   = textGetUTF8Line(text, opts.lineIdx);
    u64 lineByteLen   = strlen(lineBytes);
-   fontManagerLayoutLine(renderer, lineBytes, lineByteLen);
+   fmLayoutLine(renderer, lineBytes, lineByteLen);
 
    if (!(editor->lineRenderer = realloc(editor->lineRenderer, sizeof(struct LineRenderer *) * ((u32) editor->lineRendererCount + 1))))
    {
@@ -487,4 +488,261 @@ void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods)
    bool shiftQPress = (mods & GLFW_MOD_SHIFT) && (key == GLFW_KEY_Q) && (action == GLFW_PRESS);
    if (shiftQPress)
       glfwSetWindowShouldClose(window, GLFW_TRUE);
+}
+
+struct GlyphInfo *_glyphInfo = NULL;
+
+/**!
+ * note: FontManager is just a wrapper around harfbuzz & OpenGL functions,
+ * and manages shared objects.. So the OpenGL function pointers should be
+ * loaded before this function is called. That's done by GLFW.
+ */
+void fmInit(char *editorFontPath)
+{
+   if (E.fm.initialized)
+      return;
+
+   /* `fontManagerGetFont` checks this and returns early if false (default) */
+   E.fm.initialized = true;
+
+   _fmAtlasInit();
+   E.fm.editorFontPath = stringDuplicate(editorFontPath);
+   E.fm.editorFont     = fmGetFont(editorFontPath);
+}
+
+void fmDeInit()
+{
+   if (!E.fm.initialized)
+      return;
+
+   for (u32 fontIdx = 0; fontIdx < E.fm.fontCount; ++fontIdx)
+      fntDeInit(&E.fm.font[fontIdx]);
+
+   free(E.fm.font);
+   free((void *) E.fm.editorFontPath);
+
+   _fmAtlasDeInit();
+   E.fm.initialized = false;
+}
+
+void fmLayoutLine(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen)
+{
+   (void) lineByteLen;
+   if (!E.fm.initialized)
+      return;
+
+   struct Font *font = fmGetDefaultFont();
+
+   hb_buffer_t *buffer = hb_buffer_create();
+   hb_buffer_add_utf8(buffer, lineUTF8, -1, 0, -1);
+   hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
+   hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
+   hb_shape(font->hbFont, buffer, NULL, 0);
+
+   u32 hbGlyphCount            = 0;
+   hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
+
+   _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct GlyphInfo));
+   memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct GlyphInfo));
+
+   for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
+   {
+      hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
+      struct GlyphInfo *glyph   = &font->glyphCache[glyphIndex];
+      if (!glyph->cached)
+      {
+         i32 xScale, yScale;
+         hb_font_get_scale(font->hbFont, &xScale, &yScale);
+         hb_gpu_draw_clear(font->hbDraw);
+         hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
+
+         hb_glyph_extents_t hbGlyphExtents = {};
+         hb_blob_t *hbBlob                 = NULL;
+
+         hbBlob           = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
+         u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
+
+         *glyph = (struct GlyphInfo) {
+            .extents.xMin = 0,
+            .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+            .extents.yMin = font->hbDescent,
+            .extents.yMax = font->hbAscent,
+            .advance      = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+            .upem         = yScale,
+            .empty        = (hbBlobLength == 0),
+            .cached       = true,
+         };
+
+         /* upload glyph data to glyph atlas */
+         struct GlyphAtlas *glyphAtlas = fmGetAtlas();
+         if (!glyph->empty)
+         {
+            const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
+            glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
+            glBufferSubData(GL_TEXTURE_BUFFER, glyphAtlas->cursorOffsetBytes, hbBlobLength, hbGlyphData);
+            glyph->atlasOffset = glyphAtlas->cursorOffsetBytes;
+            glyphAtlas->cursorOffsetBytes += hbBlobLength;
+
+            hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
+         }
+      }
+
+      _glyphInfo[glyphIdx] = *glyph;
+   }
+
+   hb_buffer_destroy(buffer);
+
+   renderer->count    = hbGlyphCount * 6;
+   renderer->vertices = realloc(renderer->vertices, renderer->count * sizeof(struct GlyphVertex));
+
+   struct Point glyphPosition = { .x = 0, .y = 0 };
+   for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
+   {
+      [[maybe_unused]] bool hasCursor;
+      struct GlyphInfo *glyphInfo = &_glyphInfo[glyphIdx];
+
+      /**********************
+       * create glyph quads *
+       *********************/
+
+      glyphPosition.x += glyphInfo->extents.xMin;
+      glyphPosition.y += 0;
+
+      struct GlyphVertex glyphQuadCorners[4];
+      for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
+      {
+         i32 cx = (cornerIdx >> 1) & 1;
+         i32 cy = cornerIdx & 1;
+         f64 ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
+         f64 ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
+
+         glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
+            .x           = (f32) glyphPosition.x,
+            .y           = (f32) glyphPosition.y,
+            .tx          = (f32) ex,
+            .ty          = (f32) ey,
+            .nx          = cx ? 1.f : -1.f,
+            .ny          = cy ? -1.f : 1.f,
+            .emPerPos    = 1.0,
+            .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
+            .hasCursor   = false,
+            .fgColor     = (vec4s) { { ColorRGBAHex(0X839496FF) } },
+            .bgColor     = (vec4s) { { ColorRGBAHex(0X000000FF) } },
+            /* next: fix this. for now, nothing has a cursor */
+         };
+      }
+
+      u32 glyphQuadOffset = glyphIdx * 6;
+
+      renderer->vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
+      renderer->vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
+      renderer->vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
+      renderer->vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
+      renderer->vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
+      renderer->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
+
+      glyphPosition.x += glyphInfo->extents.xMax;
+      glyphPosition.y += 0;
+   }
+
+   glBindVertexArray(renderer->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * renderer->count, renderer->vertices, GL_STATIC_DRAW);
+   renderer->count    = renderer->count;
+   renderer->uploaded = true;
+}
+
+struct GlyphAtlas *fmGetAtlas()
+{
+   if (!E.fm.initialized)
+      return NULL;
+   return &E.fm.glyphAtlas;
+}
+
+struct Font *fmGetFont(const char *filePath)
+{
+   if (!E.fm.initialized)
+      return NULL;
+
+   for (u32 fontIdx = 0; fontIdx < E.fm.fontCount; ++fontIdx)
+      if (strcmp(E.fm.font[fontIdx].fontPath, filePath) == 0)
+         return &E.fm.font[fontIdx];
+
+   E.fm.font         = realloc(E.fm.font, sizeof(struct Font) * (E.fm.fontCount + 1));
+   struct Font *font = &E.fm.font[E.fm.fontCount++];
+   fntInit(font, filePath);
+
+   return font;
+}
+
+struct Font *fmGetDefaultFont()
+{
+   if (!E.fm.initialized)
+      return NULL;
+   return E.fm.editorFont;
+}
+
+struct Font *fmGetFontWithRune(rune codepoint)
+{
+   (void) codepoint;
+   perror("todo");
+   return NULL;
+}
+
+void fntInit(struct Font *font, const char *filePath)
+{
+   font->fontPath   = stringDuplicate(filePath);
+   font->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
+
+   hb_blob_t *hbBlob = NULL;
+   if (!(hbBlob = hb_blob_create_from_file(font->fontPath)) ||
+       !(font->hbFace = hb_face_create(hbBlob, 0)) ||
+       !(font->hbFont = hb_font_create(font->hbFace)) ||
+       !(font->hbDraw = hb_gpu_draw_create_or_fail()))
+   {
+      perror("failed to initialize harfbuzz");
+   }
+
+   hb_blob_destroy(hbBlob);
+
+   const hb_ot_metrics_tag_t ASCENT_HHEA  = HB_TAG('H', 'a', 's', 'c');
+   const hb_ot_metrics_tag_t DESCENT_HHEA = HB_TAG('H', 'd', 's', 'c');
+
+   hb_ot_metrics_get_position(font->hbFont, ASCENT_HHEA, &font->hbAscent);
+   hb_ot_metrics_get_position(font->hbFont, DESCENT_HHEA, &font->hbDescent);
+   hb_ot_metrics_get_position(font->hbFont, HB_OT_METRICS_TAG_CAP_HEIGHT, &font->hbMaxHeight);
+}
+
+void fntDeInit(struct Font *font)
+{
+   hb_font_destroy(font->hbFont);
+   hb_face_destroy(font->hbFace);
+   hb_gpu_draw_destroy(font->hbDraw);
+
+   free(font->fontPath);
+   free(font->glyphCache);
+}
+
+void _fmAtlasInit()
+{
+   struct GlyphAtlas *glyphAtlas = &E.fm.glyphAtlas;
+
+   glyphAtlas->capacityBytes     = ATLAS_PAGE_SIZE;
+   glyphAtlas->cursorOffsetBytes = TEXEL_SIZE;
+   glyphAtlas->textureUnit       = 0;
+   glGenBuffers(1, &glyphAtlas->textureBufferObject);
+   glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
+   glBufferData(GL_TEXTURE_BUFFER, glyphAtlas->capacityBytes, NULL, GL_STATIC_DRAW);
+
+   glActiveTexture(GL_TEXTURE0 + (u32) glyphAtlas->textureUnit);
+   glGenTextures(1, &glyphAtlas->texture);
+   glBindTexture(GL_TEXTURE_BUFFER, glyphAtlas->texture);
+   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, glyphAtlas->textureBufferObject);
+}
+
+void _fmAtlasDeInit()
+{
+   struct GlyphAtlas *glyphAtlas = &E.fm.glyphAtlas;
+   glDeleteBuffers(1, &glyphAtlas->textureBufferObject);
+   glDeleteTextures(1, &glyphAtlas->texture);
 }
