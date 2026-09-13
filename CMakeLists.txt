@@ -67,12 +67,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
       $<$<NOT:$<PLATFORM_ID:Windows>>:-fsanitize=undefined,address>
    )
 
-   target_compile_definitions(editor PRIVATE
-      DEBUG=1
-      NDEBUG=1
-      _DEBUG=1
-   )
-
    set(CLANGD_COMPLETION_HEADER_INSERTION Never)
    set(CLANGD_DIAGNOSTICS_UNUSED_INCLUDES None)
 
@@ -84,12 +78,10 @@ endif()
 
 
 target_compile_definitions(editor PRIVATE
-   TEXT_LINE_IMPLEMENTATION=1
-)
-
-target_compile_definitions(editor PRIVATE
    GLFW_INCLUDE_NONE
+   TEXT_LINE_IMPLEMENTATION
    ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets/"
+   "$<$<CONFIG:Debug>:DEBUG>"
 )
 
 target_include_directories(editor PUBLIC

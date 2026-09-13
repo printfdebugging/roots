@@ -54,7 +54,7 @@ GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
 #endif
 
-#ifdef NDEBUG
+#ifdef DEBUG
    glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
 #endif
 
