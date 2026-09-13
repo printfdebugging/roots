@@ -14,6 +14,9 @@ make debug
 - Open VSCode ('ms-vscode.cmake-tools', 'ms-vscode.cpptools' etc extensions, see [extensions.json](./config/vscode/.vscode/extensions.json))
 - Put a breakpoint & Press `<SHIFT-F5>`
 
+## Coding Style
+- Always assign all the values in the struct initializer lists, we use -1 for IDs, default initialization sets values to 0.
+
 ![vscode-debugging](assets/vscode-debugging.png)
 
 ## LLM Policy

@@ -67,8 +67,12 @@ bool editorInit()
           .title       = "GLFWwindow",
           .transparent = false,
           .visible     = false,
+          .icon        = DEFAULT_WINDOW_ICON,
+          .sharedWinId = INVALID_ID,
           .fbResizeFn  = fbResizeFn,
           .keyFn       = keyFn,
+          .scrollFn    = scrollFn,
+          .curPosFn    = curPosFn,
        }
    );
 
@@ -184,9 +188,12 @@ i32 editorOpenFile(const char *path)
           .title       = "GLFWwindow",
           .transparent = true,
           .visible     = true,
+          .icon        = DEFAULT_WINDOW_ICON,
+          .sharedWinId = E.sharedWindowId,
           .fbResizeFn  = fbResizeFn,
           .keyFn       = keyFn,
-          .sharedWinId = E.sharedWindowId,
+          .scrollFn    = scrollFn,
+          .curPosFn    = curPosFn,
        }
    );
 
