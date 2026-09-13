@@ -137,7 +137,7 @@ void render()
  * Loads the text file from `filePath` into a `Text` object,
  * and returns an index to it, or `-1` on error.
  */
-i32 loadTextFile(struct Editor *editor, const char *filePath)
+i32 loadTextFile(const char *filePath)
 {
    if (!filePath)
       return INVALID_ID;
@@ -146,12 +146,12 @@ i32 loadTextFile(struct Editor *editor, const char *filePath)
    if (!text)
       return INVALID_ID;
 
-   editor->text = realloc(editor->text, sizeof(struct Text *) * ((u32) editor->textCount + 1));
-   if (!editor->text)
+   E.text = realloc(E.text, sizeof(struct Text *) * ((u32) E.textCount + 1));
+   if (!E.text)
       return INVALID_ID;
 
-   editor->text[editor->textCount] = text;
-   return (i32) editor->textCount++;
+   E.text[E.textCount] = text;
+   return (i32) E.textCount++;
 }
 
 /* warn: todo: add cleanup at some later stage when it works */
@@ -163,7 +163,7 @@ i32 openFile(const char *path)
 
    if (!E.initialized)
       goto failure;
-   if ((textId = loadTextFile(&E, path)) == -1)
+   if ((textId = loadTextFile(path)) == -1)
       goto failure;
    if (!(buf = calloc(1, sizeof(struct Buffer))))
       goto failure;
