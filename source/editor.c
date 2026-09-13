@@ -54,6 +54,12 @@ bool init()
    if (!(E.fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH)))
       return false;
 
+   /**!
+    * note: Context sharing means that the objects will be shared i.e. they would be
+    * available in the other context, so we won't have to reallocate/reupload them, but
+    * we have to bind them manually to the container objects on the other context (VAOs)
+    * in order to use them.
+    */
    E.sharedWindowId = createWindow(
        (struct GLFWwindowOptions) {
           .width       = 800,
@@ -72,10 +78,10 @@ bool init()
 
    glfwSetErrorCallback(_glfwErrFn);
 
-   // fontManagerInit(E.fontFilePath);
+   fmInit(E.fontFilePath);
    if (!(E.lineShader = calloc(1, sizeof(struct LineShader))))
       return false;
-   // lineShaderInit(E.lineShader);
+   lineShaderInit(E.lineShader);
 
    E.initialized = true;
    return true;
@@ -197,9 +203,10 @@ i32 openFile(const char *path)
        }
    );
 
-   /* todo: move these to editorInit */
-   fmInit(E.fontFilePath);
-   lineShaderInit(E.lineShader);
+   /* todo: put them behind wrappers */
+   glActiveTexture(GL_TEXTURE0 + (u32) E.fm.glyphAtlas.textureUnit);
+   glBindTexture(GL_TEXTURE_BUFFER, E.fm.glyphAtlas.texture);
+   glUseProgram(E.lineShader->hbShaderProgram);
 
    struct Text *text = E.text[textId];
    u32 lineCount     = textGetLineCount(text);
