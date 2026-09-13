@@ -135,7 +135,7 @@ void render()
 
 /**!
  * Loads the text file from `filePath` into a `Text` object,
- * and returns an index to it, or `-1` on error.
+ * and returns an index to it, or `INVALID_ID` on error.
  */
 i32 loadTextFile(const char *filePath)
 {
@@ -163,13 +163,13 @@ i32 openFile(const char *path)
 
    if (!E.initialized)
       goto failure;
-   if ((textId = loadTextFile(path)) == -1)
+   if ((textId = loadTextFile(path)) == INVALID_ID)
       goto failure;
    if (!(buf = calloc(1, sizeof(struct Buffer))))
       goto failure;
 
    *buf = (struct Buffer) {
-      .winId            = -1,
+      .winId            = INVALID_ID,
       .txtId            = textId,
       .editor           = NULL,
       .cursorColumn     = 0,
@@ -207,7 +207,7 @@ i32 openFile(const char *path)
    if (!(buf->visLineRenderers = calloc(lineCount, sizeof(i32))))
       goto failure;
 
-   memset(buf->visLineRenderers, -1, sizeof(i32) * lineCount);
+   memset(buf->visLineRenderers, INVALID_ID, sizeof(i32) * lineCount);
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
@@ -412,7 +412,7 @@ i32 createLine(struct Editor *editor, struct LineOptions opts)
 {
    if (!editor->lineShader)
       return INVALID_ID;
-   if (opts.textId == -1 /*  && !opts.isVirtual */)
+   if (opts.textId == INVALID_ID /*  && !opts.isVirtual */)
       return INVALID_ID;
 
    struct LineRenderer *renderer = calloc(1, sizeof(struct LineRenderer));
