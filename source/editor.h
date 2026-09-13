@@ -328,6 +328,14 @@ i32 editorCreateLine(struct Editor *editor, struct LineOptions opts);
 i32 editorOpenFile(struct Editor *editor, const char *path);
 void editorDrawBuffer(struct Editor *editor, i32 bufId);
 
+GLFWwindow *windowCreate(struct GLFWwindowOptions opts);
+void windowDestroy(GLFWwindow *window);
+void windowSetUserDataPtr(GLFWwindow *window, void *userData);
+void mouseScroll(GLFWwindow *window, f64 x, f64 y);
+void windowResize(GLFWwindow *window, i32 width, i32 height);
+void mouseMove(GLFWwindow *window, f64 x, f64 y);
+void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
+
 /* fontmanager.c */
 void fontManagerInit(char *editorFontPath);
 void fontManagerDeInit();
@@ -367,15 +375,6 @@ char *readFileContents(const char *filPath);
 /* shader.c */
 bool shaderGetCompileStatus(u32 shaderObject);
 bool shaderGetLinkStatus(u32 shaderProgram);
-
-/* window.c */
-GLFWwindow *windowCreate(struct GLFWwindowOptions opts);
-void windowDestroy(GLFWwindow *window);
-void windowSetUserDataPtr(GLFWwindow *window, void *userData);
-void mouseScroll(GLFWwindow *window, f64 x, f64 y);
-void windowResize(GLFWwindow *window, i32 width, i32 height);
-void mouseMove(GLFWwindow *window, f64 x, f64 y);
-void keyPress(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 /* utils.c */
 char *stringDuplicate(const char *str);
