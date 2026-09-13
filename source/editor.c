@@ -137,15 +137,15 @@ bool editorDeInit()
 i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
 {
    if (!filePath)
-      return -1;
+      return INVALID_ID;
 
    struct Text *text = textLoadFromFile(filePath);
    if (!text)
-      return -1;
+      return INVALID_ID;
 
    editor->text = realloc(editor->text, sizeof(struct Text *) * (editor->textCount + 1));
    if (!editor->text)
-      return -1;
+      return INVALID_ID;
 
    editor->text[editor->textCount] = text;
    return (i32) editor->textCount++;
@@ -325,13 +325,13 @@ i32 editorCreateWindow(struct GLFWwindowOptions opts)
 i32 editorCreateLine(struct Editor *editor, struct LineOptions opts)
 {
    if (!editor->lineShader)
-      return -1;
+      return INVALID_ID;
    if (opts.textId == -1 /*  && !opts.isVirtual */)
-      return -1;
+      return INVALID_ID;
 
    struct LineRenderer *renderer = calloc(1, sizeof(struct LineRenderer));
    if (!renderer)
-      return -1;
+      return INVALID_ID;
 
    lineRendererInit(renderer, editor->lineShader);
 
@@ -345,7 +345,7 @@ i32 editorCreateLine(struct Editor *editor, struct LineOptions opts)
    {
       lineRendererDeInit(renderer);
       free(renderer);
-      return -1;
+      return INVALID_ID;
    }
 
    editor->lineRenderer[editor->lineRendererCount] = renderer;
