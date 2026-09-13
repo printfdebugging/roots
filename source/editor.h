@@ -345,19 +345,19 @@ struct LineOptions
  * These are the core editor functions, so they can access the editor
  * directly.
  */
-bool editorInit();
-void editorCalcFrameTime();
-bool editorRun();
-bool editorShouldClose();
-bool editorDeInit();
-void editorRender();
+bool init();
+void calcFrameTime();
+bool run();
+bool shouldClose();
+bool deInit();
+void render();
 
-i32 editorCreateWindow(struct GLFWwindowOptions opts);
-i32 editorOpenFile(const char *path);
+i32 createWindow(struct GLFWwindowOptions opts);
+i32 openFile(const char *path);
 
-i32 editorLoadTextFile(struct Editor *editor, const char *filePath);
-i32 editorCreateLine(struct Editor *editor, struct LineOptions opts);  // not really an editor function, move to buffer or layouting or font manager..
-void editorDrawBuffer(struct Editor *editor, i32 bufId);
+i32 loadTextFile(struct Editor *editor, const char *filePath);
+i32 createLine(struct Editor *editor, struct LineOptions opts);  // not really an editor function, move to buffer or layouting or font manager..
+void drawBuffer(struct Editor *editor, i32 bufId);
 
 void scrollFn(GLFWwindow *window, f64 x, f64 y);
 void fbResizeFn(GLFWwindow *window, i32 width, i32 height);

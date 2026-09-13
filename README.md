@@ -16,6 +16,7 @@ make debug
 
 ## Coding Style
 - Always assign all the values in the struct initializer lists, we use -1 for IDs, default initialization sets values to 0.
+- Don't prefix the function names unnecessarily, use `openFile` instead of `editorOpenFile`. For subsystems, use minimal prefixes, `fmInit` instead of `fontManagerInit`.
 
 ![vscode-debugging](assets/vscode-debugging.png)
 

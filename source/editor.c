@@ -17,21 +17,21 @@ static struct Editor E = { 0 };
 
 void _glfwErrFn(int code, const char *description);
 
-bool editorRun()
+bool run()
 {
-   [[maybe_unused]] i32 bufId = editorOpenFile(ASSETS_DIR "test.md");
+   [[maybe_unused]] i32 bufId = openFile(ASSETS_DIR "test.md");
 
-   while (!editorShouldClose())
+   while (!shouldClose())
    {
-      editorCalcFrameTime();
+      calcFrameTime();
       glfwPollEvents();
-      editorRender();
+      render();
    }
 
    return true;
 }
 
-bool editorShouldClose()
+bool shouldClose()
 {
    if (!E.initialized)
       return true;
@@ -44,7 +44,7 @@ bool editorShouldClose()
    return shouldClose;
 }
 
-bool editorInit()
+bool init()
 {
    if (E.initialized)
       return true;
@@ -53,7 +53,7 @@ bool editorInit()
    if (!(E.fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH)))
       return false;
 
-   E.sharedWindowId = editorCreateWindow(
+   E.sharedWindowId = createWindow(
        (struct GLFWwindowOptions) {
           .width       = 800,
           .height      = 600,
@@ -80,14 +80,14 @@ bool editorInit()
    return true;
 }
 
-void editorCalcFrameTime()
+void calcFrameTime()
 {
    f64 timeNow = glfwGetTime();
    E.timeDelta = timeNow - E.lastTime;
    E.lastTime  = timeNow;
 }
 
-bool editorDeInit()
+bool deInit()
 {
    for (i32 idx = 0; idx < E.textCount; ++idx)
       textDestroy(E.text[idx]);
@@ -130,14 +130,14 @@ bool editorDeInit()
 void render()
 {
    for (i32 bufId = 0; bufId < E.bufferCount; ++bufId)
-      editorDrawBuffer(&E, bufId);
+      drawBuffer(&E, bufId);
 }
 
 /**!
  * Loads the text file from `filePath` into a `Text` object,
  * and returns an index to it, or `-1` on error.
  */
-i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
+i32 loadTextFile(struct Editor *editor, const char *filePath)
 {
    if (!filePath)
       return INVALID_ID;
@@ -156,14 +156,14 @@ i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
 
 /* warn: todo: add cleanup at some later stage when it works */
 /* returns a buffer id.. todo: write nicely later, let's first make it work */
-i32 editorOpenFile(const char *path)
+i32 openFile(const char *path)
 {
    struct Buffer *buf = NULL;
    i32 textId;
 
    if (!E.initialized)
       goto failure;
-   if ((textId = editorLoadTextFile(&E, path)) == -1)
+   if ((textId = loadTextFile(&E, path)) == -1)
       goto failure;
    if (!(buf = calloc(1, sizeof(struct Buffer))))
       goto failure;
@@ -180,7 +180,7 @@ i32 editorOpenFile(const char *path)
       .visLineCount     = 0,
    };
 
-   buf->winId = editorCreateWindow(
+   buf->winId = createWindow(
        (struct GLFWwindowOptions) {
           .width       = 800,
           .height      = 600,
@@ -213,7 +213,7 @@ i32 editorOpenFile(const char *path)
    {
       /* todo: a line should hold a text id and a line number
        * just to be more aware of where it is coming from.. */
-      buf->visLineRenderers[lineIdx] = editorCreateLine(
+      buf->visLineRenderers[lineIdx] = createLine(
           &E,
           (struct LineOptions) {
              .lineIdx = lineIdx,
@@ -236,7 +236,7 @@ failure:
    return INVALID_ID;
 }
 
-i32 editorCreateWindow(struct GLFWwindowOptions opts)
+i32 createWindow(struct GLFWwindowOptions opts)
 {
    if (!glfwInit())
       return INVALID_ID;
@@ -328,7 +328,7 @@ i32 editorCreateWindow(struct GLFWwindowOptions opts)
  * it gets in shape, we would move these to one large function, maybe...
  * intuition says we would still need to keep the per line thing..
  */
-i32 editorCreateLine(struct Editor *editor, struct LineOptions opts)
+i32 createLine(struct Editor *editor, struct LineOptions opts)
 {
    if (!editor->lineShader)
       return INVALID_ID;
