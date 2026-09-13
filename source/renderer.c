@@ -20,7 +20,6 @@ void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
       .position          = GLMS_VEC2_ZERO,
       .hbGpuAtlas        = 0,
       .gamma             = 0,
-      .foreground        = (vec4s) { { ColorRGBAHex(0XD8DEE9FF) } },
       .debug             = false,
       .stemDarkening     = false,
    };
@@ -78,6 +77,14 @@ void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
    attribLocation = glGetAttribLocation(program, "a_hasCursor");
    glEnableVertexAttribArray((u32) attribLocation);
    glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, hasCursor));
+
+   attribLocation = glGetAttribLocation(program, "a_fgColor");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribIPointer((u32) attribLocation, 4, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, fgColor));
+
+   attribLocation = glGetAttribLocation(program, "a_bgColor");
+   glEnableVertexAttribArray((u32) attribLocation);
+   glVertexAttribIPointer((u32) attribLocation, 4, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, bgColor));
 }
 
 void lineRendererDeInit(struct LineRenderer *renderer)
@@ -102,7 +109,6 @@ void lineShaderInit(struct LineShader *shader)
       .positionLoc          = -1,
       .hbGpuAtlasLoc        = -1,
       .gammaLoc             = -1,
-      .foregroundLoc        = -1,
       .debugLoc             = -1,
       .stemDarkeningLoc     = -1,
    };
@@ -116,7 +122,6 @@ void lineShaderInit(struct LineShader *shader)
       .scaleLoc             = glGetUniformLocation(program, "u_scale"),
       .positionLoc          = glGetUniformLocation(program, "u_position"),
       .gammaLoc             = glGetUniformLocation(program, "u_gamma"),
-      .foregroundLoc        = glGetUniformLocation(program, "u_foreground"),
       .debugLoc             = glGetUniformLocation(program, "u_debug"),
       .stemDarkeningLoc     = glGetUniformLocation(program, "u_stem_darkening"),
       .hbGpuAtlasLoc        = glGetUniformLocation(program, "hb_gpu_atlas"),
@@ -140,7 +145,6 @@ void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUnifor
 
    struct LineShaderUniformLocations *locations = &shader->uniformLocations;
    glUniformMatrix4fv(locations->matViewProjectionLoc, 1, GL_FALSE, uniforms->matViewProjection.col[0].raw);
-   glUniform4fv(locations->foregroundLoc, 1, uniforms->foreground.raw);
    glUniform2fv(locations->positionLoc, 1, uniforms->position.raw);
    glUniform2f(locations->viewportLoc, (f32) uniforms->viewport.raw[2], (f32) uniforms->viewport.raw[3]);
    glUniform1f(locations->scaleLoc, (f32) uniforms->scale);

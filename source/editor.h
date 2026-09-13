@@ -76,6 +76,8 @@ typedef float f32;
 typedef double f64;
 typedef int b32;
 
+/* todo: document it properly */
+/* todo: also pass the text offsets, so it's easy to map clicks to cursor position changes */
 struct GlyphVertex
 {
    f32 x;
@@ -87,6 +89,17 @@ struct GlyphVertex
    f32 emPerPos;
    u32 atlasOffset;
    u32 hasCursor;
+
+   /*
+   todo:
+      vec4 textPos;
+         [0] = textId
+         [1] = line
+         [2] = byteOffset
+   */
+
+   vec4s fgColor;
+   vec4s bgColor;
 };
 
 struct Extents
@@ -263,7 +276,6 @@ struct LineShaderUniforms
    vec2s position;
    i32 hbGpuAtlas;
    f32 gamma;
-   vec4s foreground;
    bool debug;
    bool stemDarkening;
 };

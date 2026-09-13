@@ -302,7 +302,6 @@ void drawBuffer(i32 bufId)
          .gamma             = 1.0f,
          .debug             = false,
          .stemDarkening     = false,
-         .foreground        = (vec4s) { { ColorRGBAHex(0X839496FF) } },
       };
 
       lineShaderUploadUniforms(E.lineShader, &lineRenderer->uniforms);

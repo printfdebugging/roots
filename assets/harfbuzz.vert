@@ -14,10 +14,15 @@ in vec2 a_normal;
 in float a_emPerPos;
 in uint a_glyphLoc;
 in uint a_hasCursor;
+in vec4 a_fgColor;
+in vec4 a_bgColor;
 
+/* todo: document it properly */
 out vec2 v_texcoord;
 flat out uint v_hasCursor;
 flat out uint v_glyphLoc;
+flat out vec4 v_fgColor;
+flat out vec4 v_bgColor;
 
 void main()
 {
@@ -37,4 +42,6 @@ void main()
    v_texcoord  = tex;
    v_glyphLoc  = a_glyphLoc;
    v_hasCursor = a_hasCursor;
+   v_fgColor   = a_fgColor;
+   v_bgColor   = a_bgColor;
 }

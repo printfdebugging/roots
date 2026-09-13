@@ -191,6 +191,8 @@ void fontManagerLayoutLine(struct LineRenderer *renderer, char *lineUTF8, u64 li
             .emPerPos    = 1.0,
             .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
             .hasCursor   = false,
+            .fgColor     = (vec4s) { { ColorRGBAHex(0X839496FF) } },
+            .bgColor     = (vec4s) { { ColorRGBAHex(0X000000FF) } },
             /* next: fix this. for now, nothing has a cursor */
          };
       }

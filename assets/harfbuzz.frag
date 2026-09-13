@@ -5,14 +5,17 @@
 uniform float u_gamma;
 uniform float u_debug;
 uniform float u_stem_darkening;
-uniform vec4 u_foreground;
 uniform int u_runeIdx;
 
 in vec2 v_texcoord;
 flat in uint v_hasCursor;
 flat in uint v_glyphLoc;
+flat in vec4 v_fgColor;
+flat in vec4 v_bgColor;
 
 out vec4 fragColor;
+
+const vec4 TRANSPARENT_COLOR = vec4(vec3(0.0f), 1.0);
 
 void main()
 {
@@ -29,9 +32,9 @@ void main()
    float cov;
 #ifdef HB_GPU_DEMO_DRAW
    cov    = hb_gpu_draw(v_texcoord, v_glyphLoc);
-   vec4 c = vec4(u_foreground.rgb * u_foreground.a, u_foreground.a) * cov;
+   vec4 c = vec4(v_fgColor.rgb * v_fgColor.a, v_fgColor.a) * cov;
 #else
-   vec4 c = hb_gpu_paint(v_texcoord, v_glyphLoc, u_foreground, cov);
+   vec4 c = hb_gpu_paint(v_texcoord, v_glyphLoc, v_fgColor, cov);
 #endif
 
    /* Apply stem darkening and gamma correction to the edge
@@ -60,8 +63,9 @@ void main()
       return;
    }
 
+   /* todo: define a global constant */
    if (c.a == 0 && v_hasCursor != 0.0)
-      c = vec4(0.0f, 0.0f, 0.0f, 1.0);
+      c = TRANSPARENT_COLOR;
 
    fragColor = c;
 }
