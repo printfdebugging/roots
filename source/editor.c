@@ -125,6 +125,7 @@ bool editorDeInit()
    free(E.lineRenderer);
    free(E.lineShader);
    free(E.fontFilePath);
+   glfwTerminate();
 
    return true;
 }
@@ -152,13 +153,76 @@ i32 editorLoadTextFile(struct Editor *editor, const char *filePath)
 
 i32 editorCreateWindow(struct GLFWwindowOptions opts)
 {
-   GLFWwindow *window = windowCreate(opts);
+   if (!glfwInit())
+      return INVALID_ID;
+
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+   glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, opts.transparent);
+   glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
+   glfwWindowHint(GLFW_VISIBLE, opts.visible);
+   glfwWindowHint(GLFW_SAMPLES, 4);
+#ifdef __APPLE__
+   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+#endif
+
+#ifdef DEBUG
+   glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
+#endif
+
+   const i32 windowWidth   = opts.width ? opts.width : 1600;
+   const i32 windowHeight  = opts.height ? opts.height : 800;
+   const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
+
+   GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, opts.shared);
    if (!window)
-      return -1;
+      return INVALID_ID;
+
+   glfwMakeContextCurrent(window);
+   gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+   glfwSwapInterval(1);
+
+#ifndef __APPLE__
+   GLFWimage img;
+   int chanCount;
+   opts.icon  = opts.icon ? opts.icon : DEFAULT_WINDOW_ICON;
+   img.pixels = stbi_load(opts.icon, &img.width, &img.height, &chanCount, 0);
+
+   if (!img.pixels)
+   {
+      glfwDestroyWindow(window);
+      return INVALID_ID;
+   }
+
+   glfwSetWindowIcon(window, 1, &img);
+   free(img.pixels);
+#endif
+
+#ifdef _WIN32
+   HWND hwnd   = glfwGetWin32Window(window);
+   DWORD value = _msIsDarkMode();
+   DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
+#endif
+
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_MULTISAMPLE);
+   glEnable(GL_BLEND);
+   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+   glLineWidth(2);
+
+   if (opts.curPosFn) glfwSetCursorPosCallback(window, opts.curPosFn);
+   if (opts.scrollFn) glfwSetScrollCallback(window, opts.scrollFn);
+   if (opts.fbResizeFn) glfwSetFramebufferSizeCallback(window, opts.fbResizeFn);
+   if (opts.keyFn) glfwSetKeyCallback(window, opts.keyFn);
+
+   if (!window)
+      return INVALID_ID;
 
    E.window = realloc(E.window, sizeof(GLFWwindow *) * (E.windowCount + 1));
    if (!E.window)
-      return -1;
+      return INVALID_ID;
 
    E.window[E.windowCount] = window;
    return (i32) E.windowCount++;
@@ -210,11 +274,6 @@ void _glfwErrFn(int code, const char *description)
    fprintf(stderr, "_glfwErrFun: code: %i, msg: %s\n", code, description);
 }
 
-void windowSetUserDataPtr(GLFWwindow *window, void *userData)
-{
-   glfwSetWindowUserPointer(window, userData);
-}
-
 #ifdef _WIN32
 static bool _msIsDarkMode()
 {
@@ -230,81 +289,6 @@ static bool _msIsDarkMode()
    return useDarkMode;
 }
 #endif
-
-GLFWwindow *windowCreate(struct GLFWwindowOptions opts)
-{
-   if (!glfwInit())
-      return NULL;
-
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-   glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, opts.transparent);
-   glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-   glfwWindowHint(GLFW_VISIBLE, opts.visible);
-   glfwWindowHint(GLFW_SAMPLES, 4);
-#ifdef __APPLE__
-   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-#endif
-
-#ifdef DEBUG
-   glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
-#endif
-
-   const i32 windowWidth   = opts.width ? opts.width : 1600;
-   const i32 windowHeight  = opts.height ? opts.height : 800;
-   const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
-
-   GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, opts.shared);
-   if (!window)
-      return NULL;
-
-   glfwMakeContextCurrent(window);
-   gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-   glfwSwapInterval(1);
-
-#ifndef __APPLE__
-   GLFWimage img;
-   int chanCount;
-   opts.icon  = opts.icon ? opts.icon : DEFAULT_WINDOW_ICON;
-   img.pixels = stbi_load(opts.icon, &img.width, &img.height, &chanCount, 0);
-
-   if (!img.pixels)
-   {
-      glfwDestroyWindow(window);
-      return NULL;
-   }
-
-   glfwSetWindowIcon(window, 1, &img);
-   free(img.pixels);
-#endif
-
-#ifdef _WIN32
-   HWND hwnd   = glfwGetWin32Window(window);
-   DWORD value = _msIsDarkMode();
-   DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
-#endif
-
-   glEnable(GL_DEPTH_TEST);
-   glEnable(GL_MULTISAMPLE);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-   glLineWidth(2);
-
-   if (opts.curPosFn) glfwSetCursorPosCallback(window, opts.curPosFn);
-   if (opts.scrollFn) glfwSetScrollCallback(window, opts.scrollFn);
-   if (opts.fbResizeFn) glfwSetFramebufferSizeCallback(window, opts.fbResizeFn);
-   if (opts.keyFn) glfwSetKeyCallback(window, opts.keyFn);
-
-   return window;
-}
-
-void windowDestroy(GLFWwindow *window)
-{
-   glfwDestroyWindow(window);
-   glfwTerminate();
-}
 
 void windowResize(GLFWwindow *window, i32 width, i32 height)
 {

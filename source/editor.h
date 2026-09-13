@@ -59,6 +59,8 @@
 #define DEFAULT_FONT_SIZE      24
 #define DEFAULT_WINDOW_ICON    ASSETS_DIR "icon.png"
 
+#define INVALID_ID -1
+
 /* type aliases */
 typedef uint8_t u8;
 typedef uint16_t u16;
@@ -325,6 +327,7 @@ void editorCalcFrameTime();
 bool editorRun();
 bool editorShouldClose();
 bool editorDeInit();
+
 i32 editorCreateWindow(struct GLFWwindowOptions opts);
 
 i32 editorLoadTextFile(struct Editor *editor, const char *filePath);
@@ -332,9 +335,6 @@ i32 editorCreateLine(struct Editor *editor, struct LineOptions opts);  // not re
 i32 editorOpenFile(struct Editor *editor, const char *path);
 void editorDrawBuffer(struct Editor *editor, i32 bufId);
 
-GLFWwindow *windowCreate(struct GLFWwindowOptions opts);
-void windowDestroy(GLFWwindow *window);
-void windowSetUserDataPtr(GLFWwindow *window, void *userData);
 void mouseScroll(GLFWwindow *window, f64 x, f64 y);
 void windowResize(GLFWwindow *window, i32 width, i32 height);
 void mouseMove(GLFWwindow *window, f64 x, f64 y);
