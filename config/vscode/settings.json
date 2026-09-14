@@ -1,6 +1,8 @@
 {
 	"keyboard.dispatch": "keyCode",
 	"window.titleBarStyle": "custom",
+   "window.customTitleBarVisibility": "never",
+   "window.menuBarVisibility": "toggle"
 	"update.mode": "none",
 	"extensions.ignoreRecommendations": false 
 }
