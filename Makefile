@@ -2,19 +2,19 @@ export CC      := clang
 export CXX     := clang++
 
 run: debug
-	./build/bin/editor
+	./build/Debug/bin/editor
 
 debug:
 	cmake \
 		-DCMAKE_BUILD_TYPE=Debug \
 		-DCMAKE_INSTALL_PREFIX=install \
-		-B build && cmake --build build
+		-B build/Debug && cmake --build build/Debug
 
 release:
 	cmake \
 		-DCMAKE_BUILD_TYPE=Release \
 		-DCMAKE_INSTALL_PREFIX=install \
-		-B build && cmake --build build
+		-B build/Release && cmake --build build/Release
 
 install: clean debug
 	cmake --install build --prefix install
