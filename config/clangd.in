@@ -2,3 +2,5 @@ Diagnostics:
    UnusedIncludes: @CLANGD_DIAGNOSTICS_UNUSED_INCLUDES@
 Completion:
   HeaderInsertion: @CLANGD_COMPLETION_HEADER_INSERTION@
+CompileFlags:
+   CompilationDatabase: @CLANGD_COMPILE_COMMANDS_FILE_DIRECTORY@
