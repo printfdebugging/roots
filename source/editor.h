@@ -269,7 +269,7 @@ struct Editor
    struct Text **text;
    struct GLFWwindow **window;
    struct LineRenderer **lineRenderer;
-   struct LineShader *lineShader; /* shared among Buffer objects */
+   struct TextShader *lineShader; /* shared among Buffer objects */
    struct Buffer **textBuffer;    /* just a bunch of indices into Editor's object arrays */
 
    /**!
@@ -315,7 +315,7 @@ struct Font
    struct GlyphInfo *glyphCache;
 };
 
-struct LineShaderUniforms
+struct TextShaderUniforms
 {
    mat4s matViewProjection;
    ivec4s viewport;
@@ -327,7 +327,7 @@ struct LineShaderUniforms
    bool stemDarkening;
 };
 
-struct LineShaderUniformLocations
+struct TextShaderUniformLocations
 {
    i32 matViewProjectionLoc;
    i32 viewportLoc;
@@ -343,12 +343,12 @@ struct LineShaderUniformLocations
 /**!
  * A Line shader is shared between various line renderers. This
  * does not contain any state, but allows one to quickly set
- * the state using `LineShaderUniforms` and draw/redraw a line..
+ * the state using `TextShaderUniforms` and draw/redraw a line..
  */
-struct LineShader
+struct TextShader
 {
    u32 hbShaderProgram;
-   struct LineShaderUniformLocations uniformLocations;
+   struct TextShaderUniformLocations uniformLocations;
 };
 
 struct LineRenderer
@@ -357,7 +357,7 @@ struct LineRenderer
     * Uniforms of the line, like the position from where we start
     * drawing, the MVP matrix, the scale, gpu atlas, so on..
     */
-   struct LineShaderUniforms uniforms;
+   struct TextShaderUniforms uniforms;
 
    /**!
     * The vbo data, kept for compuation on the CPU, like the
@@ -419,6 +419,10 @@ i32 createWindow(struct GLFWwindowOptions opts);
 i32 loadTextFile(const char *filePath);
 i32 openFile(const char *path);
 
+void createTextShader(struct TextShader *shader);
+void destroyTextShader(struct TextShader *shader);
+void uploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms);
+
 i32 createLine(struct Editor *editor, struct LineOptions opts);  // not really an editor function, move to buffer or layouting or font manager..
 
 void scrollFn(GLFWwindow *window, f64 x, f64 y);
@@ -445,12 +449,9 @@ void _fmAtlasDeInit();
 // void _lineSubstituteTabs();
 
 /* renderer.c */
-void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader);
+void lineRendererInit(struct LineRenderer *renderer, struct TextShader *shader);
 void lineRendererDeInit(struct LineRenderer *renderer);
-void lineRendererRenderLine(struct LineRenderer *renderer, struct LineShader *shader);
-void lineShaderInit(struct LineShader *shader);
-void lineShaderDeInit(struct LineShader *shader);
-void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUniforms *uniforms);
+void lineRendererRenderLine(struct LineRenderer *renderer, struct TextShader *shader);
 
 /* text.c */
 struct Text *textLoadFromFile(const char *filepath);

@@ -79,9 +79,9 @@ bool init()
    glfwSetErrorCallback(_glfwErrFn);
 
    fmInit(E.fontFilePath);
-   if (!(E.lineShader = calloc(1, sizeof(struct LineShader))))
+   if (!(E.lineShader = calloc(1, sizeof(struct TextShader))))
       return false;
-   lineShaderInit(E.lineShader);
+   createTextShader(E.lineShader);
 
    E.initialized = true;
    return true;
@@ -121,7 +121,7 @@ bool deInit()
       glfwDestroyWindow(E.window[idx]);
 
    /* note: todo: maybe this should be above the window destruction sequence */
-   lineShaderDeInit(E.lineShader);
+   destroyTextShader(E.lineShader);
    fmDeInit();
 
    free(E.text);
@@ -307,7 +307,7 @@ void renderBuffer(i32 bufId)
 
       struct LineRenderer *lineRenderer = E.lineRenderer[lineId];
 
-      lineRenderer->uniforms = (struct LineShaderUniforms) {
+      lineRenderer->uniforms = (struct TextShaderUniforms) {
          .matViewProjection = mvp,
          .viewport          = viewport,
          .scale             = fontScale,
@@ -318,7 +318,7 @@ void renderBuffer(i32 bufId)
          .stemDarkening     = false,
       };
 
-      lineShaderUploadUniforms(E.lineShader, &lineRenderer->uniforms);
+      uploadTextShaderUniforms(E.lineShader, &lineRenderer->uniforms);
 
       if (lineRenderer->uploaded)
       {

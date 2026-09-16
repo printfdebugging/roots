@@ -4,16 +4,16 @@
 
 static u32 CURRENT_SHADER_PROGRAM = 0;
 
-static u32 _lineShaderCreate();
+static u32 _createTextShader();
 static void _rendererUseShaderProgram(u32 shaderProgram);
 
-void lineRendererInit(struct LineRenderer *renderer, struct LineShader *shader)
+void lineRendererInit(struct LineRenderer *renderer, struct TextShader *shader)
 {
    /* layout */
    renderer->vertices = NULL;
 
    /* uniforms */
-   renderer->uniforms = (struct LineShaderUniforms) {
+   renderer->uniforms = (struct TextShaderUniforms) {
       .matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT },
       .viewport          = GLMS_IVEC4_ZERO,
       .scale             = 0,
@@ -99,10 +99,10 @@ void lineRendererDeInit(struct LineRenderer *renderer)
    glDeleteVertexArrays(1, &renderer->vao);
 }
 
-void lineShaderInit(struct LineShader *shader)
+void createTextShader(struct TextShader *shader)
 {
-   shader->hbShaderProgram  = _lineShaderCreate();
-   shader->uniformLocations = (struct LineShaderUniformLocations) {
+   shader->hbShaderProgram  = _createTextShader();
+   shader->uniformLocations = (struct TextShaderUniformLocations) {
       .matViewProjectionLoc = -1,
       .viewportLoc          = -1,
       .scaleLoc             = -1,
@@ -116,7 +116,7 @@ void lineShaderInit(struct LineShader *shader)
    u32 program = shader->hbShaderProgram;
    _rendererUseShaderProgram(program);
 
-   shader->uniformLocations = (struct LineShaderUniformLocations) {
+   shader->uniformLocations = (struct TextShaderUniformLocations) {
       .matViewProjectionLoc = glGetUniformLocation(program, "u_matViewProjection"),
       .viewportLoc          = glGetUniformLocation(program, "u_viewport"),
       .scaleLoc             = glGetUniformLocation(program, "u_scale"),
@@ -128,22 +128,22 @@ void lineShaderInit(struct LineShader *shader)
    };
 }
 
-void lineShaderDeInit(struct LineShader *shader)
+void destroyTextShader(struct TextShader *shader)
 {
    glDeleteProgram(shader->hbShaderProgram);
 }
 
-void lineShaderDeinit(struct LineShader *shader)
+void lineShaderDeinit(struct TextShader *shader)
 {
    glDeleteProgram(shader->hbShaderProgram);
 }
 
-void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUniforms *uniforms)
+void uploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms)
 {
    u32 program = shader->hbShaderProgram;
    _rendererUseShaderProgram(program);
 
-   struct LineShaderUniformLocations *locations = &shader->uniformLocations;
+   struct TextShaderUniformLocations *locations = &shader->uniformLocations;
    glUniformMatrix4fv(locations->matViewProjectionLoc, 1, GL_FALSE, uniforms->matViewProjection.col[0].raw);
    glUniform2fv(locations->positionLoc, 1, uniforms->position.raw);
    glUniform2f(locations->viewportLoc, (f32) uniforms->viewport.raw[2], (f32) uniforms->viewport.raw[3]);
@@ -154,12 +154,8 @@ void lineShaderUploadUniforms(struct LineShader *shader, struct LineShaderUnifor
    glUniform1i(locations->hbGpuAtlasLoc, (i32) uniforms->hbGpuAtlas);
 }
 
-static u32 _lineShaderCreate()
+static u32 _createTextShader()
 {
-   /******************************************************************
-    * opengl: create a shader `hbShaderProgram` for rendering glyphs *
-    *****************************************************************/
-
    const char *hbShaderVersion  = "#version 330 core\n";
    const char *hbShaderPreamble = "#define HB_GPU_DEMO_DRAW\n";
    const char *hbVertexMain     = readFileContents(ASSETS_DIR "harfbuzz.vert");
