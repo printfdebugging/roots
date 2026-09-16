@@ -270,7 +270,7 @@ struct Editor
    struct GLFWwindow **window;
    struct LineRenderer **lineRenderer;
    struct TextShader *lineShader; /* shared among Buffer objects */
-   struct Buffer **textBuffer;    /* just a bunch of indices into Editor's object arrays */
+   struct Buffer *buf;
 
    /**!
     * Always 0 as it's the first window created in `editorInit`. This
@@ -282,7 +282,6 @@ struct Editor
    /* counts */
    i32 lineRendererCount;
    i32 windowCount;
-   i32 bufferCount;
 
    /* config */
    f32 fontSize;

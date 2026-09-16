@@ -101,12 +101,8 @@ bool deInit()
    for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
       free(E.lineRenderer[idx]);
 
-   for (i32 idx = 0; idx < E.bufferCount; ++idx)
-   {
-      free(E.textBuffer[idx]->visLineRenderers);
-      free(E.textBuffer[idx]);
-      free(E.textBuffer);
-   }
+   free(E.buf->visLineRenderers);
+   free(E.buf);
 
    /**!
     * note: Till we have a shared hidden window which
@@ -131,14 +127,12 @@ bool deInit()
 
 void render()
 {
-   for (i32 bufId = 0; bufId < E.bufferCount; ++bufId)
-      renderBuffer(bufId);
+   renderBuffer(0);
 }
 
 void layout()
 {
-   for (i32 bufId = 0; bufId < E.bufferCount; ++bufId)
-      layoutBuffer(bufId);
+   layoutBuffer(0);
 }
 
 /**!
@@ -222,26 +216,20 @@ i32 openFile(const char *path)
       );
    }
 
-   if (!(E.textBuffer = realloc(E.textBuffer, sizeof(struct Buffer *) * ((u32) E.bufferCount + 1))))
-      goto failure;
-
-   E.textBuffer[E.bufferCount] = buf;
-   return (i32) E.bufferCount++;
+   E.buf = buf;
+   return 0;
 
 failure:
-   if (buf)
-      free(buf->visLineRenderers);
-   free(buf);
-
    return INVALID_ID;
 }
 
 /* todo: remove editor from here */
 void renderBuffer(i32 bufId)
 {
+   struct Buffer *buf = &E.buf[bufId];
    /* todo: move to a new api */
    /* todo: fix this with new API over IDs */
-   GLFWwindow *window = E.window[E.textBuffer[bufId]->winId];
+   GLFWwindow *window = E.window[buf->winId];
    /* todo: move to render function */
    i32 windowWidth, windowHeight;
    glfwGetWindowSize(window, &windowWidth, &windowHeight);
@@ -273,8 +261,6 @@ void renderBuffer(i32 bufId)
     */
    f32 lineHeight = (f32) font->hbAscent - (f32) font->hbDescent;
    lineHeight *= (f32) fontScale;
-
-   struct Buffer *buf = E.textBuffer[bufId];
 
    glClearColor(ColorRGBAHex(0X002b36FF));
 
