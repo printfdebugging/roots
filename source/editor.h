@@ -182,20 +182,22 @@ struct Text;
  * cursor positions, different state that they are rendering, different visibility.
  * So they are not at all the same thing. Don't tell the user about this ;).
  */
-struct Buffer
-{
-   /*
-    * i32 winId;
-    * i32 txtId;
-    * u32 cursorLine;
-    * u32 cursorColumn;
-    * u32 hOffset;
-    * u32 vOffset;
-    */
 
-   i32 *visLineRenderers;
-   u32 visLineCount;
-};
+/*
+ * struct Buffer
+ * {
+ *    i32 winId;
+ *    i32 txtId;
+ *    u32 cursorLine;
+ *    u32 cursorColumn;
+ *    u32 hOffset;
+ *    u32 vOffset;
+ * };
+ */
+
+/* this is layout's job not vislinerenderer's
+ * so first step is to split line renderers from layouting :) again*/
+//};
 
 struct GLFWwindowOptions
 {
@@ -253,7 +255,10 @@ struct Editor
    struct GLFWwindow *window;
    struct LineRenderer **lineRenderer;
    struct TextShader *lineShader; /* shared among Buffer objects */
-   struct Buffer *buf;
+
+   /* essentially indices into the lineRenderer array above */
+   i32 *visLineRenderers;
+   u32 visLineCount;
 
    /* counts */
    i32 lineRendererCount;
@@ -367,7 +372,7 @@ struct LineOptions
    u32 cursorLine;
    u32 cursorColumn;
 
-   i32 textId;
+   // i32 textId;
    u32 lineIdx;
 };
 
@@ -385,12 +390,12 @@ bool deInit();
 void layout();
 void render();
 
-void layoutBuffer(i32 bufId);
-void renderBuffer(i32 bufId);
+void layoutBuffer();
+void renderBuffer();
 
 bool createWindow(struct GLFWwindowOptions opts);
-i32 loadTextFile(const char *filePath);
-i32 openFile(const char *path);
+bool loadTextFile(const char *filePath);
+void openFile(const char *path);
 
 void createTextShader(struct TextShader *shader);
 void destroyTextShader(struct TextShader *shader);

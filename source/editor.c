@@ -20,12 +20,13 @@ void _glfwErrFn(int code, const char *description);
 
 bool run()
 {
-   [[maybe_unused]] i32 bufId = openFile(ASSETS_DIR "test.md");
+   openFile(ASSETS_DIR "test.md");
 
    while (!shouldClose())
    {
       calcFrameTime();
       glfwPollEvents();
+      layout();
       render();
    }
 
@@ -100,8 +101,7 @@ bool deInit()
    for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
       free(E.lineRenderer[idx]);
 
-   free(E.buf->visLineRenderers);
-   free(E.buf);
+   free(E.visLineRenderers);
 
    /* note: todo: maybe this should be above the window destruction sequence */
    destroyTextShader(E.lineShader);
@@ -126,19 +126,19 @@ bool deInit()
 
 void render()
 {
-   renderBuffer(0);
+   renderBuffer();
 }
 
 void layout()
 {
-   layoutBuffer(0);
+   layoutBuffer();
 }
 
 /**!
  * Loads the text file from `filePath` into a `Text` object,
  * and returns an index to it, or `INVALID_ID` on error.
  */
-i32 loadTextFile(const char *filePath)
+bool loadTextFile(const char *filePath)
 {
    if (!filePath)
       return false;
@@ -149,55 +149,40 @@ i32 loadTextFile(const char *filePath)
 
 /* warn: todo: add cleanup at some later stage when it works */
 /* returns a buffer id.. todo: write nicely later, let's first make it work */
-i32 openFile(const char *path)
+void openFile(const char *path)
 {
-   struct Buffer *buf = NULL;
-   i32 textId;
-
    if (!E.initialized)
-      goto failure;
-   if ((textId = loadTextFile(path)) == INVALID_ID)
-      goto failure;
-   if (!(buf = calloc(1, sizeof(struct Buffer))))
-      goto failure;
+      perror("E not initialized\n");
+   if (!loadTextFile(path))
+      perror("Failed to load Text file\n");
 
-   *buf = (struct Buffer) {
-      .visLineRenderers = NULL,
-      .visLineCount     = 0,
-   };
+   E.visLineRenderers = NULL;
+   E.visLineCount     = 0;
 
    u32 lineCount = textGetLineCount(E.text);
 
    /* todo: allocate these just for the visible lines, not for all the lines. */
-   if (!(buf->visLineRenderers = calloc(lineCount, sizeof(i32))))
-      goto failure;
+   if (!(E.visLineRenderers = calloc(lineCount, sizeof(i32))))
+      perror("failed to allocate E.visLineRenderers\n");
 
-   memset(buf->visLineRenderers, INVALID_ID, sizeof(i32) * lineCount);
+   memset(E.visLineRenderers, INVALID_ID, sizeof(i32) * lineCount);
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
       /* todo: a line should hold a text id and a line number
        * just to be more aware of where it is coming from.. */
-      buf->visLineRenderers[lineIdx] = createLine(
+      E.visLineRenderers[lineIdx] = createLine(
           &E,
           (struct LineOptions) {
              .lineIdx = lineIdx,
-             .textId  = textId,
           }
       );
    }
-
-   E.buf = buf;
-   return 0;
-
-failure:
-   return INVALID_ID;
 }
 
 /* todo: remove editor from here */
-void renderBuffer(i32 bufId)
+void renderBuffer()
 {
-   struct Buffer *buf = &E.buf[bufId];
    /* todo: move to a new api */
    /* todo: fix this with new API over IDs */
    GLFWwindow *window = E.window;
@@ -239,13 +224,13 @@ void renderBuffer(i32 bufId)
 
    u32 lineCount = textGetLineCount(E.text);
 
-   buf->visLineCount = (u32) windowHeight / (u32) lineHeight;
-   if (lineCount < buf->visLineCount)
-      buf->visLineCount = lineCount;
+   E.visLineCount = (u32) windowHeight / (u32) lineHeight;
+   if (lineCount < E.visLineCount)
+      E.visLineCount = lineCount;
 
-   for (u32 lineIdx = 0; lineIdx < buf->visLineCount; ++lineIdx)
+   for (u32 lineIdx = 0; lineIdx < E.visLineCount; ++lineIdx)
    {
-      i32 lineId = buf->visLineRenderers[lineIdx];
+      i32 lineId = E.visLineRenderers[lineIdx];
 
       struct LineRenderer *lineRenderer = E.lineRenderer[lineId];
 
@@ -272,10 +257,9 @@ void renderBuffer(i32 bufId)
    glfwSwapBuffers(window);
 }
 
-void layoutBuffer(i32 bufId)
+void layoutBuffer()
 {
    // todo:
-   (void) bufId;
 }
 
 bool createWindow(struct GLFWwindowOptions opts)
@@ -369,7 +353,7 @@ i32 createLine(struct Editor *editor, struct LineOptions opts)
 {
    if (!editor->lineShader)
       return INVALID_ID;
-   if (opts.textId == INVALID_ID /*  && !opts.isVirtual */)
+   if (!editor->text /*  && !opts.isVirtual */)
       return INVALID_ID;
 
    struct LineRenderer *renderer = calloc(1, sizeof(struct LineRenderer));
