@@ -1,6 +1,18 @@
 *log.txt*
 
 ------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Wed Sep 16 06:59:21 AM IST 2026                       *log.txt-2026-09-16-0659*
+
+   I was wrong again :). The problem wasn't that the thing is hard to refactor and the design went horribly
+   horribly wrong (which it did).. The real problem here was that I generalized too early, handle multiple
+   windows, handle multiple buffers, multiple text files, without actually getting it right for one. That added a
+   lot of weight to the code and it became hard to reason about.
+
+   So a general rule of thumb I take away is:
+      1. Make it work well for the simplest case
+      2. Only then generalize, not before
+
+------------------------------------------------------------------------------------------------------------------------
 @printfdebugging                           Wed Sep 16 06:33:29 AM IST 2026                       *log.txt-2026-09-16-0633*
 
    I was wrong in the last thing I wrote here. Sometimes the arcitecture is so messy that it's not sanely possible
