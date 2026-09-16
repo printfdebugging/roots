@@ -162,13 +162,6 @@ i32 openFile(const char *path)
       goto failure;
 
    *buf = (struct Buffer) {
-      .winId            = INVALID_ID,
-      .txtId            = textId,
-      .editor           = NULL,
-      .cursorColumn     = 0,
-      .cursorLine       = 0,
-      .hOffset          = 0,
-      .vOffset          = 0,
       .visLineRenderers = NULL,
       .visLineCount     = 0,
    };

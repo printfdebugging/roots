@@ -184,34 +184,17 @@ struct Text;
  */
 struct Buffer
 {
-   i32 winId;
-   i32 txtId;
+   /*
+    * i32 winId;
+    * i32 txtId;
+    * u32 cursorLine;
+    * u32 cursorColumn;
+    * u32 hOffset;
+    * u32 vOffset;
+    */
 
    i32 *visLineRenderers;
    u32 visLineCount;
-
-   /* Buffer specific state. */
-
-   /**!
-    * These are not to be overwritten directly. Only
-    * return values from a Text object's API calls should
-    * be assifned to these.
-    */
-   u32 cursorLine;
-   u32 cursorColumn;
-
-   /**!
-    * The horizontal and vertical scroll offsets of a buffer.
-    * These are used to construct the MVP matrix for the buffer.
-    */
-   u32 hOffset;
-   u32 vOffset;
-
-   /**!
-    * The `Editor` holds the objects and the buffers just have
-    * the IDs of their objects in Editor's arrays.
-    */
-   struct Editor *editor;
 };
 
 struct GLFWwindowOptions
