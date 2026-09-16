@@ -137,7 +137,7 @@ bool deInit()
 void render()
 {
    for (i32 bufId = 0; bufId < E.bufferCount; ++bufId)
-      drawBuffer(bufId);
+      renderBuffer(bufId);
 }
 
 /**!
@@ -245,7 +245,7 @@ failure:
 }
 
 /* todo: remove editor from here */
-void drawBuffer(i32 bufId)
+void renderBuffer(i32 bufId)
 {
    /* todo: move to a new api */
    /* todo: fix this with new API over IDs */

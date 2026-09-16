@@ -411,7 +411,7 @@ bool shouldClose();
 bool deInit();
 void render();
 
-void drawBuffer(i32 bufId);
+void renderBuffer(i32 bufId);
 
 i32 createWindow(struct GLFWwindowOptions opts);
 i32 loadTextFile(const char *filePath);
