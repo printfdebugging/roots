@@ -38,9 +38,7 @@ bool shouldClose()
       return true;
 
    bool shouldClose = true;
-   for (i32 winId = 0; winId < (i32) E.windowCount; ++winId)
-      if (winId != E.sharedWindowId)
-         shouldClose &= glfwWindowShouldClose(E.window[winId]);
+   shouldClose &= glfwWindowShouldClose(E.window);
 
    return shouldClose;
 }
@@ -60,21 +58,22 @@ bool init()
     * we have to bind them manually to the container objects on the other context (VAOs)
     * in order to use them.
     */
-   E.sharedWindowId = createWindow(
-       (struct GLFWwindowOptions) {
+   if (!createWindow((struct GLFWwindowOptions) {
           .width       = 800,
           .height      = 600,
           .title       = "GLFWwindow",
           .transparent = false,
-          .visible     = false,
+          .visible     = true,
           .icon        = DEFAULT_WINDOW_ICON,
           .sharedWinId = INVALID_ID,
           .fbResizeFn  = fbResizeFn,
           .keyFn       = keyFn,
           .scrollFn    = scrollFn,
           .curPosFn    = curPosFn,
-       }
-   );
+       }))
+   {
+      perror("failed to create a window");
+   }
 
    glfwSetErrorCallback(_glfwErrFn);
 
@@ -104,22 +103,20 @@ bool deInit()
    free(E.buf->visLineRenderers);
    free(E.buf);
 
-   /**!
-    * note: Till we have a shared hidden window which
-    * is destroyed at the end, we need to do this last
-    */
-   for (i32 idx = 0; idx < E.windowCount; ++idx)
-      glfwDestroyWindow(E.window[idx]);
-
    /* note: todo: maybe this should be above the window destruction sequence */
    destroyTextShader(E.lineShader);
    fmDeInit();
 
    free(E.text);
-   free(E.window);
    free(E.lineRenderer);
    free(E.lineShader);
    free(E.fontFilePath);
+
+   /**!
+    * note: Till we have a shared hidden window which
+    * is destroyed at the end, we need to do this last
+    */
+   glfwDestroyWindow(E.window);
    glfwTerminate();
 
    return true;
@@ -174,27 +171,6 @@ i32 openFile(const char *path)
       .visLineCount     = 0,
    };
 
-   buf->winId = createWindow(
-       (struct GLFWwindowOptions) {
-          .width       = 800,
-          .height      = 600,
-          .title       = "GLFWwindow",
-          .transparent = true,
-          .visible     = true,
-          .icon        = DEFAULT_WINDOW_ICON,
-          .sharedWinId = E.sharedWindowId,
-          .fbResizeFn  = fbResizeFn,
-          .keyFn       = keyFn,
-          .scrollFn    = scrollFn,
-          .curPosFn    = curPosFn,
-       }
-   );
-
-   /* todo: put them behind wrappers */
-   glActiveTexture(GL_TEXTURE0 + (u32) E.fm.glyphAtlas.textureUnit);
-   glBindTexture(GL_TEXTURE_BUFFER, E.fm.glyphAtlas.texture);
-   glUseProgram(E.lineShader->hbShaderProgram);
-
    u32 lineCount = textGetLineCount(E.text);
 
    /* todo: allocate these just for the visible lines, not for all the lines. */
@@ -229,7 +205,7 @@ void renderBuffer(i32 bufId)
    struct Buffer *buf = &E.buf[bufId];
    /* todo: move to a new api */
    /* todo: fix this with new API over IDs */
-   GLFWwindow *window = E.window[buf->winId];
+   GLFWwindow *window = E.window;
    /* todo: move to render function */
    i32 windowWidth, windowHeight;
    glfwGetWindowSize(window, &windowWidth, &windowHeight);
@@ -307,10 +283,10 @@ void layoutBuffer(i32 bufId)
    (void) bufId;
 }
 
-i32 createWindow(struct GLFWwindowOptions opts)
+bool createWindow(struct GLFWwindowOptions opts)
 {
    if (!glfwInit())
-      return INVALID_ID;
+      return false;
 
    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -331,13 +307,12 @@ i32 createWindow(struct GLFWwindowOptions opts)
    const i32 windowHeight  = opts.height ? opts.height : 800;
    const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
 
+   /* todo: re-implement it later */
    GLFWwindow *sharedWindow = NULL;
-   if (opts.sharedWinId != INVALID_ID && opts.sharedWinId < (i32) E.windowCount)
-      sharedWindow = E.window[opts.sharedWinId];
 
    GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, sharedWindow);
    if (!window)
-      return INVALID_ID;
+      return false;
 
    glfwMakeContextCurrent(window);
    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
@@ -353,7 +328,7 @@ i32 createWindow(struct GLFWwindowOptions opts)
    if (!img.pixels)
    {
       glfwDestroyWindow(window);
-      return INVALID_ID;
+      return false;
    }
 
    glfwSetWindowIcon(window, 1, &img);
@@ -378,14 +353,10 @@ i32 createWindow(struct GLFWwindowOptions opts)
    if (opts.keyFn) glfwSetKeyCallback(window, opts.keyFn);
 
    if (!window)
-      return INVALID_ID;
+      return false;
 
-   E.window = realloc(E.window, sizeof(GLFWwindow *) * ((u32) E.windowCount + 1));
-   if (!E.window)
-      return INVALID_ID;
-
-   E.window[E.windowCount] = window;
-   return (i32) E.windowCount++;
+   E.window = window;
+   return true;
 }
 
 /**!

@@ -267,21 +267,13 @@ struct Editor
 {
    /* arrays */
    struct Text *text;
-   struct GLFWwindow **window;
+   struct GLFWwindow *window;
    struct LineRenderer **lineRenderer;
    struct TextShader *lineShader; /* shared among Buffer objects */
    struct Buffer *buf;
 
-   /**!
-    * Always 0 as it's the first window created in `editorInit`. This
-    * is just to put the assumption in code so that we are not accessing
-    * the window with [0] everywhere.
-    */
-   i32 sharedWindowId;
-
    /* counts */
    i32 lineRendererCount;
-   i32 windowCount;
 
    /* config */
    f32 fontSize;
@@ -413,7 +405,7 @@ void render();
 void layoutBuffer(i32 bufId);
 void renderBuffer(i32 bufId);
 
-i32 createWindow(struct GLFWwindowOptions opts);
+bool createWindow(struct GLFWwindowOptions opts);
 i32 loadTextFile(const char *filePath);
 i32 openFile(const char *path);
 
