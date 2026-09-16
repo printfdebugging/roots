@@ -1,6 +1,13 @@
 *log.txt*
 
 ------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Wed Sep 16 07:41:30 AM IST 2026                       *log.txt-2026-09-16-0741*
+
+   It always helps to be able to reproduce the error (like a memory leak) with the smallest data set you can find.
+   If it happens on a 1000 line file and it also happens on a file with just 1 line, it's very easy to step
+   through the 1 line file and see exactly what happens, compared to the 1000 line file.
+
+------------------------------------------------------------------------------------------------------------------------
 @printfdebugging                           Wed Sep 16 06:59:21 AM IST 2026                       *log.txt-2026-09-16-0659*
 
    I was wrong again :). The problem wasn't that the thing is hard to refactor and the design went horribly

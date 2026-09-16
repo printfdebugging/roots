@@ -107,7 +107,9 @@ bool deInit()
    destroyTextShader(E.lineShader);
    fmDeInit();
 
+   textDestroy(E.text);
    free(E.text);
+
    free(E.lineRenderer);
    free(E.lineShader);
    free(E.fontFilePath);
