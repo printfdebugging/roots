@@ -266,7 +266,7 @@ struct FontManager
 struct Editor
 {
    /* arrays */
-   struct Text **text;
+   struct Text *text;
    struct GLFWwindow **window;
    struct LineRenderer **lineRenderer;
    struct TextShader *lineShader; /* shared among Buffer objects */
@@ -280,7 +280,6 @@ struct Editor
    i32 sharedWindowId;
 
    /* counts */
-   i32 textCount;
    i32 lineRendererCount;
    i32 windowCount;
    i32 bufferCount;

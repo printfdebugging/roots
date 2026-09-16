@@ -96,11 +96,6 @@ void calcFrameTime()
 
 bool deInit()
 {
-   for (i32 idx = 0; idx < E.textCount; ++idx)
-      textDestroy(E.text[idx]);
-   for (i32 idx = 0; idx < E.textCount; ++idx)
-      free(E.text[idx]);
-
    for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
       lineRendererDeInit(E.lineRenderer[idx]);
    for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
@@ -153,18 +148,10 @@ void layout()
 i32 loadTextFile(const char *filePath)
 {
    if (!filePath)
-      return INVALID_ID;
-
-   struct Text *text = textLoadFromFile(filePath);
-   if (!text)
-      return INVALID_ID;
-
-   E.text = realloc(E.text, sizeof(struct Text *) * ((u32) E.textCount + 1));
-   if (!E.text)
-      return INVALID_ID;
-
-   E.text[E.textCount] = text;
-   return (i32) E.textCount++;
+      return false;
+   if (!(E.text = textLoadFromFile(filePath)))
+      return false;
+   return true;
 }
 
 /* warn: todo: add cleanup at some later stage when it works */
@@ -214,8 +201,7 @@ i32 openFile(const char *path)
    glBindTexture(GL_TEXTURE_BUFFER, E.fm.glyphAtlas.texture);
    glUseProgram(E.lineShader->hbShaderProgram);
 
-   struct Text *text = E.text[textId];
-   u32 lineCount     = textGetLineCount(text);
+   u32 lineCount = textGetLineCount(E.text);
 
    /* todo: allocate these just for the visible lines, not for all the lines. */
    if (!(buf->visLineRenderers = calloc(lineCount, sizeof(i32))))
@@ -294,8 +280,7 @@ void renderBuffer(i32 bufId)
 
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   struct Text *text = E.text[buf->txtId];
-   u32 lineCount     = textGetLineCount(text);
+   u32 lineCount = textGetLineCount(E.text);
 
    buf->visLineCount = (u32) windowHeight / (u32) lineHeight;
    if (lineCount < buf->visLineCount)
@@ -442,9 +427,8 @@ i32 createLine(struct Editor *editor, struct LineOptions opts)
    lineRendererInit(renderer, editor->lineShader);
 
    /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
-   struct Text *text = editor->text[opts.textId];
-   char *lineBytes   = textGetUTF8Line(text, opts.lineIdx);
-   u64 lineByteLen   = strlen(lineBytes);
+   char *lineBytes = textGetUTF8Line(E.text, opts.lineIdx);
+   u64 lineByteLen = strlen(lineBytes);
    fmLayoutLine(renderer, lineBytes, lineByteLen);
 
    if (!(editor->lineRenderer = realloc(editor->lineRenderer, sizeof(struct LineRenderer *) * ((u32) editor->lineRendererCount + 1))))
