@@ -1,6 +1,20 @@
 *log.txt*
 
 ------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Wed Sep 16 06:33:29 AM IST 2026                       *log.txt-2026-09-16-0633*
+
+   I was wrong in the last thing I wrote here. Sometimes the arcitecture is so messy that it's not sanely possible
+   to iterate over things one step at a time. The LineRenderer renders one line at a time, the shader takes
+   uniforms to draw a line, layouting happens on a per line basis (which is fine), we store VAOs/VBOs per line. If
+   the whole API is designed that way, it's extremely hard to think of even the next two steps to make the
+   situation any better.
+
+   In such cases, it's better to create parallel types _Buffer, _BufferRenderer etc and then the equivalents fo
+   the methods.. and then you use the last API's code as the stuffing for the new API/methods.. And when the new
+   one works, you replace the old ones with them. Hopefully I am not wrong again ;). Abstraction is a necessary
+   evil.
+
+------------------------------------------------------------------------------------------------------------------------
 @printfdebugging                           Sun Sep  6 02:21:09 AM IST 2026                       *log.txt-2026-09-06-0221*
 
    The codebase evolves gradually, and if you as a developer are able to see 10 steps ahead where the code is in a
