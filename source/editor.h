@@ -409,8 +409,10 @@ void calcFrameTime();
 bool run();
 bool shouldClose();
 bool deInit();
+void layout();
 void render();
 
+void layoutBuffer(i32 bufId);
 void renderBuffer(i32 bufId);
 
 i32 createWindow(struct GLFWwindowOptions opts);

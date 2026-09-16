@@ -140,6 +140,12 @@ void render()
       renderBuffer(bufId);
 }
 
+void layout()
+{
+   for (i32 bufId = 0; bufId < E.bufferCount; ++bufId)
+      layoutBuffer(bufId);
+}
+
 /**!
  * Loads the text file from `filePath` into a `Text` object,
  * and returns an index to it, or `INVALID_ID` on error.
@@ -322,6 +328,12 @@ void renderBuffer(i32 bufId)
    }
 
    glfwSwapBuffers(window);
+}
+
+void layoutBuffer(i32 bufId)
+{
+   // todo:
+   (void) bufId;
 }
 
 i32 createWindow(struct GLFWwindowOptions opts)
