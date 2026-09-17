@@ -348,32 +348,6 @@ struct LineRenderer
    bool uploaded;
 };
 
-struct LineOptions
-{
-   /**!
-    * These are the bounds in which the line would
-    * be drawn. With these we can just layout/upload the
-    * visible part of the line.
-    */
-   u32 startPx;
-   u32 endPx;
-
-   /**!
-    * Not all lines carry text from the file. Some lines are virtual.
-    * Virtual lines can have text, image (part of it), URLs, anything
-    * which a normal line can, but these are `read-only`. The cursor
-    * works as it usually does for normal lines.
-    */
-   bool isVirtual;
-
-   bool hasCursor;
-   u32 cursorLine;
-   u32 cursorColumn;
-
-   // i32 textId;
-   u32 lineIdx;
-};
-
 /* editor.c */
 
 /**!
@@ -398,8 +372,6 @@ void openFile(const char *path);
 void createTextShader(struct TextShader *shader);
 void destroyTextShader(struct TextShader *shader);
 void uploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms);
-
-bool createLine(struct Editor *editor, struct LineOptions opts);  // not really an editor function, move to buffer or layouting or font manager..
 
 void scrollFn(GLFWwindow *window, f64 x, f64 y);
 void fbResizeFn(GLFWwindow *window, i32 width, i32 height);

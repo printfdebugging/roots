@@ -28,12 +28,41 @@ bool run()
 
    u32 lineCount = textGetLineCount(E.text);
 
+   /* all these loops should not be happening here, but instead in the layout/render functions.
+    * And even in render.. it makes more sense to not loop and just shoot a render in one go.. */
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
-      /* todo: a line should hold a text id and a line number
-       * just to be more aware of where it is coming from.. */
-      if (!createLine(&E, (struct LineOptions) { .lineIdx = lineIdx }))
+      if (!E.lineShader)
          return false;
+      if (!E.text /*  && !opts.isVirtual */)
+         return false;
+
+      struct LineRenderer *renderer = calloc(1, sizeof(struct LineRenderer));
+      if (!renderer)
+         return false;
+
+      lineRendererInit(renderer, E.lineShader);
+
+      /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
+      char *lineBytes = textGetUTF8Line(E.text, lineIdx);
+      u64 lineByteLen = strlen(lineBytes);
+      /* this should take layouting options.. */
+
+      struct LayoutOptions layoutOpts = {
+         .lineUTF8    = lineBytes,
+         .lineByteLen = lineByteLen,
+      };
+
+      fmLayoutLine(renderer, layoutOpts);
+
+      if (!(E.lineRenderer = realloc(E.lineRenderer, sizeof(struct LineRenderer *) * ((u32) E.lineRendererCount + 1))))
+      {
+         lineRendererDeInit(renderer);
+         free(renderer);
+         return false;
+      }
+
+      E.lineRenderer[E.lineRendererCount++] = renderer;
    }
 
    while (!shouldClose())
@@ -314,53 +343,6 @@ bool createWindow(struct GLFWwindowOptions opts)
       return false;
 
    E.window = window;
-   return true;
-}
-
-/**!
- * A sane argument against this per line approach is to do it for
- * all the visible lines at the same time. That makes sense, though
- * is not actionable at the moment as that would require doing many
- * things at the same time.. so listing that as a todo: here.
- *
- * For now this works because we would have to relayout each line as they
- * are marked dirty and there are less things to manage here.. But as
- * it gets in shape, we would move these to one large function, maybe...
- * intuition says we would still need to keep the per line thing..
- */
-bool createLine(struct Editor *editor, struct LineOptions opts)
-{
-   if (!editor->lineShader)
-      return false;
-   if (!editor->text /*  && !opts.isVirtual */)
-      return false;
-
-   struct LineRenderer *renderer = calloc(1, sizeof(struct LineRenderer));
-   if (!renderer)
-      return false;
-
-   lineRendererInit(renderer, editor->lineShader);
-
-   /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
-   char *lineBytes = textGetUTF8Line(E.text, opts.lineIdx);
-   u64 lineByteLen = strlen(lineBytes);
-   /* this should take layouting options.. */
-
-   struct LayoutOptions layoutOpts = {
-      .lineUTF8    = lineBytes,
-      .lineByteLen = lineByteLen,
-   };
-
-   fmLayoutLine(renderer, layoutOpts);
-
-   if (!(editor->lineRenderer = realloc(editor->lineRenderer, sizeof(struct LineRenderer *) * ((u32) editor->lineRendererCount + 1))))
-   {
-      lineRendererDeInit(renderer);
-      free(renderer);
-      return false;
-   }
-
-   editor->lineRenderer[editor->lineRendererCount++] = renderer;
    return true;
 }
 
