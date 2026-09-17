@@ -395,7 +395,6 @@ void renderBuffer();
 
 bool createWindow(struct GLFWwindowOptions opts);
 bool loadTextFile(const char *filePath);
-void openFile(const char *path);
 
 void createTextShader(struct TextShader *shader);
 void destroyTextShader(struct TextShader *shader);

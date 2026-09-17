@@ -20,7 +20,34 @@ void _glfwErrFn(int code, const char *description);
 
 bool run()
 {
-   openFile(ASSETS_DIR "test.md");
+   const char *path = ASSETS_DIR "test.md";
+   if (!E.initialized)
+      perror("E not initialized\n");
+   if (!loadTextFile(path))
+      perror("Failed to load Text file\n");
+
+   E.visLineRenderers = NULL;
+   E.visLineCount     = 0;
+
+   u32 lineCount = textGetLineCount(E.text);
+
+   /* todo: allocate these just for the visible lines, not for all the lines. */
+   if (!(E.visLineRenderers = calloc(lineCount, sizeof(i32))))
+      perror("failed to allocate E.visLineRenderers\n");
+
+   memset(E.visLineRenderers, INVALID_ID, sizeof(i32) * lineCount);
+
+   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
+   {
+      /* todo: a line should hold a text id and a line number
+       * just to be more aware of where it is coming from.. */
+      E.visLineRenderers[lineIdx] = createLine(
+          &E,
+          (struct LineOptions) {
+             .lineIdx = lineIdx,
+          }
+      );
+   }
 
    while (!shouldClose())
    {
@@ -151,33 +178,8 @@ bool loadTextFile(const char *filePath)
 /* returns a buffer id.. todo: write nicely later, let's first make it work */
 void openFile(const char *path)
 {
-   if (!E.initialized)
-      perror("E not initialized\n");
-   if (!loadTextFile(path))
-      perror("Failed to load Text file\n");
-
-   E.visLineRenderers = NULL;
-   E.visLineCount     = 0;
-
-   u32 lineCount = textGetLineCount(E.text);
-
-   /* todo: allocate these just for the visible lines, not for all the lines. */
-   if (!(E.visLineRenderers = calloc(lineCount, sizeof(i32))))
-      perror("failed to allocate E.visLineRenderers\n");
-
-   memset(E.visLineRenderers, INVALID_ID, sizeof(i32) * lineCount);
-
-   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
-   {
-      /* todo: a line should hold a text id and a line number
-       * just to be more aware of where it is coming from.. */
-      E.visLineRenderers[lineIdx] = createLine(
-          &E,
-          (struct LineOptions) {
-             .lineIdx = lineIdx,
-          }
-      );
-   }
+   (void) path;
+   /* todo: */
 }
 
 /* todo: remove editor from here */
@@ -584,6 +586,7 @@ void fmLayoutLine(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen
       glyphPosition.y += 0;
    }
 
+   /* this should happen once for all the lines */
    glBindVertexArray(renderer->vao);
    glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
    glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * renderer->count, renderer->vertices, GL_STATIC_DRAW);
