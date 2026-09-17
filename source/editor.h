@@ -253,7 +253,8 @@ struct Editor
    /* arrays */
    struct Text *text;
    struct GLFWwindow *window;
-   struct LineRenderer **lineRenderer;
+   struct LineLayout **lineRenderer;
+   // struct GlyphVertex **lineLayout;
    struct TextShader *lineShader; /* shared among Buffer objects */
 
    /* counts */
@@ -327,7 +328,7 @@ struct TextShader
    struct TextShaderUniformLocations uniformLocations;
 };
 
-struct LineRenderer
+struct LineLayout
 {
    /**!
     * Uniforms of the line, like the position from where we start
@@ -387,7 +388,7 @@ struct LayoutOptions
 /* fontmanager.c */
 void fmInit(char *editorFontPath);
 void fmDeInit();
-void fmLayoutLine(struct LineRenderer *renderer, struct LayoutOptions opts);
+void fmLayoutLine(struct LineLayout *layout, struct LayoutOptions opts);
 struct GlyphAtlas *fmGetAtlas();
 struct Font *fmGetFont(const char *filePath);
 struct Font *fmGetDefaultFont();
@@ -403,9 +404,10 @@ void _fmAtlasDeInit();
 // void _lineSubstituteTabs();
 
 /* renderer.c */
-void lineRendererInit(struct LineRenderer *renderer, struct TextShader *shader);
-void lineRendererDeInit(struct LineRenderer *renderer);
-void lineRendererRenderLine(struct LineRenderer *renderer, struct TextShader *shader);
+/* todo: fix these asap */
+void lineRendererInit(struct LineLayout *renderer, struct TextShader *shader);
+void lineRendererDeInit(struct LineLayout *renderer);
+void lineRendererRenderLine(struct LineLayout *renderer, struct TextShader *shader);
 
 /* text.c */
 struct Text *textLoadFromFile(const char *filepath);

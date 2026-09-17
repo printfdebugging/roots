@@ -7,7 +7,9 @@ static u32 CURRENT_SHADER_PROGRAM = 0;
 static u32 _createTextShader();
 static void _rendererUseShaderProgram(u32 shaderProgram);
 
-void lineRendererInit(struct LineRenderer *renderer, struct TextShader *shader)
+/* this has to now happen once for each BufferRenderer (doens't exist yet.) */
+/* todo: warning: refactor it asap */
+void lineRendererInit(struct LineLayout *renderer, struct TextShader *shader)
 {
    /* layout */
    renderer->vertices = NULL;
@@ -87,7 +89,8 @@ void lineRendererInit(struct LineRenderer *renderer, struct TextShader *shader)
    glVertexAttribIPointer((u32) attribLocation, 4, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, bgColor));
 }
 
-void lineRendererDeInit(struct LineRenderer *renderer)
+/* todo: this also needs fixing asap */
+void lineRendererDeInit(struct LineLayout *renderer)
 {
    /* layout */
    free(renderer->vertices);

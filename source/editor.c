@@ -37,11 +37,11 @@ bool run()
       if (!E.text /*  && !opts.isVirtual */)
          return false;
 
-      struct LineRenderer *renderer = calloc(1, sizeof(struct LineRenderer));
-      if (!renderer)
+      struct LineLayout *lineLayout = calloc(1, sizeof(struct LineLayout));
+      if (!lineLayout)
          return false;
 
-      lineRendererInit(renderer, E.lineShader);
+      lineRendererInit(lineLayout, E.lineShader);
 
       /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
       char *lineBytes = textGetUTF8Line(E.text, lineIdx);
@@ -53,16 +53,17 @@ bool run()
          .lineByteLen = lineByteLen,
       };
 
-      fmLayoutLine(renderer, layoutOpts);
+      /* this already does the layouting :) */
+      fmLayoutLine(lineLayout, layoutOpts);
 
-      if (!(E.lineRenderer = realloc(E.lineRenderer, sizeof(struct LineRenderer *) * ((u32) E.lineRendererCount + 1))))
+      if (!(E.lineRenderer = realloc(E.lineRenderer, sizeof(struct LineLayout *) * ((u32) E.lineRendererCount + 1))))
       {
-         lineRendererDeInit(renderer);
-         free(renderer);
+         lineRendererDeInit(lineLayout);
+         free(lineLayout);
          return false;
       }
 
-      E.lineRenderer[E.lineRendererCount++] = renderer;
+      E.lineRenderer[E.lineRendererCount++] = lineLayout;
    }
 
    while (!shouldClose())
@@ -240,9 +241,9 @@ void renderBuffer()
 
    for (i32 lineIdx = 0; lineIdx < E.lineRendererCount; ++lineIdx)
    {
-      struct LineRenderer *lineRenderer = E.lineRenderer[lineIdx];
+      struct LineLayout *layout = E.lineRenderer[lineIdx];
 
-      lineRenderer->uniforms = (struct TextShaderUniforms) {
+      layout->uniforms = (struct TextShaderUniforms) {
          .matViewProjection = mvp,
          .viewport          = viewport,
          .scale             = fontScale,
@@ -253,12 +254,12 @@ void renderBuffer()
          .stemDarkening     = false,
       };
 
-      uploadTextShaderUniforms(E.lineShader, &lineRenderer->uniforms);
+      uploadTextShaderUniforms(E.lineShader, &layout->uniforms);
 
-      if (lineRenderer->uploaded)
+      if (layout->uploaded)
       {
-         glBindVertexArray(lineRenderer->vao);
-         glDrawArrays(GL_TRIANGLES, 0, (i32) lineRenderer->count);
+         glBindVertexArray(layout->vao);
+         glDrawArrays(GL_TRIANGLES, 0, (i32) layout->count);
       }
    }
 
@@ -432,7 +433,7 @@ void fmDeInit()
    E.fm.initialized = false;
 }
 
-void fmLayoutLine(struct LineRenderer *renderer, struct LayoutOptions opts)
+void fmLayoutLine(struct LineLayout *layout, struct LayoutOptions opts)
 {
    if (!E.fm.initialized)
       return;
@@ -498,8 +499,8 @@ void fmLayoutLine(struct LineRenderer *renderer, struct LayoutOptions opts)
 
    hb_buffer_destroy(buffer);
 
-   renderer->count    = hbGlyphCount * 6;
-   renderer->vertices = realloc(renderer->vertices, renderer->count * sizeof(struct GlyphVertex));
+   layout->count    = hbGlyphCount * 6;
+   layout->vertices = realloc(layout->vertices, layout->count * sizeof(struct GlyphVertex));
 
    struct Point glyphPosition = { .x = 0, .y = 0 };
    for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
@@ -540,23 +541,23 @@ void fmLayoutLine(struct LineRenderer *renderer, struct LayoutOptions opts)
 
       u32 glyphQuadOffset = glyphIdx * 6;
 
-      renderer->vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
-      renderer->vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
-      renderer->vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
-      renderer->vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
-      renderer->vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
-      renderer->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
+      layout->vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
+      layout->vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
+      layout->vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
+      layout->vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
+      layout->vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
+      layout->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
 
       glyphPosition.x += glyphInfo->extents.xMax;
       glyphPosition.y += 0;
    }
 
    /* this should happen once for all the lines */
-   glBindVertexArray(renderer->vao);
-   glBindBuffer(GL_ARRAY_BUFFER, renderer->vbo);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * renderer->count, renderer->vertices, GL_STATIC_DRAW);
-   renderer->count    = renderer->count;
-   renderer->uploaded = true;
+   glBindVertexArray(layout->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, layout->vbo);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->count, layout->vertices, GL_STATIC_DRAW);
+   layout->count    = layout->count;
+   layout->uploaded = true;
 }
 
 struct GlyphAtlas *fmGetAtlas()
