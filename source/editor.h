@@ -256,10 +256,6 @@ struct Editor
    struct LineRenderer **lineRenderer;
    struct TextShader *lineShader; /* shared among Buffer objects */
 
-   /* essentially indices into the lineRenderer array above */
-   i32 *visLineRenderers;
-   u32 visLineCount;
-
    /* counts */
    i32 lineRendererCount;
 
@@ -395,12 +391,13 @@ void renderBuffer();
 
 bool createWindow(struct GLFWwindowOptions opts);
 bool loadTextFile(const char *filePath);
+void openFile(const char *path);
 
 void createTextShader(struct TextShader *shader);
 void destroyTextShader(struct TextShader *shader);
 void uploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms);
 
-i32 createLine(struct Editor *editor, struct LineOptions opts);  // not really an editor function, move to buffer or layouting or font manager..
+bool createLine(struct Editor *editor, struct LineOptions opts);  // not really an editor function, move to buffer or layouting or font manager..
 
 void scrollFn(GLFWwindow *window, f64 x, f64 y);
 void fbResizeFn(GLFWwindow *window, i32 width, i32 height);

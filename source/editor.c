@@ -26,27 +26,14 @@ bool run()
    if (!loadTextFile(path))
       perror("Failed to load Text file\n");
 
-   E.visLineRenderers = NULL;
-   E.visLineCount     = 0;
-
    u32 lineCount = textGetLineCount(E.text);
-
-   /* todo: allocate these just for the visible lines, not for all the lines. */
-   if (!(E.visLineRenderers = calloc(lineCount, sizeof(i32))))
-      perror("failed to allocate E.visLineRenderers\n");
-
-   memset(E.visLineRenderers, INVALID_ID, sizeof(i32) * lineCount);
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
       /* todo: a line should hold a text id and a line number
        * just to be more aware of where it is coming from.. */
-      E.visLineRenderers[lineIdx] = createLine(
-          &E,
-          (struct LineOptions) {
-             .lineIdx = lineIdx,
-          }
-      );
+      if (!createLine(&E, (struct LineOptions) { .lineIdx = lineIdx }))
+         return false;
    }
 
    while (!shouldClose())
@@ -127,8 +114,6 @@ bool deInit()
       lineRendererDeInit(E.lineRenderer[idx]);
    for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
       free(E.lineRenderer[idx]);
-
-   free(E.visLineRenderers);
 
    /* note: todo: maybe this should be above the window destruction sequence */
    destroyTextShader(E.lineShader);
@@ -224,17 +209,9 @@ void renderBuffer()
 
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   u32 lineCount = textGetLineCount(E.text);
-
-   E.visLineCount = (u32) windowHeight / (u32) lineHeight;
-   if (lineCount < E.visLineCount)
-      E.visLineCount = lineCount;
-
-   for (u32 lineIdx = 0; lineIdx < E.visLineCount; ++lineIdx)
+   for (i32 lineIdx = 0; lineIdx < E.lineRendererCount; ++lineIdx)
    {
-      i32 lineId = E.visLineRenderers[lineIdx];
-
-      struct LineRenderer *lineRenderer = E.lineRenderer[lineId];
+      struct LineRenderer *lineRenderer = E.lineRenderer[lineIdx];
 
       lineRenderer->uniforms = (struct TextShaderUniforms) {
          .matViewProjection = mvp,
@@ -351,16 +328,16 @@ bool createWindow(struct GLFWwindowOptions opts)
  * it gets in shape, we would move these to one large function, maybe...
  * intuition says we would still need to keep the per line thing..
  */
-i32 createLine(struct Editor *editor, struct LineOptions opts)
+bool createLine(struct Editor *editor, struct LineOptions opts)
 {
    if (!editor->lineShader)
-      return INVALID_ID;
+      return false;
    if (!editor->text /*  && !opts.isVirtual */)
-      return INVALID_ID;
+      return false;
 
    struct LineRenderer *renderer = calloc(1, sizeof(struct LineRenderer));
    if (!renderer)
-      return INVALID_ID;
+      return false;
 
    lineRendererInit(renderer, editor->lineShader);
 
@@ -373,11 +350,11 @@ i32 createLine(struct Editor *editor, struct LineOptions opts)
    {
       lineRendererDeInit(renderer);
       free(renderer);
-      return INVALID_ID;
+      return false;
    }
 
-   editor->lineRenderer[editor->lineRendererCount] = renderer;
-   return (i32) editor->lineRendererCount++;
+   editor->lineRenderer[editor->lineRendererCount++] = renderer;
+   return true;
 }
 
 void _glfwErrFn(int code, const char *description)
