@@ -344,7 +344,14 @@ bool createLine(struct Editor *editor, struct LineOptions opts)
    /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
    char *lineBytes = textGetUTF8Line(E.text, opts.lineIdx);
    u64 lineByteLen = strlen(lineBytes);
-   fmLayoutLine(renderer, lineBytes, lineByteLen);
+   /* this should take layouting options.. */
+
+   struct LayoutOptions layoutOpts = {
+      .lineUTF8    = lineBytes,
+      .lineByteLen = lineByteLen,
+   };
+
+   fmLayoutLine(renderer, layoutOpts);
 
    if (!(editor->lineRenderer = realloc(editor->lineRenderer, sizeof(struct LineRenderer *) * ((u32) editor->lineRendererCount + 1))))
    {
@@ -443,16 +450,15 @@ void fmDeInit()
    E.fm.initialized = false;
 }
 
-void fmLayoutLine(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen)
+void fmLayoutLine(struct LineRenderer *renderer, struct LayoutOptions opts)
 {
-   (void) lineByteLen;
    if (!E.fm.initialized)
       return;
 
    struct Font *font = fmGetDefaultFont();
 
    hb_buffer_t *buffer = hb_buffer_create();
-   hb_buffer_add_utf8(buffer, lineUTF8, -1, 0, -1);
+   hb_buffer_add_utf8(buffer, opts.lineUTF8, -1, 0, -1);
    hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
    hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
    hb_shape(font->hbFont, buffer, NULL, 0);

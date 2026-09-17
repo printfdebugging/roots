@@ -294,6 +294,8 @@ struct TextShaderUniforms
    mat4s matViewProjection;
    ivec4s viewport;
    f32 scale;
+
+   /* deprecate: this belongs to the layouting, not to this */
    vec2s position;
    i32 hbGpuAtlas;
    f32 gamma;
@@ -404,10 +406,16 @@ void fbResizeFn(GLFWwindow *window, i32 width, i32 height);
 void curPosFn(GLFWwindow *window, f64 x, f64 y);
 void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods);
 
+struct LayoutOptions
+{
+   char *lineUTF8;
+   u64 lineByteLen;
+};
+
 /* fontmanager.c */
 void fmInit(char *editorFontPath);
 void fmDeInit();
-void fmLayoutLine(struct LineRenderer *renderer, char *lineUTF8, u64 lineByteLen);
+void fmLayoutLine(struct LineRenderer *renderer, struct LayoutOptions opts);
 struct GlyphAtlas *fmGetAtlas();
 struct Font *fmGetFont(const char *filePath);
 struct Font *fmGetDefaultFont();
