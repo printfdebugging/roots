@@ -91,7 +91,7 @@
    "cmake.autoSelectActiveFolder": true,
    "cmake.buildBeforeRun": true,
    "cmake.setBuildTypeOnMultiConfig": true,
-   "cmake.skipConfigureIfCachePresent": true,
+   "cmake.skipConfigureIfCachePresent": false,
    "cmake.buildDirectory": "${workspaceFolder}/build/${buildType}",
    "cmake.mergedCompileCommands": "${workspaceFolder}/build/compile_commands.json",
    "cmake.debugConfig": {
