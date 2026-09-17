@@ -254,10 +254,11 @@ struct Editor
    struct Text *text;
    struct GLFWwindow *window;
    struct LineLayout **lineLayout;
+   struct BufferRenderer *bufRenderer;
    struct TextShader *lineShader; /* shared among Buffer objects */
 
    /* counts */
-   i32 lineRendererCount;
+   i32 lineLayoutCount;
 
    /* config */
    f32 fontSize;
@@ -294,9 +295,6 @@ struct TextShaderUniforms
    mat4s matViewProjection;
    ivec4s viewport;
    f32 scale;
-
-   /* deprecate: this belongs to the layouting, not to this */
-   vec2s position;
    i32 hbGpuAtlas;
    f32 gamma;
    bool debug;
@@ -327,7 +325,8 @@ struct TextShader
    struct TextShaderUniformLocations uniformLocations;
 };
 
-struct LineLayout
+/* for now BufferRender and LineLayout don't know about each other, that's fine. */
+struct BufferRenderer
 {
    /**!
     * Uniforms of the line, like the position from where we start
@@ -335,17 +334,25 @@ struct LineLayout
     */
    struct TextShaderUniforms uniforms;
 
+   /* OpenGL primitives */
+   u32 vao;
+   u32 vbo;
+   u32 count;
+   bool uploaded;
+};
+
+struct LineLayout
+{
    /**!
     * The vbo data, kept for compuation on the CPU, like the
     * hit-test, scrolling etc.
     */
    struct GlyphVertex *vertices;
 
-   /* OpenGL primitives */
-   u32 vao;
-   u32 vbo;
+   /* this lives here for now, but not for long,
+    * we would have a separate array for these.. */
+   bool dirty;
    u32 count;
-   bool uploaded;
 };
 
 /* editor.c */
@@ -360,12 +367,15 @@ bool run();
 bool shouldClose();
 bool deInit();
 void layout();
+void upload();
 void render();
 
 void layoutBuffer();
 void renderBuffer();
 
 bool createWindow(struct GLFWwindowOptions opts);
+struct Rectangle getWindowBounds();
+void swapBuffers();
 bool loadTextFile(const char *filePath);
 void openFile(const char *path);
 
@@ -391,6 +401,8 @@ void fmLayoutLine(struct LineLayout *layout, struct LayoutOptions opts);
 struct GlyphAtlas *fmGetAtlas();
 struct Font *fmGetFont(const char *filePath);
 struct Font *fmGetDefaultFont();
+f32 fmGetDefaultFontScale();
+f32 fmGetDefaultFontLineHeight();
 struct Font *fmGetFontWithRune(rune codepoint);
 void fntInit(struct Font *font, const char *filePath);
 void fntDeInit(struct Font *font);
@@ -403,10 +415,8 @@ void _fmAtlasDeInit();
 // void _lineSubstituteTabs();
 
 /* renderer.c */
-/* todo: fix these asap */
-void lineRendererInit(struct LineLayout *renderer, struct TextShader *shader);
-void lineRendererDeInit(struct LineLayout *renderer);
-void lineRendererRenderLine(struct LineLayout *renderer, struct TextShader *shader);
+void initBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader);
+void deInitBufferRenderer(struct BufferRenderer *renderer);
 
 /* text.c */
 struct Text *textLoadFromFile(const char *filepath);

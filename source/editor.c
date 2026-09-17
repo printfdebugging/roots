@@ -26,51 +26,13 @@ bool run()
    if (!loadTextFile(path))
       perror("Failed to load Text file\n");
 
-   u32 lineCount = textGetLineCount(E.text);
-
-   /* all these loops should not be happening here, but instead in the layout/render functions.
-    * And even in render.. it makes more sense to not loop and just shoot a render in one go.. */
-   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
-   {
-      if (!E.lineShader)
-         return false;
-      if (!E.text /*  && !opts.isVirtual */)
-         return false;
-
-      struct LineLayout *lineLayout = calloc(1, sizeof(struct LineLayout));
-      if (!lineLayout)
-         return false;
-
-      lineRendererInit(lineLayout, E.lineShader);
-
-      /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
-      char *lineBytes = textGetUTF8Line(E.text, lineIdx);
-      u64 lineByteLen = strlen(lineBytes);
-      /* this should take layouting options.. */
-
-      struct LayoutOptions layoutOpts = {
-         .lineUTF8    = lineBytes,
-         .lineByteLen = lineByteLen,
-      };
-
-      /* this already does the layouting :) */
-      fmLayoutLine(lineLayout, layoutOpts);
-
-      if (!(E.lineLayout = realloc(E.lineLayout, sizeof(struct LineLayout *) * ((u32) E.lineRendererCount + 1))))
-      {
-         lineRendererDeInit(lineLayout);
-         free(lineLayout);
-         return false;
-      }
-
-      E.lineLayout[E.lineRendererCount++] = lineLayout;
-   }
-
    while (!shouldClose())
    {
       calcFrameTime();
       glfwPollEvents();
+
       layout();
+      upload();
       render();
    }
 
@@ -122,10 +84,14 @@ bool init()
 
    glfwSetErrorCallback(_glfwErrFn);
 
-   fmInit(E.fontFilePath);
    if (!(E.lineShader = calloc(1, sizeof(struct TextShader))))
       return false;
+   if (!(E.bufRenderer = calloc(1, sizeof(struct BufferRenderer))))
+      return false;
+
+   fmInit(E.fontFilePath);
    createTextShader(E.lineShader);
+   initBufferRenderer(E.bufRenderer, E.lineShader);
 
    E.initialized = true;
    return true;
@@ -140,13 +106,13 @@ void calcFrameTime()
 
 bool deInit()
 {
-   for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
-      lineRendererDeInit(E.lineLayout[idx]);
-   for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
-      free(E.lineLayout[idx]);
+   for (i32 idx = 0; idx < E.lineLayoutCount; ++idx)
+      free(E.lineLayout[idx]->vertices);
+   free(E.lineLayout);
 
    /* note: todo: maybe this should be above the window destruction sequence */
    destroyTextShader(E.lineShader);
+   deInitBufferRenderer(E.bufRenderer);
    fmDeInit();
 
    textDestroy(E.text);
@@ -169,6 +135,39 @@ bool deInit()
 void render()
 {
    renderBuffer();
+}
+
+/* error: todo: upload has some issue for sure. qrenderdoc
+ * says that all the vertex attribute data is 0, which is
+ * the first thing we should chase here. */
+void upload()
+{
+   if (E.lineLayoutCount == 0)
+      return;
+
+   u32 totalCount = 0;
+   for (i32 idx = 0; idx < E.lineLayoutCount; ++idx)
+      totalCount += E.lineLayout[idx]->count;
+
+   /* upload to GPU */
+   if (totalCount != E.bufRenderer->count)
+   {
+      u32 unitSize = sizeof(struct GlyphVertex);
+      glBindVertexArray(E.bufRenderer->vao);
+      glBindBuffer(GL_ARRAY_BUFFER, E.bufRenderer->vbo);
+      glBufferData(GL_ARRAY_BUFFER, totalCount * unitSize, NULL, GL_STATIC_DRAW);
+
+      u32 uploadedCount = 0;
+      for (i32 idx = 0; idx < E.lineLayoutCount; ++idx)
+      {
+         struct LineLayout *layout = E.lineLayout[idx];
+         glBufferSubData(GL_TEXTURE_BUFFER, uploadedCount * unitSize, layout->count * unitSize, layout->vertices);
+         uploadedCount += layout->count;
+      }
+
+      E.bufRenderer->count    = uploadedCount;
+      E.bufRenderer->uploaded = true;
+   }
 }
 
 void layout()
@@ -200,75 +199,86 @@ void openFile(const char *path)
 /* todo: remove editor from here */
 void renderBuffer()
 {
-   /* todo: move to a new api */
-   /* todo: fix this with new API over IDs */
-   GLFWwindow *window = E.window;
-   /* todo: move to render function */
-   i32 windowWidth, windowHeight;
-   glfwGetWindowSize(window, &windowWidth, &windowHeight);
-
-   /**!
-    * note:
-    * calculate the line height and then use that to
-    * count the number of visible lines and then render
-    * those..
-    */
-   i32 xScale, yScale;
-   struct Font *font = fmGetDefaultFont();
-   hb_font_get_scale(font->hbFont, &xScale, &yScale);
-   f32 fontScale = E.fontSize / (f32) yScale;
-
    struct GlyphAtlas *atlas = fmGetAtlas();
+   struct Rectangle bounds  = getWindowBounds();
 
    mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
-   mvp       = glms_ortho(0, (f32) windowWidth, 0, (f32) windowHeight, 0.0f, 100.0f);
+   mvp       = glms_ortho(0, (f32) bounds.w, 0, (f32) bounds.h, 0.0f, 100.0f);
    mvp       = glms_translate(mvp, (vec3s) { { 0.0f, 0.0f, 0.0f } }); /* not set as of now */
 
    ivec4s viewport = { 0 };
    glGetIntegerv(GL_VIEWPORT, viewport.raw);
 
-   /**!
-    * warn: let's not complicate things thinking about multiple fonts and
-    * different line heights, single heights single font is fine for now.
-    * let's make that work first.
-    */
-   f32 lineHeight = (f32) font->hbAscent - (f32) font->hbDescent;
-   lineHeight *= (f32) fontScale;
-
    glClearColor(ColorRGBAHex(0X002b36FF));
-
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   for (i32 lineIdx = 0; lineIdx < E.lineRendererCount; ++lineIdx)
+   f32 fontScale = fmGetDefaultFontScale();
+
+   E.bufRenderer->uniforms = (struct TextShaderUniforms) {
+      .matViewProjection = mvp,
+      .viewport          = viewport,
+      .scale             = fontScale,
+      .hbGpuAtlas        = atlas->textureUnit,
+      .gamma             = 1.0f,
+      .debug             = false,
+      .stemDarkening     = false,
+   };
+
+   uploadTextShaderUniforms(E.lineShader, &E.bufRenderer->uniforms);
+
+   if (E.bufRenderer->uploaded)
    {
-      struct LineLayout *layout = E.lineLayout[lineIdx];
-
-      layout->uniforms = (struct TextShaderUniforms) {
-         .matViewProjection = mvp,
-         .viewport          = viewport,
-         .scale             = fontScale,
-         .position          = { .x = 0, .y = ((f32) windowHeight - ((f32) lineHeight * ((f32) lineIdx + 1))) },
-         .hbGpuAtlas        = atlas->textureUnit,
-         .gamma             = 1.0f,
-         .debug             = false,
-         .stemDarkening     = false,
-      };
-
-      uploadTextShaderUniforms(E.lineShader, &layout->uniforms);
-
-      if (layout->uploaded)
-      {
-         glBindVertexArray(layout->vao);
-         glDrawArrays(GL_TRIANGLES, 0, (i32) layout->count);
-      }
+      glBindVertexArray(E.bufRenderer->vao);
+      glDrawArrays(GL_TRIANGLES, 0, (i32) E.bufRenderer->count);
    }
 
-   glfwSwapBuffers(window);
+   /* note: not sure if this should be done after each buffer is rendered, or after all of them
+    * are rendered. for now we just do it here since we only have a single buffer. */
+   swapBuffers();
 }
 
+static bool doneOnce = false;
 void layoutBuffer()
 {
-   // todo:
+   /* note: this is so that we get to see something on the screen first.
+    * once we have that, we can make this politically correct ;) */
+   if (doneOnce)
+      return;
+   u32 lineCount = textGetLineCount(E.text);
+
+   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
+   {
+      if (!E.lineShader)
+         return;
+      if (!E.text /*  && !opts.isVirtual */)
+         return;
+
+      struct LineLayout *lineLayout = calloc(1, sizeof(struct LineLayout));
+      if (!lineLayout)
+         return;
+
+      /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
+      char *lineBytes = textGetUTF8Line(E.text, lineIdx);
+      u64 lineByteLen = strlen(lineBytes);
+      /* this should take layouting options.. */
+
+      struct LayoutOptions layoutOpts = {
+         .lineUTF8    = lineBytes,
+         .lineByteLen = lineByteLen,
+      };
+
+      /* this already does the layouting :) */
+      fmLayoutLine(lineLayout, layoutOpts);
+
+      if (!(E.lineLayout = realloc(E.lineLayout, sizeof(struct LineLayout *) * ((u32) E.lineLayoutCount + 1))))
+      {
+         free(lineLayout);
+         return;
+      }
+
+      E.lineLayout[E.lineLayoutCount++] = lineLayout;
+   }
+   doneOnce = true;
 }
 
 bool createWindow(struct GLFWwindowOptions opts)
@@ -345,6 +355,27 @@ bool createWindow(struct GLFWwindowOptions opts)
 
    E.window = window;
    return true;
+}
+
+struct Rectangle getWindowBounds()
+{
+   if (!E.window)
+      return (struct Rectangle) {};
+
+   i32 windowWidth, windowHeight;
+   glfwGetWindowSize(E.window, &windowWidth, &windowHeight);
+
+   return (struct Rectangle) {
+      .x = 0,
+      .y = 0,
+      .w = windowWidth,
+      .h = windowHeight,
+   };
+}
+
+void swapBuffers()
+{
+   glfwSwapBuffers(E.window);
 }
 
 void _glfwErrFn(int code, const char *description)
@@ -502,7 +533,11 @@ void fmLayoutLine(struct LineLayout *layout, struct LayoutOptions opts)
    layout->count    = hbGlyphCount * 6;
    layout->vertices = realloc(layout->vertices, layout->count * sizeof(struct GlyphVertex));
 
-   struct Point glyphPosition = { .x = 0, .y = 0 };
+   struct Point glyphPosition = {
+      .x = 0,
+      .y = fmGetDefaultFontLineHeight(),
+   };
+
    for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
    {
       [[maybe_unused]] bool hasCursor;
@@ -549,15 +584,7 @@ void fmLayoutLine(struct LineLayout *layout, struct LayoutOptions opts)
       layout->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
 
       glyphPosition.x += glyphInfo->extents.xMax;
-      glyphPosition.y += 0;
    }
-
-   /* this should happen once for all the lines */
-   glBindVertexArray(layout->vao);
-   glBindBuffer(GL_ARRAY_BUFFER, layout->vbo);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(struct GlyphVertex) * layout->count, layout->vertices, GL_STATIC_DRAW);
-   layout->count    = layout->count;
-   layout->uploaded = true;
 }
 
 struct GlyphAtlas *fmGetAtlas()
@@ -588,6 +615,25 @@ struct Font *fmGetDefaultFont()
    if (!E.fm.initialized)
       return NULL;
    return E.fm.editorFont;
+}
+
+f32 fmGetDefaultFontScale()
+{
+   if (!E.fm.initialized)
+      return 0;
+
+   i32 xScale, yScale;
+   hb_font_get_scale(E.fm.editorFont->hbFont, &xScale, &yScale);
+   return E.fontSize / (f32) yScale;
+}
+
+f32 fmGetDefaultFontLineHeight()
+{
+   if (!E.fm.initialized)
+      return 0;
+
+   f32 lineHeight = (f32) E.fm.editorFont->hbAscent - (f32) E.fm.editorFont->hbDescent;
+   return lineHeight * fmGetDefaultFontScale();
 }
 
 struct Font *fmGetFontWithRune(rune codepoint)

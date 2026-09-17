@@ -9,17 +9,13 @@ static void _rendererUseShaderProgram(u32 shaderProgram);
 
 /* this has to now happen once for each BufferRenderer (doens't exist yet.) */
 /* todo: warning: refactor it asap */
-void lineRendererInit(struct LineLayout *renderer, struct TextShader *shader)
+void initBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader)
 {
-   /* layout */
-   renderer->vertices = NULL;
-
    /* uniforms */
    renderer->uniforms = (struct TextShaderUniforms) {
       .matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT },
       .viewport          = GLMS_IVEC4_ZERO,
       .scale             = 0,
-      .position          = GLMS_VEC2_ZERO,
       .hbGpuAtlas        = 0,
       .gamma             = 0,
       .debug             = false,
@@ -90,11 +86,8 @@ void lineRendererInit(struct LineLayout *renderer, struct TextShader *shader)
 }
 
 /* todo: this also needs fixing asap */
-void lineRendererDeInit(struct LineLayout *renderer)
+void deInitBufferRenderer(struct BufferRenderer *renderer)
 {
-   /* layout */
-   free(renderer->vertices);
-
    /* primitives */
    renderer->uploaded = false;
    renderer->count    = 0;
@@ -148,7 +141,6 @@ void uploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUnifor
 
    struct TextShaderUniformLocations *locations = &shader->uniformLocations;
    glUniformMatrix4fv(locations->matViewProjectionLoc, 1, GL_FALSE, uniforms->matViewProjection.col[0].raw);
-   glUniform2fv(locations->positionLoc, 1, uniforms->position.raw);
    glUniform2f(locations->viewportLoc, (f32) uniforms->viewport.raw[2], (f32) uniforms->viewport.raw[3]);
    glUniform1f(locations->scaleLoc, (f32) uniforms->scale);
    glUniform1f(locations->stemDarkeningLoc, uniforms->stemDarkening);

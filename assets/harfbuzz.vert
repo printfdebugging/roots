@@ -6,7 +6,6 @@
 uniform mat4 u_matViewProjection;
 uniform vec2 u_viewport;
 uniform float u_scale;
-uniform vec2 u_position;
 
 in vec2 a_position;
 in vec2 a_texcoord;
@@ -33,7 +32,6 @@ void main()
 
    epp /= scale;
    pos = (pos + tex) * scale;
-   pos += u_position;
 
    vec4 jac = vec4(epp, 0.0, 0.0, -epp);
    hb_gpu_dilate(pos, tex, a_normal, jac, u_matViewProjection, u_viewport);
