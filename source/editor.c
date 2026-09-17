@@ -56,14 +56,14 @@ bool run()
       /* this already does the layouting :) */
       fmLayoutLine(lineLayout, layoutOpts);
 
-      if (!(E.lineRenderer = realloc(E.lineRenderer, sizeof(struct LineLayout *) * ((u32) E.lineRendererCount + 1))))
+      if (!(E.lineLayout = realloc(E.lineLayout, sizeof(struct LineLayout *) * ((u32) E.lineRendererCount + 1))))
       {
          lineRendererDeInit(lineLayout);
          free(lineLayout);
          return false;
       }
 
-      E.lineRenderer[E.lineRendererCount++] = lineLayout;
+      E.lineLayout[E.lineRendererCount++] = lineLayout;
    }
 
    while (!shouldClose())
@@ -141,9 +141,9 @@ void calcFrameTime()
 bool deInit()
 {
    for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
-      lineRendererDeInit(E.lineRenderer[idx]);
+      lineRendererDeInit(E.lineLayout[idx]);
    for (i32 idx = 0; idx < E.lineRendererCount; ++idx)
-      free(E.lineRenderer[idx]);
+      free(E.lineLayout[idx]);
 
    /* note: todo: maybe this should be above the window destruction sequence */
    destroyTextShader(E.lineShader);
@@ -152,7 +152,7 @@ bool deInit()
    textDestroy(E.text);
    free(E.text);
 
-   free(E.lineRenderer);
+   free(E.lineLayout);
    free(E.lineShader);
    free(E.fontFilePath);
 
@@ -241,7 +241,7 @@ void renderBuffer()
 
    for (i32 lineIdx = 0; lineIdx < E.lineRendererCount; ++lineIdx)
    {
-      struct LineLayout *layout = E.lineRenderer[lineIdx];
+      struct LineLayout *layout = E.lineLayout[lineIdx];
 
       layout->uniforms = (struct TextShaderUniforms) {
          .matViewProjection = mvp,

@@ -253,8 +253,7 @@ struct Editor
    /* arrays */
    struct Text *text;
    struct GLFWwindow *window;
-   struct LineLayout **lineRenderer;
-   // struct GlyphVertex **lineLayout;
+   struct LineLayout **lineLayout;
    struct TextShader *lineShader; /* shared among Buffer objects */
 
    /* counts */
