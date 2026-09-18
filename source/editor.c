@@ -250,6 +250,11 @@ void layoutBuffer()
    if (doneOnce)
       return;
 
+   /* todo: some way to layout/show only the visible part & relayout on some event */
+   /* todo: some mechanism to mark a line dirty here */
+   /* todo: check the dirty line count and the editor */
+   /* todo: relayout only when the quads change. for stuff like color changes, cursor movement, we can just send the diffs to the gpu to make it really quick */
+
    u32 lineCount  = textGetLineCount(E.text);
    f32 lineHeight = fmGetDefaultFontLineHeight();
    f32 fontScale  = fmGetDefaultFontScale();
@@ -275,6 +280,14 @@ void layoutBuffer()
       };
 
       /* this already does the layouting :) */
+      /*
+       * todo: refactor:
+       * - there's a lot more to line layouting than just position and text..
+       * - at some point even this function would be gone and all we would have is "layoutBuffer + a loop over each line".
+       * - this intution seems right because currently LineLayoutOpts is the pipeline to pass all that info to layouting,
+       *   the foreground color etc.. per character essentially, and this struct just isn't sufficient for that.
+       * - treesitter i think uses utf8 streams, and fmLayoutLine too does that.. so would be intresting to see how they fit together
+       */
       fmLayoutLine(lineLayout, layoutOpts);
 
       if (!(E.lineLayout = realloc(E.lineLayout, sizeof(struct LineLayout *) * ((u32) E.lineLayoutCount + 1))))
