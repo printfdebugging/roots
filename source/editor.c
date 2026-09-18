@@ -263,8 +263,8 @@ void layoutBuffer()
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
-      struct LineLayout *lineLayout = calloc(1, sizeof(struct LineLayout));
-      if (!lineLayout)
+      struct LineLayout *layout = calloc(1, sizeof(struct LineLayout));
+      if (!layout)
          return;
 
       /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
@@ -273,7 +273,7 @@ void layoutBuffer()
       /* this should take layouting options.. */
 
       /* todo: next: question: why is it that when i send 10 the text doesn't move and when i send 10 / fontScale it does move? */
-      struct LineLayoutOpts layoutOpts = {
+      struct LineLayoutOpts opts = {
          .lineUTF8    = lineBytes,
          .lineByteLen = lineByteLen,
          .position    = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale },
@@ -288,15 +288,15 @@ void layoutBuffer()
        *   the foreground color etc.. per character essentially, and this struct just isn't sufficient for that.
        * - treesitter i think uses utf8 streams, and fmLayoutLine too does that.. so would be intresting to see how they fit together
        */
-      fmLayoutLine(lineLayout, layoutOpts);
+      fmLayoutLine(layout, opts);
 
       if (!(E.lineLayout = realloc(E.lineLayout, sizeof(struct LineLayout *) * ((u32) E.lineLayoutCount + 1))))
       {
-         free(lineLayout);
+         free(layout);
          return;
       }
 
-      E.lineLayout[E.lineLayoutCount++] = lineLayout;
+      E.lineLayout[E.lineLayoutCount++] = layout;
    }
    doneOnce = true;
 }
