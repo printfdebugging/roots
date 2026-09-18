@@ -66,17 +66,17 @@ bool init()
     * in order to use them.
     */
    if (!createWindow((struct GLFWwindowOptions) {
-          .width       = 800,
-          .height      = 600,
-          .title       = "GLFWwindow",
+          .width = 800,
+          .height = 600,
+          .title = "GLFWwindow",
           .transparent = false,
-          .visible     = true,
-          .icon        = DEFAULT_WINDOW_ICON,
+          .visible = true,
+          .icon = DEFAULT_WINDOW_ICON,
           .sharedWinId = INVALID_ID,
-          .fbResizeFn  = fbResizeFn,
-          .keyFn       = keyFn,
-          .scrollFn    = scrollFn,
-          .curPosFn    = curPosFn,
+          .fbResizeFn = fbResizeFn,
+          .keyFn = keyFn,
+          .scrollFn = scrollFn,
+          .curPosFn = curPosFn,
        }))
    {
       perror("failed to create a window");
@@ -101,7 +101,7 @@ void calcFrameTime()
 {
    f64 tNow = glfwGetTime();
    E.tDelta = tNow - E.tLast;
-   E.tLast  = tNow;
+   E.tLast = tNow;
 }
 
 bool deInit()
@@ -165,7 +165,7 @@ void upload()
          uploadedCount += layout->count;
       }
 
-      E.bufRenderer->count    = uploadedCount;
+      E.bufRenderer->count = uploadedCount;
       E.bufRenderer->uploaded = true;
    }
 }
@@ -200,11 +200,11 @@ void openFile(const char *path)
 void renderBuffer()
 {
    struct GlyphAtlas *atlas = fmGetAtlas();
-   struct Rectangle bounds  = getWindowBounds();
+   struct Rectangle bounds = getWindowBounds();
 
    mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
-   mvp       = glms_ortho(0, (f32) bounds.w, 0, (f32) bounds.h, 0.0f, 100.0f);
-   mvp       = glms_translate(mvp, (vec3s) { { 0.0f, 0.0f, 0.0f } }); /* not set as of now */
+   mvp = glms_ortho(0, (f32) bounds.w, 0, (f32) bounds.h, 0.0f, 100.0f);
+   mvp = glms_translate(mvp, (vec3s) { { 0.0f, 0.0f, 0.0f } }); /* not set as of now */
 
    ivec4s viewport = { 0 };
    glGetIntegerv(GL_VIEWPORT, viewport.raw);
@@ -216,12 +216,12 @@ void renderBuffer()
 
    E.bufRenderer->uniforms = (struct TextShaderUniforms) {
       .matViewProjection = mvp,
-      .viewport          = viewport,
-      .scale             = fontScale,
-      .hbGpuAtlas        = atlas->textureUnit,
-      .gamma             = 1.0f,
-      .debug             = false,
-      .stemDarkening     = false,
+      .viewport = viewport,
+      .scale = fontScale,
+      .hbGpuAtlas = atlas->textureUnit,
+      .gamma = 1.0f,
+      .debug = false,
+      .stemDarkening = false,
    };
 
    uploadTextShaderUniforms(E.lineShader, &E.bufRenderer->uniforms);
@@ -258,9 +258,9 @@ void layoutBuffer()
    /* todo: check the dirty line count and the editor */
    /* todo: relayout only when the quads change. for stuff like color changes, cursor movement, we can just send the diffs to the gpu to make it really quick */
 
-   u32 lineCount  = textGetLineCount(E.text);
+   u32 lineCount = textGetLineCount(E.text);
    f32 lineHeight = fmGetDefaultFontLineHeight();
-   f32 fontScale  = fmGetDefaultFontScale();
+   f32 fontScale = fmGetDefaultFontScale();
 
    struct Rectangle bounds = getWindowBounds();
 
@@ -277,9 +277,9 @@ void layoutBuffer()
 
       /* todo: next: question: why is it that when i send 10 the text doesn't move and when i send 10 / fontScale it does move? */
       struct LineLayoutOpts opts = {
-         .lineUTF8    = lineBytes,
+         .lineUTF8 = lineBytes,
          .lineByteLen = lineByteLen,
-         .position    = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale },
+         .position = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale },
       };
 
       /* this already does the layouting :) */
@@ -302,7 +302,7 @@ void layoutBuffer()
       hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
       hb_shape(font->hbFont, buffer, NULL, 0);
 
-      u32 hbGlyphCount            = 0;
+      u32 hbGlyphCount = 0;
       hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
 
       _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct GlyphInfo));
@@ -311,7 +311,7 @@ void layoutBuffer()
       for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
       {
          hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
-         struct GlyphInfo *glyph   = &font->glyphCache[glyphIndex];
+         struct GlyphInfo *glyph = &font->glyphCache[glyphIndex];
          if (!glyph->cached)
          {
             i32 xScale, yScale;
@@ -320,9 +320,9 @@ void layoutBuffer()
             hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
 
             hb_glyph_extents_t hbGlyphExtents = {};
-            hb_blob_t *hbBlob                 = NULL;
+            hb_blob_t *hbBlob = NULL;
 
-            hbBlob           = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
+            hbBlob = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
             u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
 
             *glyph = (struct GlyphInfo) {
@@ -330,10 +330,10 @@ void layoutBuffer()
                .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
                .extents.yMin = font->hbDescent,
                .extents.yMax = font->hbAscent,
-               .advance      = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
-               .upem         = yScale,
-               .empty        = (hbBlobLength == 0),
-               .cached       = true,
+               .advance = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+               .upem = yScale,
+               .empty = (hbBlobLength == 0),
+               .cached = true,
             };
 
             /* upload glyph data to glyph atlas */
@@ -355,7 +355,7 @@ void layoutBuffer()
 
       hb_buffer_destroy(buffer);
 
-      layout->count    = hbGlyphCount * 6;
+      layout->count = hbGlyphCount * 6;
       layout->vertices = realloc(layout->vertices, layout->count * sizeof(struct GlyphVertex));
 
       struct Point glyphPosition = {
@@ -384,17 +384,17 @@ void layoutBuffer()
             f64 ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
 
             glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
-               .x           = (f32) glyphPosition.x,
-               .y           = (f32) glyphPosition.y,
-               .tx          = (f32) ex,
-               .ty          = (f32) ey,
-               .nx          = cx ? 1.f : -1.f,
-               .ny          = cy ? -1.f : 1.f,
-               .emPerPos    = 1.0,
+               .x = (f32) glyphPosition.x,
+               .y = (f32) glyphPosition.y,
+               .tx = (f32) ex,
+               .ty = (f32) ey,
+               .nx = cx ? 1.f : -1.f,
+               .ny = cy ? -1.f : 1.f,
+               .emPerPos = 1.0,
                .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
-               .hasCursor   = false,
-               .fgColor     = (vec4s) { { ColorRGBAHex(0X839496FF) } },
-               .bgColor     = (vec4s) { { ColorRGBAHex(0X000000FF) } },
+               .hasCursor = false,
+               .fgColor = (vec4s) { { ColorRGBAHex(0X839496FF) } },
+               .bgColor = (vec4s) { { ColorRGBAHex(0X000000FF) } },
                /* next: fix this. for now, nothing has a cursor */
             };
          }
@@ -445,8 +445,8 @@ bool createWindow(struct GLFWwindowOptions opts)
    glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
 #endif
 
-   const i32 windowWidth   = opts.width ? opts.width : 1600;
-   const i32 windowHeight  = opts.height ? opts.height : 800;
+   const i32 windowWidth = opts.width ? opts.width : 1600;
+   const i32 windowHeight = opts.height ? opts.height : 800;
    const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
 
    /* todo: re-implement it later */
@@ -464,7 +464,7 @@ bool createWindow(struct GLFWwindowOptions opts)
 #ifndef __APPLE__
    GLFWimage img;
    int chanCount;
-   opts.icon  = opts.icon ? opts.icon : DEFAULT_WINDOW_ICON;
+   opts.icon = opts.icon ? opts.icon : DEFAULT_WINDOW_ICON;
    img.pixels = stbi_load(opts.icon, &img.width, &img.height, &chanCount, 0);
 
    if (!img.pixels)
@@ -478,7 +478,7 @@ bool createWindow(struct GLFWwindowOptions opts)
 #endif
 
 #ifdef _WIN32
-   HWND hwnd   = glfwGetWin32Window(window);
+   HWND hwnd = glfwGetWin32Window(window);
    DWORD value = _msIsDarkMode();
    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 #endif
@@ -588,7 +588,7 @@ void fmInit(char *editorFontPath)
 
    _fmAtlasInit();
    E.fm.editorFontPath = stringDuplicate(editorFontPath);
-   E.fm.editorFont     = fmGetFont(editorFontPath);
+   E.fm.editorFont = fmGetFont(editorFontPath);
 }
 
 void fmDeInit()
@@ -622,7 +622,7 @@ struct Font *fmGetFont(const char *filePath)
       if (strcmp(E.fm.font[fontIdx].fontPath, filePath) == 0)
          return &E.fm.font[fontIdx];
 
-   E.fm.font         = realloc(E.fm.font, sizeof(struct Font) * (E.fm.fontCount + 1));
+   E.fm.font = realloc(E.fm.font, sizeof(struct Font) * (E.fm.fontCount + 1));
    struct Font *font = &E.fm.font[E.fm.fontCount++];
    fntInit(font, filePath);
 
@@ -664,7 +664,7 @@ struct Font *fmGetFontWithRune(rune codepoint)
 
 void fntInit(struct Font *font, const char *filePath)
 {
-   font->fontPath   = stringDuplicate(filePath);
+   font->fontPath = stringDuplicate(filePath);
    font->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
 
    hb_blob_t *hbBlob = NULL;
@@ -678,7 +678,7 @@ void fntInit(struct Font *font, const char *filePath)
 
    hb_blob_destroy(hbBlob);
 
-   const hb_ot_metrics_tag_t ASCENT_HHEA  = HB_TAG('H', 'a', 's', 'c');
+   const hb_ot_metrics_tag_t ASCENT_HHEA = HB_TAG('H', 'a', 's', 'c');
    const hb_ot_metrics_tag_t DESCENT_HHEA = HB_TAG('H', 'd', 's', 'c');
 
    hb_ot_metrics_get_position(font->hbFont, ASCENT_HHEA, &font->hbAscent);
@@ -700,9 +700,9 @@ void _fmAtlasInit()
 {
    struct GlyphAtlas *glyphAtlas = &E.fm.glyphAtlas;
 
-   glyphAtlas->capacityBytes     = ATLAS_PAGE_SIZE;
+   glyphAtlas->capacityBytes = ATLAS_PAGE_SIZE;
    glyphAtlas->cursorOffsetBytes = TEXEL_SIZE;
-   glyphAtlas->textureUnit       = 0;
+   glyphAtlas->textureUnit = 0;
    glGenBuffers(1, &glyphAtlas->textureBufferObject);
    glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
    glBufferData(GL_TEXTURE_BUFFER, glyphAtlas->capacityBytes, NULL, GL_STATIC_DRAW);

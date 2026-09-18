@@ -14,18 +14,18 @@ void initBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shad
    /* uniforms */
    renderer->uniforms = (struct TextShaderUniforms) {
       .matViewProjection = (mat4s) { GLM_MAT4_IDENTITY_INIT },
-      .viewport          = GLMS_IVEC4_ZERO,
-      .scale             = 0,
-      .hbGpuAtlas        = 0,
-      .gamma             = 0,
-      .debug             = false,
-      .stemDarkening     = false,
+      .viewport = GLMS_IVEC4_ZERO,
+      .scale = 0,
+      .hbGpuAtlas = 0,
+      .gamma = 0,
+      .debug = false,
+      .stemDarkening = false,
    };
 
    /* primitives */
    glGenVertexArrays(1, &renderer->vao);
    glGenBuffers(1, &renderer->vbo);
-   renderer->count    = 0;
+   renderer->count = 0;
    renderer->uploaded = false;
 
    /**!
@@ -41,8 +41,8 @@ void initBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shad
 
    /* set attribute locations */
 
-   u32 program               = shader->hbShaderProgram;
-   i32 attribLocation        = -1;
+   u32 program = shader->hbShaderProgram;
+   i32 attribLocation = -1;
    i32 glyphQuadObjectStride = sizeof(struct GlyphVertex);
 
    /**!
@@ -90,23 +90,23 @@ void deInitBufferRenderer(struct BufferRenderer *renderer)
 {
    /* primitives */
    renderer->uploaded = false;
-   renderer->count    = 0;
+   renderer->count = 0;
    glDeleteBuffers(1, &renderer->vbo);
    glDeleteVertexArrays(1, &renderer->vao);
 }
 
 void createTextShader(struct TextShader *shader)
 {
-   shader->hbShaderProgram  = _createTextShader();
+   shader->hbShaderProgram = _createTextShader();
    shader->uniformLocations = (struct TextShaderUniformLocations) {
       .matViewProjectionLoc = -1,
-      .viewportLoc          = -1,
-      .scaleLoc             = -1,
-      .positionLoc          = -1,
-      .hbGpuAtlasLoc        = -1,
-      .gammaLoc             = -1,
-      .debugLoc             = -1,
-      .stemDarkeningLoc     = -1,
+      .viewportLoc = -1,
+      .scaleLoc = -1,
+      .positionLoc = -1,
+      .hbGpuAtlasLoc = -1,
+      .gammaLoc = -1,
+      .debugLoc = -1,
+      .stemDarkeningLoc = -1,
    };
 
    u32 program = shader->hbShaderProgram;
@@ -114,13 +114,13 @@ void createTextShader(struct TextShader *shader)
 
    shader->uniformLocations = (struct TextShaderUniformLocations) {
       .matViewProjectionLoc = glGetUniformLocation(program, "u_matViewProjection"),
-      .viewportLoc          = glGetUniformLocation(program, "u_viewport"),
-      .scaleLoc             = glGetUniformLocation(program, "u_scale"),
-      .positionLoc          = glGetUniformLocation(program, "u_position"),
-      .gammaLoc             = glGetUniformLocation(program, "u_gamma"),
-      .debugLoc             = glGetUniformLocation(program, "u_debug"),
-      .stemDarkeningLoc     = glGetUniformLocation(program, "u_stem_darkening"),
-      .hbGpuAtlasLoc        = glGetUniformLocation(program, "hb_gpu_atlas"),
+      .viewportLoc = glGetUniformLocation(program, "u_viewport"),
+      .scaleLoc = glGetUniformLocation(program, "u_scale"),
+      .positionLoc = glGetUniformLocation(program, "u_position"),
+      .gammaLoc = glGetUniformLocation(program, "u_gamma"),
+      .debugLoc = glGetUniformLocation(program, "u_debug"),
+      .stemDarkeningLoc = glGetUniformLocation(program, "u_stem_darkening"),
+      .hbGpuAtlasLoc = glGetUniformLocation(program, "hb_gpu_atlas"),
    };
 }
 
@@ -151,10 +151,10 @@ void uploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUnifor
 
 static u32 _createTextShader()
 {
-   const char *hbShaderVersion  = "#version 330 core\n";
+   const char *hbShaderVersion = "#version 330 core\n";
    const char *hbShaderPreamble = "#define HB_GPU_DEMO_DRAW\n";
-   const char *hbVertexMain     = readFileContents(ASSETS_DIR "harfbuzz.vert");
-   const char *hbFragmentMain   = readFileContents(ASSETS_DIR "harfbuzz.frag");
+   const char *hbVertexMain = readFileContents(ASSETS_DIR "harfbuzz.vert");
+   const char *hbFragmentMain = readFileContents(ASSETS_DIR "harfbuzz.frag");
 
    u32 hbVertexShader;
    u32 hbFragmentShader;

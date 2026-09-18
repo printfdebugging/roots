@@ -1,6 +1,6 @@
 BasedOnStyle: Chromium
 AlignAfterOpenBracket: BlockIndent
-AlignConsecutiveAssignments: true
+AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: DontAlign
 AlignConsecutiveMacros: true

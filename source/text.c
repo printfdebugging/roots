@@ -53,7 +53,7 @@ struct Text *textLoadFromFile(const char *filepath)
       return NULL;
 
    struct Text *text = textLoadFromData(data, (u32) strlen(data));
-   text->filePath    = stringDuplicate(filepath);
+   text->filePath = stringDuplicate(filepath);
 
    free(data);
    return text;
@@ -68,7 +68,7 @@ struct Text *textLoadFromFile(const char *filepath)
 
    struct Text *text = calloc(1, sizeof(struct Text));
 
-   char *line  = NULL;
+   char *line = NULL;
    u64 lineCap = 0;
    i32 lineLen = 0;
    while ((lineLen = (i32) getline(&line, &lineCap, file)) != -1)
@@ -76,9 +76,9 @@ struct Text *textLoadFromFile(const char *filepath)
       if (lineLen == 0)
          continue;
 
-      text->lines                    = realloc(text->lines, (sizeof(char *)) * (text->lineCount + 1));
+      text->lines = realloc(text->lines, (sizeof(char *)) * (text->lineCount + 1));
       text->lines[text->lineCount++] = line;
-      line                           = NULL;
+      line = NULL;
    }
 
    fclose(file);
@@ -95,7 +95,7 @@ struct Text *textLoadFromData(const char *data, u32 dataLength)
    if (data == NULL)
       perror("got null data");
 
-   u32 index     = 0;
+   u32 index = 0;
    u32 lastIndex = 0;
 
    struct Text *text = calloc(1, sizeof(struct Text));
@@ -113,15 +113,15 @@ struct Text *textLoadFromData(const char *data, u32 dataLength)
          perror("failed to allocate buffer\n");
 
       buffer[length] = '\0';
-      buffer         = memcpy(buffer, data + lastIndex, length);
-      lastIndex      = index;
+      buffer = memcpy(buffer, data + lastIndex, length);
+      lastIndex = index;
 
-      text->lines                  = realloc(text->lines, (text->lineCount + 1) * sizeof(char *));
+      text->lines = realloc(text->lines, (text->lineCount + 1) * sizeof(char *));
       text->lines[text->lineCount] = buffer;
       text->lineCount++;
    }
 
-   text->cursorLine   = 0;
+   text->cursorLine = 0;
    text->cursorColumn = 0;
    return text;
 }
@@ -164,7 +164,7 @@ bool textMoveCursorUp(struct Text *text)
 
    /* check if the line has cursorColumn */
    const char *line = text->lines[text->cursorLine];
-   u64 lineLen      = strlen(line);
+   u64 lineLen = strlen(line);
 
    /* if not move it to the last column of that line. */
    if (lineLen < text->cursorColumn)
@@ -180,7 +180,7 @@ bool textMoveCursorDown(struct Text *text)
       return false;
 
    const char *line = text->lines[text->cursorLine];
-   u64 lineLen      = strlen(line);
+   u64 lineLen = strlen(line);
 
    if (lineLen < text->cursorColumn)
       text->cursorColumn = (u32) lineLen - 1;
@@ -202,7 +202,7 @@ bool textMoveCursorLeft(struct Text *text)
 bool textMoveCursorRight(struct Text *text)
 {
    const char *line = text->lines[text->cursorLine];
-   u64 lineLen      = strlen(line);
+   u64 lineLen = strlen(line);
    if (text->cursorColumn < lineLen - 1)
    {
       ++text->cursorColumn;
