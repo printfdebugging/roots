@@ -398,7 +398,6 @@ struct LineLayoutOpts
 /* fontmanager.c */
 void fmInit(char *editorFontPath);
 void fmDeInit();
-void fmLayoutLine(struct LineLayout *layout, struct LineLayoutOpts opts);
 struct GlyphAtlas *fmGetAtlas();
 struct Font *fmGetFont(const char *filePath);
 struct Font *fmGetDefaultFont();

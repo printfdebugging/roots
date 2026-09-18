@@ -238,6 +238,9 @@ void renderBuffer()
 }
 
 static bool doneOnce = false;
+
+struct GlyphInfo *_glyphInfo = NULL;
+
 void layoutBuffer()
 {
    if (!E.lineShader)
@@ -288,7 +291,128 @@ void layoutBuffer()
        *   the foreground color etc.. per character essentially, and this struct just isn't sufficient for that.
        * - treesitter i think uses utf8 streams, and fmLayoutLine too does that.. so would be intresting to see how they fit together
        */
-      fmLayoutLine(layout, opts);
+      if (!E.fm.initialized)
+         return;
+
+      struct Font *font = fmGetDefaultFont();
+
+      hb_buffer_t *buffer = hb_buffer_create();
+      hb_buffer_add_utf8(buffer, opts.lineUTF8, -1, 0, -1);
+      hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
+      hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
+      hb_shape(font->hbFont, buffer, NULL, 0);
+
+      u32 hbGlyphCount            = 0;
+      hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
+
+      _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct GlyphInfo));
+      memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct GlyphInfo));
+
+      for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
+      {
+         hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
+         struct GlyphInfo *glyph   = &font->glyphCache[glyphIndex];
+         if (!glyph->cached)
+         {
+            i32 xScale, yScale;
+            hb_font_get_scale(font->hbFont, &xScale, &yScale);
+            hb_gpu_draw_clear(font->hbDraw);
+            hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
+
+            hb_glyph_extents_t hbGlyphExtents = {};
+            hb_blob_t *hbBlob                 = NULL;
+
+            hbBlob           = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
+            u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
+
+            *glyph = (struct GlyphInfo) {
+               .extents.xMin = 0,
+               .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+               .extents.yMin = font->hbDescent,
+               .extents.yMax = font->hbAscent,
+               .advance      = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+               .upem         = yScale,
+               .empty        = (hbBlobLength == 0),
+               .cached       = true,
+            };
+
+            /* upload glyph data to glyph atlas */
+            struct GlyphAtlas *glyphAtlas = fmGetAtlas();
+            if (!glyph->empty)
+            {
+               const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
+               glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
+               glBufferSubData(GL_TEXTURE_BUFFER, glyphAtlas->cursorOffsetBytes, hbBlobLength, hbGlyphData);
+               glyph->atlasOffset = glyphAtlas->cursorOffsetBytes;
+               glyphAtlas->cursorOffsetBytes += hbBlobLength;
+
+               hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
+            }
+         }
+
+         _glyphInfo[glyphIdx] = *glyph;
+      }
+
+      hb_buffer_destroy(buffer);
+
+      layout->count    = hbGlyphCount * 6;
+      layout->vertices = realloc(layout->vertices, layout->count * sizeof(struct GlyphVertex));
+
+      struct Point glyphPosition = {
+         .x = opts.position.x,
+         .y = opts.position.y,
+      };
+
+      for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
+      {
+         [[maybe_unused]] bool hasCursor;
+         struct GlyphInfo *glyphInfo = &_glyphInfo[glyphIdx];
+
+         /**********************
+          * create glyph quads *
+          *********************/
+
+         glyphPosition.x += glyphInfo->extents.xMin;
+         glyphPosition.y += 0;
+
+         struct GlyphVertex glyphQuadCorners[4];
+         for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
+         {
+            i32 cx = (cornerIdx >> 1) & 1;
+            i32 cy = cornerIdx & 1;
+            f64 ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
+            f64 ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
+
+            glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
+               .x           = (f32) glyphPosition.x,
+               .y           = (f32) glyphPosition.y,
+               .tx          = (f32) ex,
+               .ty          = (f32) ey,
+               .nx          = cx ? 1.f : -1.f,
+               .ny          = cy ? -1.f : 1.f,
+               .emPerPos    = 1.0,
+               .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
+               .hasCursor   = false,
+               .fgColor     = (vec4s) { { ColorRGBAHex(0X839496FF) } },
+               .bgColor     = (vec4s) { { ColorRGBAHex(0X000000FF) } },
+               /* next: fix this. for now, nothing has a cursor */
+            };
+         }
+
+         u32 glyphQuadOffset = glyphIdx * 6;
+
+         layout->vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
+         layout->vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
+         layout->vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
+         layout->vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
+         layout->vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
+         layout->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
+
+         /* note: this currently assumes the layout to be horizontal, fine assumption
+          * when starting out, but later we would also want to cater for the vertical
+          * writing styles. */
+         glyphPosition.x += glyphInfo->extents.xMax;
+      }
 
       if (!(E.lineLayout = realloc(E.lineLayout, sizeof(struct LineLayout *) * ((u32) E.lineLayoutCount + 1))))
       {
@@ -449,8 +573,6 @@ void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods)
       glfwSetWindowShouldClose(window, GLFW_TRUE);
 }
 
-struct GlyphInfo *_glyphInfo = NULL;
-
 /**!
  * note: FontManager is just a wrapper around harfbuzz & OpenGL functions,
  * and manages shared objects.. So the OpenGL function pointers should be
@@ -482,132 +604,6 @@ void fmDeInit()
 
    _fmAtlasDeInit();
    E.fm.initialized = false;
-}
-
-void fmLayoutLine(struct LineLayout *layout, struct LineLayoutOpts opts)
-{
-   if (!E.fm.initialized)
-      return;
-
-   struct Font *font = fmGetDefaultFont();
-
-   hb_buffer_t *buffer = hb_buffer_create();
-   hb_buffer_add_utf8(buffer, opts.lineUTF8, -1, 0, -1);
-   hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
-   hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
-   hb_shape(font->hbFont, buffer, NULL, 0);
-
-   u32 hbGlyphCount            = 0;
-   hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
-
-   _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct GlyphInfo));
-   memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct GlyphInfo));
-
-   for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
-   {
-      hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
-      struct GlyphInfo *glyph   = &font->glyphCache[glyphIndex];
-      if (!glyph->cached)
-      {
-         i32 xScale, yScale;
-         hb_font_get_scale(font->hbFont, &xScale, &yScale);
-         hb_gpu_draw_clear(font->hbDraw);
-         hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
-
-         hb_glyph_extents_t hbGlyphExtents = {};
-         hb_blob_t *hbBlob                 = NULL;
-
-         hbBlob           = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
-         u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
-
-         *glyph = (struct GlyphInfo) {
-            .extents.xMin = 0,
-            .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
-            .extents.yMin = font->hbDescent,
-            .extents.yMax = font->hbAscent,
-            .advance      = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
-            .upem         = yScale,
-            .empty        = (hbBlobLength == 0),
-            .cached       = true,
-         };
-
-         /* upload glyph data to glyph atlas */
-         struct GlyphAtlas *glyphAtlas = fmGetAtlas();
-         if (!glyph->empty)
-         {
-            const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
-            glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
-            glBufferSubData(GL_TEXTURE_BUFFER, glyphAtlas->cursorOffsetBytes, hbBlobLength, hbGlyphData);
-            glyph->atlasOffset = glyphAtlas->cursorOffsetBytes;
-            glyphAtlas->cursorOffsetBytes += hbBlobLength;
-
-            hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
-         }
-      }
-
-      _glyphInfo[glyphIdx] = *glyph;
-   }
-
-   hb_buffer_destroy(buffer);
-
-   layout->count    = hbGlyphCount * 6;
-   layout->vertices = realloc(layout->vertices, layout->count * sizeof(struct GlyphVertex));
-
-   struct Point glyphPosition = {
-      .x = opts.position.x,
-      .y = opts.position.y,
-   };
-
-   for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
-   {
-      [[maybe_unused]] bool hasCursor;
-      struct GlyphInfo *glyphInfo = &_glyphInfo[glyphIdx];
-
-      /**********************
-       * create glyph quads *
-       *********************/
-
-      glyphPosition.x += glyphInfo->extents.xMin;
-      glyphPosition.y += 0;
-
-      struct GlyphVertex glyphQuadCorners[4];
-      for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
-      {
-         i32 cx = (cornerIdx >> 1) & 1;
-         i32 cy = cornerIdx & 1;
-         f64 ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
-         f64 ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
-
-         glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
-            .x           = (f32) glyphPosition.x,
-            .y           = (f32) glyphPosition.y,
-            .tx          = (f32) ex,
-            .ty          = (f32) ey,
-            .nx          = cx ? 1.f : -1.f,
-            .ny          = cy ? -1.f : 1.f,
-            .emPerPos    = 1.0,
-            .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
-            .hasCursor   = false,
-            .fgColor     = (vec4s) { { ColorRGBAHex(0X839496FF) } },
-            .bgColor     = (vec4s) { { ColorRGBAHex(0X000000FF) } },
-            /* next: fix this. for now, nothing has a cursor */
-         };
-      }
-
-      u32 glyphQuadOffset = glyphIdx * 6;
-
-      layout->vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
-      layout->vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
-      layout->vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
-      layout->vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
-      layout->vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
-      layout->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
-
-      /* note: this currently assumes the layout to be horizontal, fine assumption
-       * when starting out, but later we would also want to cater for the vertical
-       * writing styles. */
-      glyphPosition.x += glyphInfo->extents.xMax;
-   }
 }
 
 struct GlyphAtlas *fmGetAtlas()
