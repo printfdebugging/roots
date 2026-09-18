@@ -240,6 +240,11 @@ void renderBuffer()
 static bool doneOnce = false;
 void layoutBuffer()
 {
+   if (!E.lineShader)
+      return;
+   if (!E.text)
+      return;
+
    /* note: this is so that we get to see something on the screen first.
     * once we have that, we can make this politically correct ;) */
    if (doneOnce)
@@ -253,11 +258,6 @@ void layoutBuffer()
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
-      if (!E.lineShader)
-         return;
-      if (!E.text /*  && !opts.isVirtual */)
-         return;
-
       struct LineLayout *lineLayout = calloc(1, sizeof(struct LineLayout));
       if (!lineLayout)
          return;
