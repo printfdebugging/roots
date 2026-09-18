@@ -388,7 +388,7 @@ void fbResizeFn(GLFWwindow *window, i32 width, i32 height);
 void curPosFn(GLFWwindow *window, f64 x, f64 y);
 void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-struct LayoutOptions
+struct LineLayoutOpts
 {
    char *lineUTF8;
    u64 lineByteLen;
@@ -398,7 +398,7 @@ struct LayoutOptions
 /* fontmanager.c */
 void fmInit(char *editorFontPath);
 void fmDeInit();
-void fmLayoutLine(struct LineLayout *layout, struct LayoutOptions opts);
+void fmLayoutLine(struct LineLayout *layout, struct LineLayoutOpts opts);
 struct GlyphAtlas *fmGetAtlas();
 struct Font *fmGetFont(const char *filePath);
 struct Font *fmGetDefaultFont();

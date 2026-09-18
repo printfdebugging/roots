@@ -268,7 +268,7 @@ void layoutBuffer()
       /* this should take layouting options.. */
 
       /* todo: next: question: why is it that when i send 10 the text doesn't move and when i send 10 / fontScale it does move? */
-      struct LayoutOptions layoutOpts = {
+      struct LineLayoutOpts layoutOpts = {
          .lineUTF8    = lineBytes,
          .lineByteLen = lineByteLen,
          .position    = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale },
@@ -471,7 +471,7 @@ void fmDeInit()
    E.fm.initialized = false;
 }
 
-void fmLayoutLine(struct LineLayout *layout, struct LayoutOptions opts)
+void fmLayoutLine(struct LineLayout *layout, struct LineLayoutOpts opts)
 {
    if (!E.fm.initialized)
       return;
