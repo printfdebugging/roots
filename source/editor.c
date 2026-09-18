@@ -161,7 +161,7 @@ void upload()
       for (i32 idx = 0; idx < E.lineLayoutCount; ++idx)
       {
          struct LineLayout *layout = E.lineLayout[idx];
-         glBufferSubData(GL_TEXTURE_BUFFER, uploadedCount * unitSize, layout->count * unitSize, layout->vertices);
+         glBufferSubData(GL_ARRAY_BUFFER, uploadedCount * unitSize, layout->count * unitSize, layout->vertices);
          uploadedCount += layout->count;
       }
 
