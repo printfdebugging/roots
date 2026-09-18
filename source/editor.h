@@ -392,6 +392,7 @@ struct LayoutOptions
 {
    char *lineUTF8;
    u64 lineByteLen;
+   vec2s position;
 };
 
 /* fontmanager.c */

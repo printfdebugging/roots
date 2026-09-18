@@ -244,7 +244,12 @@ void layoutBuffer()
     * once we have that, we can make this politically correct ;) */
    if (doneOnce)
       return;
-   u32 lineCount = textGetLineCount(E.text);
+
+   u32 lineCount  = textGetLineCount(E.text);
+   f32 lineHeight = fmGetDefaultFontLineHeight();
+   f32 fontScale  = fmGetDefaultFontScale();
+
+   struct Rectangle bounds = getWindowBounds();
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
@@ -262,9 +267,11 @@ void layoutBuffer()
       u64 lineByteLen = strlen(lineBytes);
       /* this should take layouting options.. */
 
+      /* todo: next: question: why is it that when i send 10 the text doesn't move and when i send 10 / fontScale it does move? */
       struct LayoutOptions layoutOpts = {
          .lineUTF8    = lineBytes,
          .lineByteLen = lineByteLen,
+         .position    = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale },
       };
 
       /* this already does the layouting :) */
@@ -534,8 +541,8 @@ void fmLayoutLine(struct LineLayout *layout, struct LayoutOptions opts)
    layout->vertices = realloc(layout->vertices, layout->count * sizeof(struct GlyphVertex));
 
    struct Point glyphPosition = {
-      .x = 0,
-      .y = fmGetDefaultFontLineHeight(),
+      .x = opts.position.x,
+      .y = opts.position.y,
    };
 
    for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
@@ -583,6 +590,9 @@ void fmLayoutLine(struct LineLayout *layout, struct LayoutOptions opts)
       layout->vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
       layout->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
 
+      /* note: this currently assumes the layout to be horizontal, fine assumption
+       * when starting out, but later we would also want to cater for the vertical
+       * writing styles. */
       glyphPosition.x += glyphInfo->extents.xMax;
    }
 }
