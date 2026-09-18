@@ -388,13 +388,6 @@ void fbResizeFn(GLFWwindow *window, i32 width, i32 height);
 void curPosFn(GLFWwindow *window, f64 x, f64 y);
 void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods);
 
-struct LineLayoutOpts
-{
-   char *lineUTF8;
-   u64 lineByteLen;
-   vec2s position;
-};
-
 /* fontmanager.c */
 void fmInit(char *editorFontPath);
 void fmDeInit();

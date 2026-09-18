@@ -272,15 +272,11 @@ void layoutBuffer()
 
       /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
       char *lineBytes = textGetUTF8Line(E.text, lineIdx);
-      u64 lineByteLen = strlen(lineBytes);
+      [[maybe_unused]] u64 lineByteLen = strlen(lineBytes);
       /* this should take layouting options.. */
 
       /* todo: next: question: why is it that when i send 10 the text doesn't move and when i send 10 / fontScale it does move? */
-      struct LineLayoutOpts opts = {
-         .lineUTF8 = lineBytes,
-         .lineByteLen = lineByteLen,
-         .position = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale },
-      };
+      vec2s linePos = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale };
 
       /* this already does the layouting :) */
       /*
@@ -297,7 +293,7 @@ void layoutBuffer()
       struct Font *font = fmGetDefaultFont();
 
       hb_buffer_t *buffer = hb_buffer_create();
-      hb_buffer_add_utf8(buffer, opts.lineUTF8, -1, 0, -1);
+      hb_buffer_add_utf8(buffer, lineBytes, -1, 0, -1);
       hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
       hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
       hb_shape(font->hbFont, buffer, NULL, 0);
@@ -359,8 +355,8 @@ void layoutBuffer()
       layout->vertices = realloc(layout->vertices, layout->count * sizeof(struct GlyphVertex));
 
       struct Point glyphPosition = {
-         .x = opts.position.x,
-         .y = opts.position.y,
+         .x = linePos.x,
+         .y = linePos.y,
       };
 
       for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
