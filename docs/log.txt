@@ -1,6 +1,23 @@
 *log.txt*
 
 ------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Sat Sep 19 11:35:27 AM IST 2026                       *log.txt-2026-09-19-1135*
+
+   usually when trying to upgrade a function from just a prototype which works just to show something, to something
+   which really works well, we should focus more on the data flow through that function. what a function can assume
+   happened before it, what it has to check and re-evaluate. what is expected from a function given all those pieces
+   of information. and when we have those things listed, that's usually the way the should be written down. we get
+   the data, we calculate some values, we check some flags and we claculate and store the new data which is the
+   purpose of the function we are working on.
+
+   the data pipeline is at the heart of the software. what happens at each pass comes in only later once we have
+   got the pipelines right. this doesn't mean that we should prototype for 30 days and then start writing code.
+   but it means that "given we know all the constructs we have to do something and most of the unknowns, we should
+   spend more thought on how the data flows, more than we usually do". That makes life/refactors/implementation so
+   much easier.
+
+
+------------------------------------------------------------------------------------------------------------------------
 @printfdebugging                           Wed Sep 16 07:41:30 AM IST 2026                       *log.txt-2026-09-16-0741*
 
    It always helps to be able to reproduce the error (like a memory leak) with the smallest data set you can find.
