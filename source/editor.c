@@ -233,9 +233,7 @@ struct GlyphInfo *_glyphInfo = NULL;
 
 void layoutBuffer()
 {
-   if (!E.lineShader)
-      return;
-   if (!E.text)
+   if (!E.lineShader || !E.text || !E.window || !E.fm.initialized)
       return;
 
    /* note: this is so that we get to see something on the screen first.
@@ -267,18 +265,6 @@ void layoutBuffer()
        * pixels / scale = points
        */
       vec2s linePos = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale };
-
-      /* this already does the layouting :) */
-      /*
-       * todo: refactor:
-       * - there's a lot more to line layouting than just position and text..
-       * - at some point even this function would be gone and all we would have is "layoutBuffer + a loop over each line".
-       * - this intution seems right because currently LineLayoutOpts is the pipeline to pass all that info to layouting,
-       *   the foreground color etc.. per character essentially, and this struct just isn't sufficient for that.
-       * - treesitter i think uses utf8 streams, and fmLayoutLine too does that.. so would be intresting to see how they fit together
-       */
-      if (!E.fm.initialized)
-         return;
 
       struct Font *font = fmGetDefaultFont();
 
