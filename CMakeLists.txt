@@ -69,7 +69,7 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
    set(CLANGD_COMPILE_COMMANDS_FILE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
    configure_file(
-      ${CMAKE_CURRENT_SOURCE_DIR}/config/clangd.in
+      ${CMAKE_CURRENT_SOURCE_DIR}/clangd.in
       ${CMAKE_CURRENT_SOURCE_DIR}/.clangd @ONLY
    )
 endif()

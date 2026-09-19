@@ -1,8 +1,8 @@
 # roots
 
 ## Development Setup
-- Run `scripts/dependencies.sh` to install dependencies
-- See `configs/vscode` for an example vscode config
+- Run `tooling/dependencies.sh` to install dependencies
+- See `tooling/vscode` for an example vscode config
 
 ## Bulid Steps
 ```bash
@@ -14,11 +14,12 @@ make debug
 - Open VSCode ('ms-vscode.cmake-tools', 'ms-vscode.cpptools' etc extensions, see [extensions.json](./config/vscode/.vscode/extensions.json))
 - Put a breakpoint & Press `<SHIFT-F5>`
 
+![vscode-debugging](assets/vscode-debugging.png)
+
 ## Coding Style
-- Always assign all the values in the struct initializer lists, we use -1 for IDs, default initialization sets values to 0.
+- Don't rely on the default values, always assign a default value whenever you can, like in the struct initializer lists, or to local variables.
 - Don't prefix the function names unnecessarily, use `openFile` instead of `editorOpenFile`. For subsystems, use minimal prefixes, `fmInit` instead of `fontManagerInit`.
 
-![vscode-debugging](assets/vscode-debugging.png)
 
 ## LLM Policy
 

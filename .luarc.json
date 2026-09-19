@@ -1,0 +1,20 @@
+{
+   "runtime": {
+      "version": "Lua 5.4",
+      "path": [
+         "runtime/?.lua",
+         "runtime/?/init.lua",
+         "config/?.lua",
+         "config/?/init.lua"
+      ]
+   },
+
+   "workspace": {
+      "ignoreDir": ["libs/lua/lua5.4"],
+      "checkThirdParty": false
+   },
+
+   "diagnostics": {
+      "globals": []
+   }
+}
