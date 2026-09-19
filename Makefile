@@ -17,10 +17,23 @@ release:
 		-B build/Release && cmake --build build/Release
 
 install: clean debug
-	cmake --install build --prefix install
+	cmake --install build/Debug --prefix install --component dist
+	cmake --install build/Debug --prefix install --component dev
 
-package: clean release
-	cmake --install build --prefix install
+licenses:
+	@rm -rf install/share/licenses
+	@git submodule foreach --quiet 'echo $$sm_path' | while read -r path; do \
+		found=$$(ls "$$path"/LICENSE* "$$path"/LICENCE* "$$path"/COPYING* "$$path"/UNLICENSE* 2>/dev/null | head -1); \
+		if [ -n "$$found" ]; then \
+			mkdir -p "install/share/licenses/$$(basename $$path)"; \
+			cp "$$found" "install/share/licenses/$$(basename $$path)/"; \
+		else \
+			echo "no licence found in $$path"; \
+		fi; \
+	done
+
+package: clean release licenses
+	cmake --install build/Release --prefix install --component dist
 	tar -czvf roots.tar.gz -C install .
 
 perf: debug
