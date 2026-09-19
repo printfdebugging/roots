@@ -103,7 +103,10 @@ void calcFrameTime()
 bool deInit()
 {
    for (i32 idx = 0; idx < E.lineLayoutCount; ++idx)
+   {
       free(E.lineLayout[idx]->vertices);
+      free(E.lineLayout[idx]);
+   }
    free(E.lineLayout);
 
    destroyTextShader(E.lineShader);
@@ -113,7 +116,6 @@ bool deInit()
    textDestroy(E.text);
    free(E.text);
 
-   free(E.lineLayout);
    free(E.lineShader);
    free(E.fontFilePath);
 
@@ -254,10 +256,6 @@ void layoutBuffer()
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
-      struct LineLayout *layout = calloc(1, sizeof(struct LineLayout));
-      if (!layout)
-         return;
-
       /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
       char *lineBytes = textGetUTF8Line(E.text, lineIdx);
       [[maybe_unused]] u64 lineByteLen = strlen(lineBytes);
@@ -342,6 +340,10 @@ void layoutBuffer()
       }
 
       hb_buffer_destroy(buffer);
+
+      struct LineLayout *layout = calloc(1, sizeof(struct LineLayout));
+      if (!layout)
+         return;
 
       layout->count = hbGlyphCount * 6;
       layout->vertices = realloc(layout->vertices, layout->count * sizeof(struct GlyphVertex));
