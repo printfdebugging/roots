@@ -59,13 +59,8 @@ bool init()
    if (!(E.fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH)))
       return false;
 
-   /**!
-    * note: Context sharing means that the objects will be shared i.e. they would be
-    * available in the other context, so we won't have to reallocate/reupload them, but
-    * we have to bind them manually to the container objects on the other context (VAOs)
-    * in order to use them.
-    */
-   if (!createWindow((struct GLFWwindowOptions) {
+   bool windowExists = createWindow(
+       (struct GLFWwindowOptions) {
           .width = 800,
           .height = 600,
           .title = "GLFWwindow",
@@ -77,10 +72,11 @@ bool init()
           .keyFn = keyFn,
           .scrollFn = scrollFn,
           .curPosFn = curPosFn,
-       }))
-   {
+       }
+   );
+
+   if (!windowExists)
       perror("failed to create a window");
-   }
 
    glfwSetErrorCallback(_glfwErrFn);
 
@@ -110,7 +106,6 @@ bool deInit()
       free(E.lineLayout[idx]->vertices);
    free(E.lineLayout);
 
-   /* note: todo: maybe this should be above the window destruction sequence */
    destroyTextShader(E.lineShader);
    deInitBufferRenderer(E.bufRenderer);
    fmDeInit();
@@ -122,10 +117,6 @@ bool deInit()
    free(E.lineShader);
    free(E.fontFilePath);
 
-   /**!
-    * note: Till we have a shared hidden window which
-    * is destroyed at the end, we need to do this last
-    */
    glfwDestroyWindow(E.window);
    glfwTerminate();
 
@@ -137,9 +128,6 @@ void render()
    renderBuffer();
 }
 
-/* error: todo: upload has some issue for sure. qrenderdoc
- * says that all the vertex attribute data is 0, which is
- * the first thing we should chase here. */
 void upload()
 {
    if (E.lineLayoutCount == 0)
