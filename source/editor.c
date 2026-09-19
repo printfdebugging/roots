@@ -263,7 +263,11 @@ void layoutBuffer()
       [[maybe_unused]] u64 lineByteLen = strlen(lineBytes);
       /* this should take layouting options.. */
 
-      /* todo: next: question: why is it that when i send 10 the text doesn't move and when i send 10 / fontScale it does move? */
+      /**!
+       * scale = #pixels one point represents
+       * points * scale = pixels
+       * pixels / scale = points
+       */
       vec2s linePos = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale };
 
       /* this already does the layouting :) */
