@@ -1,6 +1,44 @@
 *log.txt*
 
 ------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Sun Sep 20 03:12:26 PM IST 2026                       *log.txt-2026-09-20-1512*
+
+TO READ
+   - Game Programming Patterns - Object Pool, Dirty Flag, Data Locality: https://gameprogrammingpatterns.com/
+   - sokol_gfx.h's pool code, as the reference implementation: https://github.com/floooh/sokol
+   - Zed's GPUI post - the instanced glyph struct: https://zed.dev/blog/videogame
+   - ryg, trip through the graphics pipeline: https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/
+   - Text Rendering Hates You - faultlore.com/blah/text-hates-you/ (didn't verify the link)
+   - harfbuzz's own docs on clusters and shaping
+   - Computer, Enhance! parts 2 and 3: https://www.computerenhance.com/p/table-of-contents
+   - Algorithmica HPC: https://en.algorithmica.org/hpc/
+   - Drepper, What Every Programmer Should Know About Memory - lwn.net/Articles/250967/ (unverified)
+
+------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Sun Sep 20 09:17:20 AM IST 2026                       *log.txt-2026-09-20-0917*
+
+   - Fleury's arena talk https://www.youtube.com/watch?v=TZ5a3gCCZYo
+     - Arena + free-list for lots of single use objects with realloc
+     - Contextual arenas
+     - Virtual Memory
+
+   - Acton's DOD talk https://www.youtube.com/watch?v=rX0ItVEVjHc
+     - Avoid last minute decision making 
+     - Operate on a list of things at the same time
+     - Understand the problem, what it costs, and what the platform allows
+     - Everything is a data problem
+     - Help the compiler, it's not a magic wand
+     - Keep those cache lines packed with the data you are going to process next (signal, not noise)
+     - Hardware isthe platform
+     - Design around the data not the idealized world
+     - Your main responsibility is to transform data, solve that first, not the code design
+
+   - https://www.gamedeveloper.com/programming/data-structures-part-1-bulk-data
+   - https://www.gamedeveloper.com/programming/virtual-memory-tricks
+   - https://www.gamedeveloper.com/programming/data-structures-part-3-arrays-of-arrays
+   - https://floooh.github.io/2018/06/17/handles-vs-pointers.html
+
+------------------------------------------------------------------------------------------------------------------------
 @printfdebugging                           Sat Sep 19 11:35:27 AM IST 2026                       *log.txt-2026-09-19-1135*
 
    usually when trying to upgrade a function from just a prototype which works just to show something, to something
