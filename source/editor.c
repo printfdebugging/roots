@@ -85,9 +85,14 @@ bool init()
    if (!(E.bufRenderer = calloc(1, sizeof(struct BufferRenderer))))
       return false;
 
+   E.verticesCount = CHARS * LINES * VERTICES;
+   if (!(E.vertices = calloc(E.verticesCount, VERTEX_SIZE)))
+      return false;
+
    fmInit(E.fontFilePath);
    createTextShader(E.lineShader);
    initBufferRenderer(E.bufRenderer, E.lineShader);
+   glBufferData(GL_ARRAY_BUFFER, E.verticesCount * VERTEX_SIZE, NULL, GL_STATIC_DRAW);
 
    E.initialized = true;
    return true;
@@ -102,13 +107,6 @@ void calcFrameTime()
 
 bool deInit()
 {
-   for (i32 idx = 0; idx < E.lineLayoutCount; ++idx)
-   {
-      free(E.lineLayout[idx]->vertices);
-      free(E.lineLayout[idx]);
-   }
-   free(E.lineLayout);
-
    destroyTextShader(E.lineShader);
    deInitBufferRenderer(E.bufRenderer);
    fmDeInit();
@@ -118,6 +116,7 @@ bool deInit()
 
    free(E.lineShader);
    free(E.fontFilePath);
+   free(E.vertices);
 
    glfwDestroyWindow(E.window);
    glfwTerminate();
@@ -132,32 +131,25 @@ void render()
 
 void upload()
 {
-   if (E.lineLayoutCount == 0)
+   if (E.verticesCount == 0)
       return;
 
-   u32 totalCount = 0;
-   for (i32 idx = 0; idx < E.lineLayoutCount; ++idx)
-      totalCount += E.lineLayout[idx]->count;
+   glBindVertexArray(E.bufRenderer->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, E.bufRenderer->vbo);
 
-   /* upload to GPU */
-   if (totalCount != E.bufRenderer->count)
+   for (u32 idx = 0; idx < LINES; ++idx)
    {
-      u32 unitSize = sizeof(struct GlyphVertex);
-      glBindVertexArray(E.bufRenderer->vao);
-      glBindBuffer(GL_ARRAY_BUFFER, E.bufRenderer->vbo);
-      glBufferData(GL_ARRAY_BUFFER, totalCount * unitSize, NULL, GL_STATIC_DRAW);
-
-      u32 uploadedCount = 0;
-      for (i32 idx = 0; idx < E.lineLayoutCount; ++idx)
+      if (E.layoutMap[idx].layouted && !E.layoutMap[idx].uploaded)
       {
-         struct LineLayout *layout = E.lineLayout[idx];
-         glBufferSubData(GL_ARRAY_BUFFER, uploadedCount * unitSize, layout->count * unitSize, layout->vertices);
-         uploadedCount += layout->count;
+         u32 offset = CHARS * VERTICES * idx;
+         u32 byteOffset = offset * VERTEX_SIZE;
+         u32 count = CHARS * VERTICES * VERTEX_SIZE;
+         glBufferSubData(GL_ARRAY_BUFFER, byteOffset, count, E.vertices + offset);
+         E.layoutMap[idx].uploaded = true;
       }
-
-      E.bufRenderer->count = uploadedCount;
-      E.bufRenderer->uploaded = true;
    }
+
+   E.bufRenderer->uploaded = true;
 }
 
 void layout()
@@ -219,15 +211,13 @@ void renderBuffer()
    if (E.bufRenderer->uploaded)
    {
       glBindVertexArray(E.bufRenderer->vao);
-      glDrawArrays(GL_TRIANGLES, 0, (i32) E.bufRenderer->count);
+      glDrawArrays(GL_TRIANGLES, 0, (i32) E.verticesCount);
    }
 
    /* note: not sure if this should be done after each buffer is rendered, or after all of them
     * are rendered. for now we just do it here since we only have a single buffer. */
    swapBuffers();
 }
-
-static bool doneOnce = false;
 
 struct GlyphInfo *_glyphInfo = NULL;
 
@@ -236,25 +226,26 @@ void layoutBuffer()
    if (!E.lineShader || !E.text || !E.window || !E.fm.initialized)
       return;
 
-   /* note: this is so that we get to see something on the screen first.
-    * once we have that, we can make this politically correct ;) */
-   if (doneOnce)
-      return;
-
    /* todo: some way to layout/show only the visible part & relayout on some event */
    /* todo: some mechanism to mark a line dirty here */
    /* todo: check the dirty line count and the editor */
    /* todo: relayout only when the quads change. for stuff like color changes, cursor movement, we can just send the diffs to the gpu to make it really quick */
 
-   u32 lineCount = textGetLineCount(E.text);
    f32 lineHeight = fmGetDefaultFontLineHeight();
    f32 fontScale = fmGetDefaultFontScale();
+
+   u32 textLineCount = textGetLineCount(E.text);
+   u32 lineCount = textLineCount < LINES ? textLineCount : LINES;
 
    struct Rectangle bounds = getWindowBounds();
 
    for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
    {
+      if (E.layoutMap[lineIdx].layouted)
+         continue;
+
       /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
+      /* todo: scroll offset comes here and add checks for valid line */
       char *lineBytes = textGetUTF8Line(E.text, lineIdx);
       [[maybe_unused]] u64 lineByteLen = strlen(lineBytes);
       /* this should take layouting options.. */
@@ -264,6 +255,8 @@ void layoutBuffer()
        * points * scale = pixels
        * pixels / scale = points
        */
+
+      /* todo: this x changes on scrolling */
       vec2s linePos = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale };
 
       struct Font *font = fmGetDefaultFont();
@@ -280,7 +273,9 @@ void layoutBuffer()
       _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct GlyphInfo));
       memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct GlyphInfo));
 
-      for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
+      u32 glyphCount = hbGlyphCount < CHARS ? hbGlyphCount : CHARS;
+
+      for (u32 glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
       {
          hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
          struct GlyphInfo *glyph = &font->glyphCache[glyphIndex];
@@ -327,26 +322,16 @@ void layoutBuffer()
 
       hb_buffer_destroy(buffer);
 
-      struct LineLayout *layout = calloc(1, sizeof(struct LineLayout));
-      if (!layout)
-         return;
-
-      layout->count = hbGlyphCount * 6;
-      layout->vertices = realloc(layout->vertices, layout->count * sizeof(struct GlyphVertex));
-
       struct Point glyphPosition = {
          .x = linePos.x,
          .y = linePos.y,
       };
 
-      for (u32 glyphIdx = 0; glyphIdx < hbGlyphCount; ++glyphIdx)
+      /* we loop over the available slots */
+      for (u32 glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
       {
          [[maybe_unused]] bool hasCursor;
          struct GlyphInfo *glyphInfo = &_glyphInfo[glyphIdx];
-
-         /**********************
-          * create glyph quads *
-          *********************/
 
          glyphPosition.x += glyphInfo->extents.xMin;
          glyphPosition.y += 0;
@@ -375,14 +360,13 @@ void layoutBuffer()
             };
          }
 
-         u32 glyphQuadOffset = glyphIdx * 6;
-
-         layout->vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
-         layout->vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
-         layout->vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
-         layout->vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
-         layout->vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
-         layout->vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
+         u32 glyphQuadOffset = (glyphIdx * 6) + (lineIdx * CHARS * VERTICES);
+         E.vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
+         E.vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
+         E.vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
+         E.vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
+         E.vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
+         E.vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
 
          /* note: this currently assumes the layout to be horizontal, fine assumption
           * when starting out, but later we would also want to cater for the vertical
@@ -390,15 +374,9 @@ void layoutBuffer()
          glyphPosition.x += glyphInfo->extents.xMax;
       }
 
-      if (!(E.lineLayout = realloc(E.lineLayout, sizeof(struct LineLayout *) * ((u32) E.lineLayoutCount + 1))))
-      {
-         free(layout);
-         return;
-      }
-
-      E.lineLayout[E.lineLayoutCount++] = layout;
+      E.layoutMap[lineIdx].layouted = true;
+      E.layoutMap[lineIdx].uploaded = false;
    }
-   doneOnce = true;
 }
 
 bool createWindow(struct GLFWwindowOptions opts)
@@ -412,6 +390,7 @@ bool createWindow(struct GLFWwindowOptions opts)
    glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, opts.transparent);
    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
    glfwWindowHint(GLFW_VISIBLE, opts.visible);
+   glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
    glfwWindowHint(GLFW_SAMPLES, 4);
 #ifdef __APPLE__
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);

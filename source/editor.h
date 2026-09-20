@@ -60,7 +60,7 @@
  * language. Probably with an EditorConfig struct.
  */
 #define DEFAULT_FONT_FILE_PATH ASSETS_DIR "LilexNerdFont-Regular.ttf"
-#define DEFAULT_FONT_SIZE      24
+#define DEFAULT_FONT_SIZE      34
 #define DEFAULT_WINDOW_ICON    ASSETS_DIR "icon.png"
 #define TABSTOP                3
 
@@ -248,17 +248,35 @@ struct FontManager
    bool initialized;
 };
 
+/* layout space constants */
+#define CHARS       80
+#define LINES       30
+#define VERTICES    6
+#define VERTEX_SIZE sizeof(struct GlyphVertex)
+
+struct LayoutMap
+{
+   u32 textLineIdx;
+
+   /* not used anywhere for now */
+   u32 count;
+
+   bool layouted;
+   bool uploaded;
+};
+
 struct Editor
 {
    /* arrays */
    struct Text *text;
    struct GLFWwindow *window;
-   struct LineLayout **lineLayout;
    struct BufferRenderer *bufRenderer;
    struct TextShader *lineShader; /* shared among Buffer objects */
 
-   /* counts */
-   i32 lineLayoutCount;
+   struct GlyphVertex *vertices;
+   /* this is fixed by the constants above */
+   u32 verticesCount;
+   struct LayoutMap layoutMap[LINES];
 
    /* config */
    f32 fontSize;
@@ -337,6 +355,9 @@ struct BufferRenderer
    /* OpenGL primitives */
    u32 vao;
    u32 vbo;
+
+   /* note: this is inconsiquencial in layouting, considering that we
+    * are going for a fixed buffer approach for now */
    u32 count;
    bool uploaded;
 };
