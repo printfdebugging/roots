@@ -432,6 +432,12 @@ bool createWindow(struct GLFWwindowOptions opts)
    if (!window)
       return false;
 
+   const i32 maxWidth = 2230;
+   const i32 maxHeight = 1420;
+   const i32 minWidth = 800;
+   const i32 minHeight = 600;
+
+   glfwSetWindowSizeLimits(window, minWidth, minHeight, maxWidth, maxHeight);
    glfwMakeContextCurrent(window);
    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
