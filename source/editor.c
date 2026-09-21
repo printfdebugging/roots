@@ -6,17 +6,21 @@
 #include "stb_image.h"
 #include "hb-ot.h"
 
+#include "editor.h"
+
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <dwmapi.h>
 #include "GLFW/glfw3native.h"
 #endif
 
-#include "editor.h"
-
 static struct Editor E = { 0 };
 
 void _glfwErrFn(int code, const char *description);
+
+#ifdef _WIN32
+static bool _msIsDarkMode();
+#endif
 
 bool run()
 {
