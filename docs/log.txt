@@ -1,6 +1,181 @@
 *log.txt*
 
 ------------------------------------------------------------------------------------------------------------------------
+@printfdebugging                           Tue Sep 22 12:04:51 AM IST 2026                       *log.txt-2026-09-22-0004*
+
+   Asked a smart LLM to give me a reading list to bridge the gap between what i currently know and what I should know
+   to create good software. Got a reading list.
+
+READING LIST: TEXT EDITOR -> ENGINE DEVELOPER ~
+
+   Trigger for the foundational material: read it just before you start the
+   subsystem, not while you are debugging it. Everything else is read on demand,
+   when the build hits something you cannot reason about.
+
+STAGE 0 -> 50: THE EDITOR ~
+
+   THE C LANGUAGE AND WHAT THE COMPILER IS ALLOWED TO DO ~
+   - Modern C, Jens Gustedt (free PDF from his site)
+   - C11 draft standard N1570, the sections on sequence points, aliasing and alignment - https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1570.pdf
+   - What Every C Programmer Should Know About Undefined Behavior, LLVM blog, 3 parts - https://blog.llvm.org/2011/05/what-every-c-programmer-should-know.html
+   - Expert C Programming: Deep C Secrets, van der Linden
+   - Compiler Explorer, used as a reading tool - https://godbolt.org/
+
+   THE MACHINE ~
+   - Computer Systems: A Programmer's Perspective, chapters 3, 5, 6, 9
+   - Drepper, What Every Programmer Should Know About Memory - https://lwn.net/Articles/250967/
+   - Algorithmica HPC - https://en.algorithmica.org/hpc/
+   - Agner Fog's optimization manuals, 3 (microarchitecture) and 4 (instruction tables) - https://www.agner.org/optimize/
+   - Computer, Enhance! (Casey Muratori) - https://www.computerenhance.com/
+   - Performance Analysis and Tuning on Modern CPUs, Denis Bakhvalov (free PDF) - https://easyperf.net/
+   - Bit Twiddling Hacks - https://graphics.stanford.edu/~seander/bithacks.html
+   - What Every Computer Scientist Should Know About Floating-Point Arithmetic, Goldberg
+   - Bruce Dawson on floating point - https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/
+
+   OPERATING SYSTEM AND PLATFORM ~
+   - Operating Systems: Three Easy Pieces, the virtual memory chapters - https://pages.cs.wisc.edu/~remzi/OSTEP/
+   - The Linux Programming Interface, Kerrisk. mmap, mremap, file I/O, signals
+   - Virtual memory tricks, Frykholm - https://www.gamedeveloper.com/programming/virtual-memory-tricks
+
+   MEMORY AND DATA LAYOUT ~
+   - Data-Oriented Design, Richard Fabian (free online) - https://www.dataorienteddesign.com/dodbook/
+   - Game Programming Patterns: Object Pool, Dirty Flag, Data Locality - https://gameprogrammingpatterns.com/
+   - Handles are the better pointers - https://floooh.github.io/2018/06/17/handles-vs-pointers.html
+   - Chris Wellons on arena allocation - https://nullprogram.com/blog/2023/09/27/
+   - Ryan Fleury, Untangling Lifetimes - https://www.rfleury.com/p/untangling-lifetimes-the-arena-allocator
+   - Bulk data and arrays of arrays, Frykholm - https://www.gamedeveloper.com/programming/data-structures-part-1-bulk-data
+   - sokol_gfx.h pool code, as the reference implementation - https://github.com/floooh/sokol
+
+   TEXT STORAGE ~
+   - Data Structures for Text Sequences, Charles Crowley. The survey of gap buffer, piece table, rope and line spans
+   - Raph Levien, Rope Science, all parts - https://xi-editor.io/docs/rope_science_00.html
+   - VS Code text buffer reimplementation - https://code.visualstudio.com/blogs/2018/03/23/text-buffer-reimplementation
+   - Ropey's design notes
+
+   UNICODE ~
+   - The Unicode Standard, chapters 2 and 3
+   - UAX #29, text segmentation. Grapheme clusters and words - https://unicode.org/reports/tr29/
+   - UAX #14, line breaking - https://unicode.org/reports/tr14/
+   - UAX #9, the bidirectional algorithm - https://unicode.org/reports/tr9/
+   - UAX #15, normalization - https://unicode.org/reports/tr15/
+   - Text Rendering Hates You - https://faultlore.com/blah/text-hates-you/
+   - Let's Stop Ascribing Meaning to Code Points, Manish Goregaokar - https://manishearth.github.io/blog/2017/01/14/stop-ascribing-meaning-to-unicode-code-points/
+
+   FONTS, SHAPING, RASTERIZATION ~
+   - OpenType specification, Microsoft. Read cmap, glyf, CFF2, GPOS, GSUB, hmtx and COLR - https://learn.microsoft.com/en-us/typography/opentype/spec/
+   - HarfBuzz manual, the clusters and buffers chapters - https://harfbuzz.github.io/
+   - FreeType documentation and its glyph conventions - https://freetype.org/freetype2/docs/documentation.html
+   - stb_truetype.h source, read end to end
+   - Valve signed distance field paper, Chris Green 2007. Improved Alpha-Tested Magnification for Vector Textures
+   - msdfgen, and Viktor Chlumsky's thesis - https://github.com/Chlumsky/msdfgen
+   - Slug, Eric Lengyel. GPU rendering directly from glyph outlines - https://sluglibrary.com/
+   - Raph Levien on font-rs and analytic anti-aliasing
+   - Vello and piet-gpu design notes, for compute-based 2D
+   - Jukka Jylanki, A Thousand Ways to Pack the Bin, for the glyph atlas
+   - Zed's GPUI post, the instanced glyph struct - https://zed.dev/blog/videogame
+
+   LATENCY, WHICH IS THE WHOLE POINT OF AN EDITOR ~
+   - Pavel Fatin, Typing with Pleasure - https://pavelfatin.com/typing-with-pleasure/
+   - Dan Luu, computer latency measurements - https://danluu.com/input-lag/
+
+
+STAGE 50 -> 75: THE GPU ~
+
+   HOW THE HARDWARE ACTUALLY WORKS ~
+   - ryg, A Trip Through the Graphics Pipeline - https://fgiesen.wordpress.com/2011/07/09/a-trip-through-the-graphics-pipeline-2011-index/
+   - AMD GCN and RDNA instruction set documents, the first two chapters
+   - NVIDIA and AMD developer blogs on wave occupancy and divergence
+   - Render Hell, Simon Schreibt
+
+   COMPUTE SHADERS, THE PRACTICAL PART ~
+   - OpenGL wiki, Compute Shader. Dispatch, work group sizes, the built-in invocation IDs - https://www.khronos.org/opengl/wiki/Compute_Shader
+   - OpenGL wiki, Shader Storage Buffer Object. How the index array gets in - https://www.khronos.org/opengl/wiki/Shader_Storage_Buffer_Object
+   - OpenGL wiki, Image Load Store. How you write to a texture rather than sample it - https://www.khronos.org/opengl/wiki/Image_Load_Store
+   - OpenGL wiki, Memory Model, and the glMemoryBarrier reference page. The part everyone gets wrong first
+   - GLSL specification, the compute chapter, for the exact built-ins and the shared qualifier
+   - OpenGL SuperBible, 7th edition, the compute chapter, for worked examples
+   - Mike Bailey's compute shader course handouts, Oregon State (from memory, verify)
+
+   THE APIS ~
+   - LearnOpenGL, as a lookup rather than a course - https://learnopengl.com/
+   - The OpenGL wiki, in particular Buffer Object Streaming - https://www.khronos.org/opengl/wiki/Buffer_Object_Streaming
+   - The OpenGL 4.6 core specification
+   - Approaching Zero Driver Overhead, GDC 2014 slides. Persistent mapping, bindless, multi-draw
+   - Then Vulkan - https://vkguide.dev/ and the Vulkan specification's synchronization chapter
+   - RenderDoc, and its documentation on capture and replay - https://renderdoc.org/
+
+   SHADERS AND THE MATHS ~
+   - The Book of Shaders - https://thebookofshaders.com/
+   - Inigo Quilez's articles, all of them - https://iquilezles.org/articles/
+   - Shadertoy, read other people's code - https://www.shadertoy.com/
+   - 3D Math Primer for Graphics and Game Development, Dunn and Parberry - https://gamemath.com/
+   - Foundations of Game Engine Development, volume 1, Eric Lengyel
+   - Scratchapixel, for the derivations - https://www.scratchapixel.com/
+
+   COLOUR ~
+   - Hitchhiker's Guide to Digital Colour, Troy Sobotka - https://hg2dc.com/
+   - Tone mapping - https://64.github.io/tonemapping/
+   - Any of the gamma correct blending write-ups
+
+STAGE 75 -> 100: THE ENGINE ~
+
+   RENDERING ~
+   - Real-Time Rendering, 4th edition, Akenine-Moller et al - https://www.realtimerendering.com/
+   - Physically Based Rendering, free online - https://www.pbr-book.org/
+   - Filament's documentation, the shortest good PBR derivation - https://google.github.io/filament/Filament.html
+   - GPU Gems 1 to 3, free from NVIDIA - https://developer.nvidia.com/gpugems/gpugems/contributors
+   - SIGGRAPH Advances in Real-Time Rendering course notes, every year - https://advances.realtimerendering.com/
+   - MJP's blog, the shadow maps and MSAA series - https://therealmjp.github.io/
+
+   ASSETS ~
+   - glTF 2.0 specification - https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html
+   - glTF tutorials - https://github.khronos.org/glTF-Tutorials/gltfTutorial/
+   - KTX2 and Basis Universal
+   - Understanding BCn texture compression formats, Nathan Reed - https://www.reedbeta.com/blog/understanding-bcn-texture-compression-formats/
+   - The asset pipeline posts on the Bitsquid blog - https://bitsquid.blogspot.com/
+
+   SIMULATION ~
+   - Real-Time Collision Detection, Christer Ericson
+   - Erin Catto's GDC presentations and the Box2D publications - https://box2d.org/publications/
+   - Gaffer on Games. Fix your timestep, and the networking series - https://gafferongames.com/
+   - Daniel Holden on animation, all of it - https://theorangeduck.com/page/articles
+
+   AUDIO ~
+   - The Scientist and Engineer's Guide to Digital Signal Processing - https://www.dspguide.com/
+   - miniaudio's source and documentation - https://miniaud.io/
+
+   CONCURRENCY ~
+   - Preshing on Programming, the lock-free series - https://preshing.com/
+   - 1024cores, Dmitry Vyukov - https://www.1024cores.net/
+   - Parallelizing the Naughty Dog Engine Using Fibers, Christian Gyrling, GDC 2015
+
+   SCRIPTING AND LANGUAGES ~
+   - Lua 5.4 Reference Manual, the C API chapter in full - https://www.lua.org/manual/5.4/
+   - The Implementation of Lua 5.0, the paper - https://www.lua.org/doc/jucs05.pdf
+   - Programming in Lua, first edition, free - https://www.lua.org/pil/
+   - Crafting Interpreters, both halves. Part 3 is the bytecode VM - https://craftinginterpreters.com/
+   - Build Your Own Lisp, Daniel Holden. A lisp in C, which is your language - https://buildyourownlisp.com/
+   - Norvig, (How to Write a (Lisp) Interpreter in Python), then lispy2 - https://norvig.com/lispy.html
+   - SICP, read for its own sake and not as a step toward speed - https://sarabander.github.io/sicp/
+   - Lisp in Small Pieces, Queinnec. The serious book on compiling lisp
+   - Ghuloum, An Incremental Approach to Compiler Construction. Scheme to native x86 in small steps - http://scheme2006.cs.uchicago.edu/11-ghuloum.pdf
+   - The Implementation of Lua 5.0, the paper. Register VM, tables, closures - https://www.lua.org/doc/jucs05.pdf
+   - Baby's First Garbage Collector, Bob Nystrom
+   - The Garbage Collection Handbook, Jones, Hosking and Moss
+   - NaN boxing write-ups, any of them, before you design the value representation
+   - Andy Wingo's blog, for JIT and garbage collector internals - https://wingolog.org/
+   - Mike Pall's LuaJIT posts on the mailing list and the wiki, last
+
+   ENGINE SHAPE AND TOOLS ~
+   - Game Engine Architecture, Jason Gregory, as a map of the territory
+   - Handmade Hero, watched rather than read - https://guide.handmadehero.org/
+   - Casey Muratori, Semantic Compression - https://caseymuratori.com/blog_0015
+   - Casey Muratori, Immediate Mode GUI, then Dear ImGui's source - https://caseymuratori.com/blog_0001
+   - Tracy profiler, and its manual - https://github.com/wolfpld/tracy
+   - rr, for reverse debugging - https://rr-project.org/
+   - Jonathan Blow's language talks and the Jai demo videos
+
+------------------------------------------------------------------------------------------------------------------------
 @printfdebugging                           Sun Sep 20 03:49:58 PM IST 2026                       *log.txt-2026-09-20-1549*
 
 
