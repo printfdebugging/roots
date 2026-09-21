@@ -451,8 +451,8 @@ bool createWindow(struct GLFWwindowOptions opts)
    if (!glfwInit())
       return false;
 
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
    glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, opts.transparent);
    glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
@@ -485,7 +485,7 @@ bool createWindow(struct GLFWwindowOptions opts)
 
    glfwSetWindowSizeLimits(window, minWidth, minHeight, maxWidth, maxHeight);
    glfwMakeContextCurrent(window);
-   gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
+   gladLoadGL((GLADloadfunc) glfwGetProcAddress);
    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
    glfwSwapInterval(1);
 
