@@ -94,6 +94,9 @@ bool init()
    initBufferRenderer(E.bufRenderer, E.lineShader);
    glBufferData(GL_ARRAY_BUFFER, E.verticesCount * VERTEX_SIZE, NULL, GL_STATIC_DRAW);
 
+   for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+      E.layoutMap[lineIdx].textLineIdx = lineIdx;
+
    E.initialized = true;
    return true;
 }
