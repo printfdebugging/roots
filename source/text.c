@@ -140,7 +140,7 @@ u32 textGetLineCount(struct Text *text)
 
 char *textGetUTF8Line(struct Text *text, u32 line)
 {
-   if (text->lineCount < line)
+   if (text->lineCount <= line)
       return NULL;
    return text->lines[line];
 }

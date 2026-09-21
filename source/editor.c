@@ -20,7 +20,7 @@ void _glfwErrFn(int code, const char *description);
 
 bool run()
 {
-   const char *path = ASSETS_DIR "test.md";
+   const char *path = ASSETS_DIR "mini-test.md";
    if (!E.initialized)
       perror("E not initialized\n");
    if (!loadTextFile(path))
@@ -155,6 +155,82 @@ void upload()
    E.bufRenderer->uploaded = true;
 }
 
+/*
+ * This should prepare the layoutMap such that
+ * layout can just be sure that that's up to date and just loop over
+ * it and either relayout or skip.
+ *
+ * This should be triggered by events like cursor moved, or window resized, etc etc..
+ * This should probably take a "who calls the update and for what" param
+ */
+void update()
+{
+   /* we can be sure that newCurLine and newCurCol are valid since the text functions
+    * are returning these, so they couldn't have been incremented/decremented anywhere randomly. */
+   u32 newCurLine = textGetCursorLine(E.text);
+   u32 newCurCol = textGetCursorColumn(E.text);
+
+   if (newCurCol != E.cursorColumn)
+   {
+      if (E.columnOffset + CHARS < newCurCol) /* cursor move right */
+      {
+         LOG_INFO("E.columnOffset (%i) + CHARS (%i) < newCurCol (%i)\n", E.columnOffset, CHARS, newCurCol)
+         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+            E.layoutMap[lineIdx].layouted = false;
+         E.columnOffset++;
+      }
+      else if (newCurCol < E.columnOffset) /* cursor move left */
+      {
+         LOG_INFO("newCurCol (%i) < E.columnOffset (%i)\n", newCurCol, E.columnOffset)
+         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+            E.layoutMap[lineIdx].layouted = false;
+         E.columnOffset--;
+      }
+      else /* moved over visible columns */
+      {
+         LOG_INFO("E.layoutMap[E.cursorLine (%i) - E.lineOffset (%i)].layouted (%i) = false;\n", E.cursorLine, E.lineOffset, E.layoutMap[E.cursorLine - E.lineOffset].layouted);
+         E.layoutMap[E.cursorLine - E.lineOffset].layouted = false;
+      }
+
+      E.cursorColumn = newCurCol;
+   }
+
+   if (newCurLine != E.cursorLine)
+   {
+      if (E.lineOffset + LINES <= newCurLine)
+      {
+         LOG_INFO("E.lineOffset (%i) + LINES (%i)< newCurLine (%i)\n", E.lineOffset, LINES, newCurLine);
+         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         {
+            E.layoutMap[lineIdx].layouted = false;
+            E.layoutMap[lineIdx].textLineIdx += 1;
+         }
+         E.lineOffset++;
+      }
+      else if (newCurLine < E.lineOffset)
+      {
+         LOG_INFO("newCurLine (%i) < E.lineOffset (%i)\n", newCurLine, E.lineOffset);
+         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         {
+            E.layoutMap[lineIdx].layouted = false;
+            E.layoutMap[lineIdx].textLineIdx -= 1;
+         }
+         E.lineOffset--;
+      }
+      else
+      {
+         LOG_INFO("E.layoutMap[newCurLine (%i) - E.lineOffset (%i)].layouted (%i) = false;\n", newCurLine, E.lineOffset, E.layoutMap[newCurLine - E.lineOffset].layouted);
+         E.layoutMap[E.cursorLine - E.lineOffset].layouted = false;
+         E.layoutMap[newCurLine - E.lineOffset].layouted = false;
+      }
+
+      E.cursorLine = newCurLine;
+
+      /* if scroll past the edges, then all lines relayout. middle ones just move one step up */
+      /* if scroll within visible range, invalidate both lines. later with a cursor moved flag */
+   }
+}
+
 void layout()
 {
    layoutBuffer();
@@ -229,41 +305,27 @@ void layoutBuffer()
    if (!E.lineShader || !E.text || !E.window || !E.fm.initialized)
       return;
 
-   /* todo: some way to layout/show only the visible part & relayout on some event */
-   /* todo: some mechanism to mark a line dirty here */
-   /* todo: check the dirty line count and the editor */
-   /* todo: relayout only when the quads change. for stuff like color changes, cursor movement, we can just send the diffs to the gpu to make it really quick */
-
    f32 lineHeight = fmGetDefaultFontLineHeight();
    f32 fontScale = fmGetDefaultFontScale();
 
-   u32 textLineCount = textGetLineCount(E.text);
-   u32 lineCount = textLineCount < LINES ? textLineCount : LINES;
-
    struct Rectangle bounds = getWindowBounds();
-
-   for (u32 lineIdx = 0; lineIdx < lineCount; ++lineIdx)
+   for (u32 visLineIdx = 0; visLineIdx < LINES; ++visLineIdx)
    {
-      if (E.layoutMap[lineIdx].layouted)
+      if (E.layoutMap[visLineIdx].layouted)
          continue;
 
-      /* todo: hide strlen behind the text api so that we can later replace it with something more efficient. */
-      /* todo: scroll offset comes here and add checks for valid line */
-      char *lineBytes = textGetUTF8Line(E.text, lineIdx);
-      [[maybe_unused]] u64 lineByteLen = strlen(lineBytes);
-      /* this should take layouting options.. */
+      char *lineBytes = textGetUTF8Line(E.text, E.layoutMap[visLineIdx].textLineIdx);
+      if (!lineBytes)
+         continue;
 
       /**!
        * scale = #pixels one point represents
        * points * scale = pixels
        * pixels / scale = points
        */
-
-      /* todo: this x changes on scrolling */
-      vec2s linePos = { .x = 0, .y = ((f32) bounds.h - ((f32) (lineIdx + 1) * lineHeight)) / fontScale };
+      vec2s linePos = { .x = 0, .y = ((f32) bounds.h - ((f32) (visLineIdx + 1) * lineHeight)) / fontScale };
 
       struct Font *font = fmGetDefaultFont();
-
       hb_buffer_t *buffer = hb_buffer_create();
       hb_buffer_add_utf8(buffer, lineBytes, -1, 0, -1);
       hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
@@ -359,11 +421,13 @@ void layoutBuffer()
                .hasCursor = false,
                .fgColor = (vec4s) { { ColorRGBAHex(0X839496FF) } },
                .bgColor = (vec4s) { { ColorRGBAHex(0X000000FF) } },
+               .hasCursor = (E.cursorLine == E.layoutMap[visLineIdx].textLineIdx && E.cursorColumn == glyphIdx),
                /* next: fix this. for now, nothing has a cursor */
             };
          }
+         // LOG_INFO("E.cursorLine %i, E.layoutMap[visLineIdx].textLineIdx %i\n", E.cursorLine, E.layoutMap[visLineIdx].textLineIdx)
 
-         u32 glyphQuadOffset = (glyphIdx * 6) + (lineIdx * CHARS * VERTICES);
+         u32 glyphQuadOffset = (glyphIdx * 6) + (visLineIdx * CHARS * VERTICES);
          E.vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
          E.vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
          E.vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
@@ -371,14 +435,14 @@ void layoutBuffer()
          E.vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
          E.vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
 
-         /* note: this currently assumes the layout to be horizontal, fine assumption
+         /* note: todo: this currently assumes the layout to be horizontal, fine assumption
           * when starting out, but later we would also want to cater for the vertical
           * writing styles. */
          glyphPosition.x += glyphInfo->extents.xMax;
       }
 
-      E.layoutMap[lineIdx].layouted = true;
-      E.layoutMap[lineIdx].uploaded = false;
+      E.layoutMap[visLineIdx].layouted = true;
+      E.layoutMap[visLineIdx].uploaded = false;
    }
 }
 
@@ -535,6 +599,34 @@ void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods)
    bool shiftQPress = (mods & GLFW_MOD_SHIFT) && (key == GLFW_KEY_Q) && (action == GLFW_PRESS);
    if (shiftQPress)
       glfwSetWindowShouldClose(window, GLFW_TRUE);
+
+   /* what if cursor is on the last line? what if it's on the first line?
+    * what if last column and the next line is short?*/
+   bool press = (action == GLFW_PRESS || action == GLFW_REPEAT);
+   if (press)
+   {
+      switch (key)
+      {
+         /* this crashes the application when key is clicked */
+         case GLFW_KEY_DOWN:
+            LOG_EVENT("keyFn: GLFW_KEY_DOWN\n");
+            textMoveCursorDown(E.text);
+            break;
+         case GLFW_KEY_UP:
+            LOG_EVENT("keyFn: GLFW_KEY_UP\n");
+            textMoveCursorUp(E.text);
+            break;
+         case GLFW_KEY_LEFT:
+            LOG_EVENT("keyFn: GLFW_KEY_LEFT\n");
+            textMoveCursorLeft(E.text);
+            break;
+         case GLFW_KEY_RIGHT:
+            LOG_EVENT("keyFn: GLFW_KEY_RIGHT\n");
+            textMoveCursorRight(E.text);
+            break;
+      }
+      update();
+   }
 }
 
 /**!

@@ -188,10 +188,6 @@ struct Text;
  * {
  *    i32 winId;
  *    i32 txtId;
- *    u32 cursorLine;
- *    u32 cursorColumn;
- *    u32 hOffset;
- *    u32 vOffset;
  * };
  */
 
@@ -249,18 +245,26 @@ struct FontManager
 };
 
 /* layout space constants */
-#define CHARS       80
-#define LINES       30
+#define CHARS       14
+#define LINES       6
 #define VERTICES    6
 #define VERTEX_SIZE sizeof(struct GlyphVertex)
+
+#define LOG_INFO(...)  fprintf(stderr, __VA_ARGS__);
+#define LOG_EVENT(...) fprintf(stderr, __VA_ARGS__);
 
 struct LayoutMap
 {
    u32 textLineIdx;
 
    /* not used anywhere for now */
+   /*
+    * this would come in handy as when we scroll, we need to know if we need to iterate over the whole
+    * thing to zero it, or if we can just overwrite since the new count is larger than the old.
+    */
    u32 count;
 
+   /* layoutKind = CURSOR_MOVE | SCROLL | ... (hints for the upload to either use morph or sub data..) */
    bool layouted;
    bool uploaded;
 };
@@ -277,6 +281,12 @@ struct Editor
    /* this is fixed by the constants above */
    u32 verticesCount;
    struct LayoutMap layoutMap[LINES];
+
+   u32 cursorLine;
+   u32 cursorColumn;
+
+   u32 lineOffset;
+   u32 columnOffset;
 
    /* config */
    f32 fontSize;
@@ -387,6 +397,7 @@ void calcFrameTime();
 bool run();
 bool shouldClose();
 bool deInit();
+void update();
 void layout();
 void upload();
 void render();
