@@ -179,6 +179,7 @@ bool textMoveCursorDown(struct Text *text)
    if (text->cursorLine == text->lineCount - 1)
       return false;
 
+   text->cursorLine++;
    const char *line = text->lines[text->cursorLine];
    u64 lineLen = strlen(line);
 
