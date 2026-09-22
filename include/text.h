@@ -6,6 +6,8 @@
 /* note: todo: the text api has to change */
 /* return string views into sub portions of the text */
 
+struct Text;
+
 struct Text *textLoadFromFile(const char *filepath);
 struct Text *textLoadFromData(const char *data, u32 dataLength);
 bool textWriteToFile(const char *filepath);
