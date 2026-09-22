@@ -353,29 +353,29 @@ union UpdateState
  * These are the core editor functions, so they can access the editor
  * directly.
  */
-bool init();
-void calcFrameTime();
-bool run();
-bool shouldClose();
-bool deInit();
-void update(enum UpdateEvent event, union UpdateState state);
-void layout();
-void upload();
-void render();
+bool Init();
+void CalcFrameTime();
+bool Run();
+bool ShouldClose();
+bool DeInit();
+void Update(enum UpdateEvent event, union UpdateState state);
+void Layout();
+void Upload();
+void Render();
 
-void layoutBuffer();
-void uploadBuffer();
-void renderBuffer();
+void LayoutBuffer();
+void UploadBuffer();
+void RenderBuffer();
 
-bool createWindow(struct GLFWwindowOptions opts);
-struct Rectangle getWindowBounds();
-void swapBuffers();
-bool loadTextFile(const char *filePath);
-void openFile(const char *path);
+bool CreateWindow(struct GLFWwindowOptions opts);
+struct Rectangle GetWindowBounds();
+void SwapBuffers();
+bool LoadTextFile(const char *filePath);
+void OpenFile(const char *path);
 
-void createTextShader(struct TextShader *shader);
-void destroyTextShader(struct TextShader *shader);
-void uploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms);
+void CreateTextShader(struct TextShader *shader);
+void DestroyTextShader(struct TextShader *shader);
+void UploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms);
 
 void scrollFn(GLFWwindow *window, f64 x, f64 y);
 void fbResizeFn(GLFWwindow *window, i32 width, i32 height);
@@ -383,36 +383,39 @@ void curPosFn(GLFWwindow *window, f64 x, f64 y);
 void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods);
 
 /* fontmanager.c */
-void fmInit(char *editorFontPath);
-void fmDeInit();
-struct GlyphAtlas *fmGetAtlas();
-struct Font *fmGetFont(const char *filePath);
-struct Font *fmGetDefaultFont();
-f32 fmGetDefaultFontScale();
-f32 fmGetDefaultFontLineHeight();
-struct Font *fmGetFontWithRune(rune codepoint);
-void fntInit(struct Font *font, const char *filePath);
-void fntDeInit(struct Font *font);
+void FontMgrInit(char *editorFontPath);
+void FontMgrDeInit();
+struct GlyphAtlas *FontMgrGetAtlas();
+struct Font *FontMgrGetFont(const char *filePath);
+struct Font *FontMgrGetDefaultFont();
 
-void _fmAtlasInit();
-void _fmAtlasDeInit();
+f32 FontMgrGetDefaultFontScale();
+f32 FontMgrGetDefaultFontLineHeight();
+
+struct Font *FontMgrGetFontWithRune(rune codepoint);
+
+void FontInit(struct Font *font, const char *filePath);
+void FontDeInit(struct Font *font);
+
+void _fontMgrAtlasInit();
+void _fontMgrAtlasDeInit();
 
 // void _linePrintChars();
 // void _lineSubstituteNewlines();
 // void _lineSubstituteTabs();
 
 /* renderer.c */
-void initBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader);
-void deInitBufferRenderer(struct BufferRenderer *renderer);
+void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader);
+void DeInitBufferRenderer(struct BufferRenderer *renderer);
 
 /* filesystem.c */
-char *readFileContents(const char *filPath);
+char *ReadFileContents(const char *filPath);
 
 /* shader.c */
-bool shaderGetCompileStatus(u32 shaderObject);
-bool shaderGetLinkStatus(u32 shaderProgram);
+bool ShaderGetCompileStatus(u32 shaderObject);
+bool ShaderGetLinkStatus(u32 shaderProgram);
 
 /* utils.c */
-char *stringDuplicate(const char *str);
+char *StringDuplicate(const char *str);
 
 #endif

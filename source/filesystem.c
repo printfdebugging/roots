@@ -3,7 +3,7 @@
 
 #include "editor.h"
 
-char *readFileContents(const char *filPath)
+char *ReadFileContents(const char *filPath)
 {
    char *data = NULL;
    FILE *file = fopen(filPath, "rb");

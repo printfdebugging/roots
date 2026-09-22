@@ -9,7 +9,7 @@
  * The caller is responsible for managing the `lifetime` of the returned
  * string i.e. freeing it. Returns `NULL` on error.
  */
-char *stringDuplicate(const char *str)
+char *StringDuplicate(const char *str)
 {
    u64 strLen = strlen(str);
    if (strLen == 0)

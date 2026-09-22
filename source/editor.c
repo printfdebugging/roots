@@ -22,30 +22,30 @@ void _glfwErrFn(int code, const char *description);
 static bool _msIsDarkMode();
 #endif
 
-bool run()
+bool Run()
 {
    const char *path = ASSETS_DIR "mini-test.md";
    if (!E.initialized)
       perror("E not initialized\n");
-   if (!loadTextFile(path))
+   if (!LoadTextFile(path))
       perror("Failed to load Text file\n");
 
-   update(EDITOR_STARTUP, (union UpdateState) {});
+   Update(EDITOR_STARTUP, (union UpdateState) {});
 
-   while (!shouldClose())
+   while (!ShouldClose())
    {
-      calcFrameTime();
+      CalcFrameTime();
       glfwPollEvents();
 
-      layout();
-      upload();
-      render();
+      Layout();
+      Upload();
+      Render();
    }
 
    return true;
 }
 
-bool shouldClose()
+bool ShouldClose()
 {
    if (!E.initialized)
       return true;
@@ -56,16 +56,16 @@ bool shouldClose()
    return shouldClose;
 }
 
-bool init()
+bool Init()
 {
    if (E.initialized)
       return true;
 
    E.fontSize = DEFAULT_FONT_SIZE;
-   if (!(E.fontFilePath = stringDuplicate(DEFAULT_FONT_FILE_PATH)))
+   if (!(E.fontFilePath = StringDuplicate(DEFAULT_FONT_FILE_PATH)))
       return false;
 
-   bool windowExists = createWindow(
+   bool windowExists = CreateWindow(
        (struct GLFWwindowOptions) {
           .width = 800,
           .height = 600,
@@ -95,9 +95,9 @@ bool init()
    if (!(E.vertices = calloc(E.verticesCount, VERTEX_SIZE)))
       return false;
 
-   fmInit(E.fontFilePath);
-   createTextShader(E.lineShader);
-   initBufferRenderer(E.bufRenderer, E.lineShader);
+   FontMgrInit(E.fontFilePath);
+   CreateTextShader(E.lineShader);
+   InitBufferRenderer(E.bufRenderer, E.lineShader);
    glBufferData(GL_ARRAY_BUFFER, E.verticesCount * VERTEX_SIZE, NULL, GL_STATIC_DRAW);
 
    for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
@@ -107,18 +107,18 @@ bool init()
    return true;
 }
 
-void calcFrameTime()
+void CalcFrameTime()
 {
    f64 tNow = glfwGetTime();
    E.tDelta = tNow - E.tLast;
    E.tLast = tNow;
 }
 
-bool deInit()
+bool DeInit()
 {
-   destroyTextShader(E.lineShader);
-   deInitBufferRenderer(E.bufRenderer);
-   fmDeInit();
+   DestroyTextShader(E.lineShader);
+   DeInitBufferRenderer(E.bufRenderer);
+   FontMgrDeInit();
 
    TextDestroy(E.text);
    free(E.text);
@@ -133,21 +133,21 @@ bool deInit()
    return true;
 }
 
-void render()
+void Render()
 {
-   renderBuffer();
+   RenderBuffer();
 }
 
-void upload()
+void Upload()
 {
    if (!E.layoutMapState.uploaded)
    {
-      uploadBuffer();
+      UploadBuffer();
       E.layoutMapState.uploaded = true;
    }
 }
 
-void uploadBuffer()
+void UploadBuffer()
 {
    if (E.verticesCount == 0)
       return;
@@ -178,7 +178,7 @@ void uploadBuffer()
  * This should be triggered by events like cursor moved, or window resized, etc etc..
  * This should probably take a "who calls the update and for what" param
  */
-void update(enum UpdateEvent event, union UpdateState state)
+void Update(enum UpdateEvent event, union UpdateState state)
 {
    u32 lineCount = TextGetLineCount(E.text);
    u32 oldCurLine = E.cursorLine;
@@ -329,11 +329,11 @@ void update(enum UpdateEvent event, union UpdateState state)
    }
 }
 
-void layout()
+void Layout()
 {
    if (!E.layoutMapState.layouted)
    {
-      layoutBuffer();
+      LayoutBuffer();
       E.layoutMapState.layouted = true;
       E.layoutMapState.uploaded = false;
    }
@@ -343,7 +343,7 @@ void layout()
  * Loads the text file from `filePath` into a `Text` object,
  * and returns an index to it, or `INVALID_ID` on error.
  */
-bool loadTextFile(const char *filePath)
+bool LoadTextFile(const char *filePath)
 {
    if (!filePath)
       return false;
@@ -354,17 +354,17 @@ bool loadTextFile(const char *filePath)
 
 /* warn: todo: add cleanup at some later stage when it works */
 /* returns a buffer id.. todo: write nicely later, let's first make it work */
-void openFile(const char *path)
+void OpenFile(const char *path)
 {
    (void) path;
    /* todo: */
 }
 
 /* todo: remove editor from here */
-void renderBuffer()
+void RenderBuffer()
 {
-   struct GlyphAtlas *atlas = fmGetAtlas();
-   struct Rectangle bounds = getWindowBounds();
+   struct GlyphAtlas *atlas = FontMgrGetAtlas();
+   struct Rectangle bounds = GetWindowBounds();
 
    mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
    mvp = glms_ortho(0, (f32) bounds.w, 0, (f32) bounds.h, 0.0f, 100.0f);
@@ -376,7 +376,7 @@ void renderBuffer()
    glClearColor(ColorRGBAHex(0X002b36FF));
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   f32 fontScale = fmGetDefaultFontScale();
+   f32 fontScale = FontMgrGetDefaultFontScale();
 
    E.bufRenderer->uniforms = (struct TextShaderUniforms) {
       .matViewProjection = mvp,
@@ -388,7 +388,7 @@ void renderBuffer()
       .stemDarkening = false,
    };
 
-   uploadTextShaderUniforms(E.lineShader, &E.bufRenderer->uniforms);
+   UploadTextShaderUniforms(E.lineShader, &E.bufRenderer->uniforms);
 
    if (E.bufRenderer->uploaded)
    {
@@ -398,20 +398,20 @@ void renderBuffer()
 
    /* note: not sure if this should be done after each buffer is rendered, or after all of them
     * are rendered. for now we just do it here since we only have a single buffer. */
-   swapBuffers();
+   SwapBuffers();
 }
 
 struct GlyphInfo *_glyphInfo = NULL;
 
-void layoutBuffer()
+void LayoutBuffer()
 {
    if (!E.lineShader || !E.text || !E.window || !E.fm.initialized)
       return;
 
-   f32 lineHeight = fmGetDefaultFontLineHeight();
-   f32 fontScale = fmGetDefaultFontScale();
+   f32 lineHeight = FontMgrGetDefaultFontLineHeight();
+   f32 fontScale = FontMgrGetDefaultFontScale();
 
-   struct Rectangle bounds = getWindowBounds();
+   struct Rectangle bounds = GetWindowBounds();
    for (u32 visLineIdx = 0; visLineIdx < LINES; ++visLineIdx)
    {
       if (E.layoutMap[visLineIdx].layouted)
@@ -428,7 +428,7 @@ void layoutBuffer()
        */
       vec2s linePos = { .x = 0, .y = ((f32) bounds.h - ((f32) (visLineIdx + 1) * lineHeight)) / fontScale };
 
-      struct Font *font = fmGetDefaultFont();
+      struct Font *font = FontMgrGetDefaultFont();
       hb_buffer_t *buffer = hb_buffer_create();
       hb_buffer_add_utf8(buffer, lineBytes, -1, 0, -1);
       hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
@@ -472,7 +472,7 @@ void layoutBuffer()
             };
 
             /* upload glyph data to glyph atlas */
-            struct GlyphAtlas *glyphAtlas = fmGetAtlas();
+            struct GlyphAtlas *glyphAtlas = FontMgrGetAtlas();
             if (!glyph->empty)
             {
                const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
@@ -549,7 +549,7 @@ void layoutBuffer()
    }
 }
 
-bool createWindow(struct GLFWwindowOptions opts)
+bool CreateWindow(struct GLFWwindowOptions opts)
 {
    if (!glfwInit())
       return false;
@@ -632,7 +632,7 @@ bool createWindow(struct GLFWwindowOptions opts)
    return true;
 }
 
-struct Rectangle getWindowBounds()
+struct Rectangle GetWindowBounds()
 {
    if (!E.window)
       return (struct Rectangle) {};
@@ -648,7 +648,7 @@ struct Rectangle getWindowBounds()
    };
 }
 
-void swapBuffers()
+void SwapBuffers()
 {
    glfwSwapBuffers(E.window);
 }
@@ -704,7 +704,7 @@ void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods)
       glfwSetWindowShouldClose(window, GLFW_TRUE);
 
    if (action == GLFW_PRESS || action == GLFW_REPEAT)
-      update(KEY_PRESS, (union UpdateState) { .glfwKey = key });
+      Update(KEY_PRESS, (union UpdateState) { .glfwKey = key });
 }
 
 /**!
@@ -712,7 +712,7 @@ void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods)
  * and manages shared objects.. So the OpenGL function pointers should be
  * loaded before this function is called. That's done by GLFW.
  */
-void fmInit(char *editorFontPath)
+void FontMgrInit(char *editorFontPath)
 {
    if (E.fm.initialized)
       return;
@@ -720,34 +720,34 @@ void fmInit(char *editorFontPath)
    /* `fontManagerGetFont` checks this and returns early if false (default) */
    E.fm.initialized = true;
 
-   _fmAtlasInit();
-   E.fm.editorFontPath = stringDuplicate(editorFontPath);
-   E.fm.editorFont = fmGetFont(editorFontPath);
+   _fontMgrAtlasInit();
+   E.fm.editorFontPath = StringDuplicate(editorFontPath);
+   E.fm.editorFont = FontMgrGetFont(editorFontPath);
 }
 
-void fmDeInit()
+void FontMgrDeInit()
 {
    if (!E.fm.initialized)
       return;
 
    for (u32 fontIdx = 0; fontIdx < E.fm.fontCount; ++fontIdx)
-      fntDeInit(&E.fm.font[fontIdx]);
+      FontDeInit(&E.fm.font[fontIdx]);
 
    free(E.fm.font);
    free((void *) E.fm.editorFontPath);
 
-   _fmAtlasDeInit();
+   _fontMgrAtlasDeInit();
    E.fm.initialized = false;
 }
 
-struct GlyphAtlas *fmGetAtlas()
+struct GlyphAtlas *FontMgrGetAtlas()
 {
    if (!E.fm.initialized)
       return NULL;
    return &E.fm.glyphAtlas;
 }
 
-struct Font *fmGetFont(const char *filePath)
+struct Font *FontMgrGetFont(const char *filePath)
 {
    if (!E.fm.initialized)
       return NULL;
@@ -758,19 +758,19 @@ struct Font *fmGetFont(const char *filePath)
 
    E.fm.font = realloc(E.fm.font, sizeof(struct Font) * (E.fm.fontCount + 1));
    struct Font *font = &E.fm.font[E.fm.fontCount++];
-   fntInit(font, filePath);
+   FontInit(font, filePath);
 
    return font;
 }
 
-struct Font *fmGetDefaultFont()
+struct Font *FontMgrGetDefaultFont()
 {
    if (!E.fm.initialized)
       return NULL;
    return E.fm.editorFont;
 }
 
-f32 fmGetDefaultFontScale()
+f32 FontMgrGetDefaultFontScale()
 {
    if (!E.fm.initialized)
       return 0;
@@ -780,25 +780,25 @@ f32 fmGetDefaultFontScale()
    return E.fontSize / (f32) yScale;
 }
 
-f32 fmGetDefaultFontLineHeight()
+f32 FontMgrGetDefaultFontLineHeight()
 {
    if (!E.fm.initialized)
       return 0;
 
    f32 lineHeight = (f32) E.fm.editorFont->hbAscent - (f32) E.fm.editorFont->hbDescent;
-   return lineHeight * fmGetDefaultFontScale();
+   return lineHeight * FontMgrGetDefaultFontScale();
 }
 
-struct Font *fmGetFontWithRune(rune codepoint)
+struct Font *FontMgrGetFontWithRune(rune codepoint)
 {
    (void) codepoint;
    perror("todo");
    return NULL;
 }
 
-void fntInit(struct Font *font, const char *filePath)
+void FontInit(struct Font *font, const char *filePath)
 {
-   font->fontPath = stringDuplicate(filePath);
+   font->fontPath = StringDuplicate(filePath);
    font->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
 
    hb_blob_t *hbBlob = NULL;
@@ -820,7 +820,7 @@ void fntInit(struct Font *font, const char *filePath)
    hb_ot_metrics_get_position(font->hbFont, HB_OT_METRICS_TAG_CAP_HEIGHT, &font->hbMaxHeight);
 }
 
-void fntDeInit(struct Font *font)
+void FontDeInit(struct Font *font)
 {
    hb_font_destroy(font->hbFont);
    hb_face_destroy(font->hbFace);
@@ -830,7 +830,7 @@ void fntDeInit(struct Font *font)
    free(font->glyphCache);
 }
 
-void _fmAtlasInit()
+void _fontMgrAtlasInit()
 {
    struct GlyphAtlas *glyphAtlas = &E.fm.glyphAtlas;
 
@@ -847,7 +847,7 @@ void _fmAtlasInit()
    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, glyphAtlas->textureBufferObject);
 }
 
-void _fmAtlasDeInit()
+void _fontMgrAtlasDeInit()
 {
    struct GlyphAtlas *glyphAtlas = &E.fm.glyphAtlas;
    glDeleteBuffers(1, &glyphAtlas->textureBufferObject);

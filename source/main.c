@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
    (void) argc;
    (void) argv;
 
-   if (!init() || !run() || !deInit())
+   if (!Init() || !Run() || !DeInit())
       return EXIT_FAILURE;
    return EXIT_SUCCESS;
 }

@@ -9,7 +9,7 @@ static void _rendererUseShaderProgram(u32 shaderProgram);
 
 /* this has to now happen once for each BufferRenderer (doens't exist yet.) */
 /* todo: warning: refactor it asap */
-void initBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader)
+void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader)
 {
    /* uniforms */
    renderer->uniforms = (struct TextShaderUniforms) {
@@ -86,7 +86,7 @@ void initBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shad
 }
 
 /* todo: this also needs fixing asap */
-void deInitBufferRenderer(struct BufferRenderer *renderer)
+void DeInitBufferRenderer(struct BufferRenderer *renderer)
 {
    /* primitives */
    renderer->uploaded = false;
@@ -95,7 +95,7 @@ void deInitBufferRenderer(struct BufferRenderer *renderer)
    glDeleteVertexArrays(1, &renderer->vao);
 }
 
-void createTextShader(struct TextShader *shader)
+void CreateTextShader(struct TextShader *shader)
 {
    shader->hbShaderProgram = _createTextShader();
    shader->uniformLocations = (struct TextShaderUniformLocations) {
@@ -124,7 +124,7 @@ void createTextShader(struct TextShader *shader)
    };
 }
 
-void destroyTextShader(struct TextShader *shader)
+void DestroyTextShader(struct TextShader *shader)
 {
    glDeleteProgram(shader->hbShaderProgram);
 }
@@ -134,7 +134,7 @@ void lineShaderDeinit(struct TextShader *shader)
    glDeleteProgram(shader->hbShaderProgram);
 }
 
-void uploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms)
+void UploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms)
 {
    u32 program = shader->hbShaderProgram;
    _rendererUseShaderProgram(program);
@@ -153,8 +153,8 @@ static u32 _createTextShader()
 {
    const char *hbShaderVersion = "#version 330 core\n";
    const char *hbShaderPreamble = "#define HB_GPU_DEMO_DRAW\n";
-   const char *hbVertexMain = readFileContents(ASSETS_DIR "harfbuzz.vert");
-   const char *hbFragmentMain = readFileContents(ASSETS_DIR "harfbuzz.frag");
+   const char *hbVertexMain = ReadFileContents(ASSETS_DIR "harfbuzz.vert");
+   const char *hbFragmentMain = ReadFileContents(ASSETS_DIR "harfbuzz.frag");
 
    u32 hbVertexShader;
    u32 hbFragmentShader;
@@ -178,20 +178,20 @@ static u32 _createTextShader()
    hbVertexShader = glCreateShader(GL_VERTEX_SHADER);
    glShaderSource(hbVertexShader, ArraySize(hbVertexShaderSources), hbVertexShaderSources, NULL);
    glCompileShader(hbVertexShader);
-   if (!shaderGetCompileStatus(hbVertexShader))
+   if (!ShaderGetCompileStatus(hbVertexShader))
       perror("vertex shader compilation failed");
 
    hbFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
    glShaderSource(hbFragmentShader, ArraySize(hbFragmentShaderSources), hbFragmentShaderSources, NULL);
    glCompileShader(hbFragmentShader);
-   if (!shaderGetCompileStatus(hbFragmentShader))
+   if (!ShaderGetCompileStatus(hbFragmentShader))
       perror("fragment shader compilation failed");
 
    u32 program = glCreateProgram();
    glAttachShader(program, hbVertexShader);
    glAttachShader(program, hbFragmentShader);
    glLinkProgram(program);
-   if (!shaderGetLinkStatus(program))
+   if (!ShaderGetLinkStatus(program))
       perror("failed to link shader program");
 
    glDeleteShader(hbVertexShader);
