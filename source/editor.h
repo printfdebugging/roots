@@ -282,6 +282,25 @@ struct Editor
    u32 verticesCount;
    struct LayoutMap layoutMap[LINES];
 
+   /*
+    * This is a baton which the update -> layout -> upload stages
+    * pass to each other to signal if things changed and whether
+    * they need to do something about it.
+    *
+    * The idea is that each stage just checks "do i need to do anything"
+    * and only when the answer is "yes", should they go out and look
+    * into the layoutMap about what changed.
+    *
+    * - todo: add LayoutType - CURSOR_MOVE, SCROLL, RESIZE..
+    * - todo: add UploadType - MORPH, BUFFER_SUBDATA
+    */
+   struct
+   {
+      bool updated;
+      bool layouted;
+      bool uploaded;
+   } layoutMapState;
+
    u32 cursorLine;
    u32 cursorColumn;
 
@@ -403,6 +422,7 @@ void upload();
 void render();
 
 void layoutBuffer();
+void uploadBuffer();
 void renderBuffer();
 
 bool createWindow(struct GLFWwindowOptions opts);

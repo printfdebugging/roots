@@ -35,6 +35,7 @@ bool run()
       calcFrameTime();
       glfwPollEvents();
 
+      update();
       layout();
       upload();
       render();
@@ -138,6 +139,15 @@ void render()
 
 void upload()
 {
+   if (!E.layoutMapState.uploaded)
+   {
+      uploadBuffer();
+      E.layoutMapState.uploaded = true;
+   }
+}
+
+void uploadBuffer()
+{
    if (E.verticesCount == 0)
       return;
 
@@ -197,6 +207,8 @@ void update()
       }
 
       E.cursorColumn = newCurCol;
+      E.layoutMapState.updated = true;
+      E.layoutMapState.layouted = false;
    }
 
    if (newCurLine != E.cursorLine)
@@ -229,6 +241,8 @@ void update()
       }
 
       E.cursorLine = newCurLine;
+      E.layoutMapState.updated = true;
+      E.layoutMapState.layouted = false;
 
       /* if scroll past the edges, then all lines relayout. middle ones just move one step up */
       /* if scroll within visible range, invalidate both lines. later with a cursor moved flag */
@@ -237,7 +251,12 @@ void update()
 
 void layout()
 {
-   layoutBuffer();
+   if (!E.layoutMapState.layouted)
+   {
+      layoutBuffer();
+      E.layoutMapState.layouted = true;
+      E.layoutMapState.uploaded = false;
+   }
 }
 
 /**!
