@@ -14,7 +14,7 @@ struct Text
    u32 lineCount;
 };
 
-struct Text *textLoadFromFile(const char *filepath)
+struct Text *TextLoadFromFile(const char *filepath)
 {
    /**!
     * warning: `getline` is a UNIX only function, so can't
@@ -71,7 +71,7 @@ struct Text *textLoadFromFile(const char *filepath)
 #endif
 }
 
-struct Text *textLoadFromData(const char *data, u32 dataLength)
+struct Text *TextLoadFromData(const char *data, u32 dataLength)
 {
    if (data == NULL)
       perror("got null data");
@@ -107,26 +107,26 @@ struct Text *textLoadFromData(const char *data, u32 dataLength)
    return text;
 }
 
-bool textWriteToFile(const char *filepath)
+bool TextWriteToFile(const char *filepath)
 {
    (void) filepath;
    perror("todo");
    return true;
 }
 
-u32 textGetLineCount(struct Text *text)
+u32 TextGetLineCount(struct Text *text)
 {
    return text->lineCount;
 }
 
-char *textGetUTF8Line(struct Text *text, u32 line)
+char *TextGetUTF8Line(struct Text *text, u32 line)
 {
    if (text->lineCount <= line)
       return NULL;
    return text->lines[line].data;
 }
 
-void textDestroy(struct Text *text)
+void TextDestroy(struct Text *text)
 {
    for (u32 lineIdx = 0; lineIdx < text->lineCount; ++lineIdx)
       free(text->lines[lineIdx].data);
@@ -134,7 +134,7 @@ void textDestroy(struct Text *text)
    free(text->filePath);
 }
 
-u32 textGetLineLength(struct Text *text, u32 lineIdx)
+u32 TextGetLineLength(struct Text *text, u32 lineIdx)
 {
    if (lineIdx <= text->lineCount - 1)
       return text->lines[lineIdx].count;

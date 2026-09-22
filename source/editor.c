@@ -120,7 +120,7 @@ bool deInit()
    deInitBufferRenderer(E.bufRenderer);
    fmDeInit();
 
-   textDestroy(E.text);
+   TextDestroy(E.text);
    free(E.text);
 
    free(E.lineShader);
@@ -180,7 +180,7 @@ void uploadBuffer()
  */
 void update(enum UpdateEvent event, union UpdateState state)
 {
-   u32 lineCount = textGetLineCount(E.text);
+   u32 lineCount = TextGetLineCount(E.text);
    u32 oldCurLine = E.cursorLine;
    u32 oldCurCol = E.cursorColumn;
 
@@ -206,7 +206,7 @@ void update(enum UpdateEvent event, union UpdateState state)
                E.cursorLine += 1;
 
                /* dup */
-               u32 lineLen = textGetLineLength(E.text, E.cursorLine);
+               u32 lineLen = TextGetLineLength(E.text, E.cursorLine);
                if (lineLen < E.cursorColumn)
                   E.cursorColumn = lineLen - 1;
 
@@ -224,7 +224,7 @@ void update(enum UpdateEvent event, union UpdateState state)
                E.cursorLine -= 1;
 
                /* dup */
-               u32 lineLen = textGetLineLength(E.text, E.cursorLine);
+               u32 lineLen = TextGetLineLength(E.text, E.cursorLine);
                if (lineLen < E.cursorColumn)
                   E.cursorColumn = lineLen - 1;
 
@@ -246,7 +246,7 @@ void update(enum UpdateEvent event, union UpdateState state)
             {
                LOG_EVENT("update: GLFW_KEY_RIGHT\n");
 
-               u32 lineLen = textGetLineLength(E.text, E.cursorLine);
+               u32 lineLen = TextGetLineLength(E.text, E.cursorLine);
                if (E.cursorColumn < lineLen - 1)
                   E.cursorColumn += 1;
 
@@ -347,7 +347,7 @@ bool loadTextFile(const char *filePath)
 {
    if (!filePath)
       return false;
-   if (!(E.text = textLoadFromFile(filePath)))
+   if (!(E.text = TextLoadFromFile(filePath)))
       return false;
    return true;
 }
@@ -417,7 +417,7 @@ void layoutBuffer()
       if (E.layoutMap[visLineIdx].layouted)
          continue;
 
-      char *lineBytes = textGetUTF8Line(E.text, E.layoutMap[visLineIdx].textLineIdx);
+      char *lineBytes = TextGetUTF8Line(E.text, E.layoutMap[visLineIdx].textLineIdx);
       if (!lineBytes)
          continue;
 

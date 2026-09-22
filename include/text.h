@@ -8,13 +8,13 @@
 
 struct Text;
 
-struct Text *textLoadFromFile(const char *filepath);
-struct Text *textLoadFromData(const char *data, u32 dataLength);
-bool textWriteToFile(const char *filepath);
-u32 textGetLineCount(struct Text *text);
-char *textGetUTF8Line(struct Text *text, u32 line);
-void textDestroy(struct Text *text);
+struct Text *TextLoadFromFile(const char *filepath);
+struct Text *TextLoadFromData(const char *data, u32 dataLength);
+bool TextWriteToFile(const char *filepath);
+u32 TextGetLineCount(struct Text *text);
+char *TextGetUTF8Line(struct Text *text, u32 line);
+void TextDestroy(struct Text *text);
 
-u32 textGetLineLength(struct Text *text, u32 lineIdx);
+u32 TextGetLineLength(struct Text *text, u32 lineIdx);
 
 #endif
