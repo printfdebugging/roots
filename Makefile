@@ -46,6 +46,7 @@ perf: debug
 
 reformat:
 	find \
+		include/* \
 		source/* \
 		-iname '*.h' -o \
 		-iname '*.c' -o \
