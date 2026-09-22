@@ -12,29 +12,6 @@ struct Text
    char *filePath;
    struct cString *lines;
    u32 lineCount;
-
-   /*!
-    * next: move these outside, a cursor
-    * is a property of the gui buffer, not the text
-    * itself. it's an abstraction on top of text and
-    * therefore doesn't belong here
-    */
-
-   /**!
-    * note: It is assumed that whatever chanes these variables
-    * takes them from one consistent state to another.. they
-    * should not be changed directly.
-    */
-   u32 cursorLine;
-   /**!
-    * note: this later becomes the offset by character, not by
-    * byte, but then we also need to see where we encode this
-    * info in the gui code and if glyphs there map to the same indexing
-    * as these characters.. or what to do in case where multiple
-    * codepoints combine to become one glyph.. interesting
-    * problem indeed.
-    */
-   u32 cursorColumn;
 };
 
 struct Text *textLoadFromFile(const char *filepath)
@@ -80,7 +57,7 @@ struct Text *textLoadFromFile(const char *filepath)
       text->lines = realloc(text->lines, (sizeof(struct cString)) * (text->lineCount + 1));
       text->lines[text->lineCount++] = (struct cString) {
          .data = line,
-         .count = (u64) lineLen,
+         .count = (u32) lineLen,
       };
       line = NULL;
    }
@@ -123,12 +100,10 @@ struct Text *textLoadFromData(const char *data, u32 dataLength)
       text->lines = realloc(text->lines, (text->lineCount + 1) * sizeof(struct cString));
       text->lines[text->lineCount++] = (struct cString) {
          .data = buffer,
-         .count = (u64) length,
+         .count = length,
       };
    }
 
-   text->cursorLine = 0;
-   text->cursorColumn = 0;
    return text;
 }
 
@@ -159,72 +134,11 @@ void textDestroy(struct Text *text)
    free(text->filePath);
 }
 
-bool textMoveCursorUp(struct Text *text)
+u32 textGetLineLength(struct Text *text, u32 lineIdx)
 {
-   /* already on the first line */
-   if (text->cursorLine == 0)
-      return false;
-
-   /* decrement the line */
-   --text->cursorLine;
-
-   /* check if the line has cursorColumn */
-   const char *line = text->lines[text->cursorLine].data;
-   u64 lineLen = strlen(line);
-
-   /* if not move it to the last column of that line. */
-   if (lineLen < text->cursorColumn)
-      text->cursorColumn = (u32) lineLen - 1;
-
-   return true;
-}
-
-bool textMoveCursorDown(struct Text *text)
-{
-   /* already on the last line */
-   if (text->cursorLine == text->lineCount - 1)
-      return false;
-
-   text->cursorLine++;
-   u64 lineLen = text->lines[text->cursorLine].count;
-
-   if (lineLen < text->cursorColumn)
-      text->cursorColumn = (u32) lineLen - 1;
-
-   return true;
-}
-
-bool textMoveCursorLeft(struct Text *text)
-{
-   if (text->cursorColumn != 0)
-   {
-      --text->cursorColumn;
-      return true;
-   }
-
-   return false;
-}
-
-bool textMoveCursorRight(struct Text *text)
-{
-   u64 lineLen = text->lines[text->cursorLine].count;
-   if (text->cursorColumn < lineLen - 1)
-   {
-      ++text->cursorColumn;
-      return true;
-   }
-
-   return false;
-}
-
-u32 textGetCursorLine(struct Text *text)
-{
-   return text->cursorLine;
-}
-
-u32 textGetCursorColumn(struct Text *text)
-{
-   return text->cursorColumn;
+   if (lineIdx <= text->lineCount - 1)
+      return text->lines[lineIdx].count;
+   return 0;
 }
 
 #endif

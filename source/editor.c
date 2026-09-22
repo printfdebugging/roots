@@ -30,12 +30,13 @@ bool run()
    if (!loadTextFile(path))
       perror("Failed to load Text file\n");
 
+   update(EDITOR_STARTUP, (union UpdateState) {});
+
    while (!shouldClose())
    {
       calcFrameTime();
       glfwPollEvents();
 
-      update();
       layout();
       upload();
       render();
@@ -177,25 +178,142 @@ void uploadBuffer()
  * This should be triggered by events like cursor moved, or window resized, etc etc..
  * This should probably take a "who calls the update and for what" param
  */
-void update()
+void update(enum UpdateEvent event, union UpdateState state)
 {
-   /* we can be sure that newCurLine and newCurCol are valid since the text functions
-    * are returning these, so they couldn't have been incremented/decremented anywhere randomly. */
-   u32 newCurLine = textGetCursorLine(E.text);
-   u32 newCurCol = textGetCursorColumn(E.text);
+   u32 lineCount = textGetLineCount(E.text);
+   u32 oldCurLine = E.cursorLine;
+   u32 oldCurCol = E.cursorColumn;
 
-   if (newCurCol != E.cursorColumn)
+   switch (event)
    {
-      if (E.columnOffset + CHARS < newCurCol) /* cursor move right */
+      case EDITOR_STARTUP:
       {
-         LOG_INFO("E.columnOffset (%i) + CHARS (%i) < newCurCol (%i)\n", E.columnOffset, CHARS, newCurCol)
+         break;
+      }
+      case KEY_PRESS:
+      {
+         switch (state.glfwKey)
+         {
+            /* this crashes the application when key is clicked */
+            case GLFW_KEY_DOWN:
+            {
+               LOG_EVENT("update: GLFW_KEY_DOWN\n");
+
+               bool alreadyOnTheLastLine = E.cursorLine == lineCount - 1;
+               if (alreadyOnTheLastLine)
+                  break;
+
+               E.cursorLine += 1;
+
+               /* dup */
+               u32 lineLen = textGetLineLength(E.text, E.cursorLine);
+               if (lineLen < E.cursorColumn)
+                  E.cursorColumn = lineLen - 1;
+
+               break;
+            }
+            case GLFW_KEY_UP:
+            {
+               LOG_EVENT("update: GLFW_KEY_UP\n");
+
+               /* already on the first line */
+               bool alreadyOnTheFirstLine = E.cursorLine == 0;
+               if (alreadyOnTheFirstLine)
+                  break;
+
+               E.cursorLine -= 1;
+
+               /* dup */
+               u32 lineLen = textGetLineLength(E.text, E.cursorLine);
+               if (lineLen < E.cursorColumn)
+                  E.cursorColumn = lineLen - 1;
+
+               break;
+            }
+            case GLFW_KEY_LEFT:
+            {
+               LOG_EVENT("update: GLFW_KEY_LEFT\n");
+
+               bool alreadyOnTheFirstColumn = E.cursorColumn == 0;
+               if (alreadyOnTheFirstColumn)
+                  break;
+
+               E.cursorColumn -= 1;
+
+               break;
+            }
+            case GLFW_KEY_RIGHT:
+            {
+               LOG_EVENT("update: GLFW_KEY_RIGHT\n");
+
+               u32 lineLen = textGetLineLength(E.text, E.cursorLine);
+               if (E.cursorColumn < lineLen - 1)
+                  E.cursorColumn += 1;
+
+               break;
+            }
+         }
+         break;
+      }
+   }
+
+   /*
+    * note: Line calculations should happen before column calculations, because columns
+    * depend on lines and it's possible (locally observed) that line changes might
+    * change some offsets which the column tests need, and without those chagnes, the indices
+    * are wrong and all the sudden you get a crash.
+    */
+
+   if (E.cursorLine != oldCurLine)
+   {
+      if (E.lineOffset + LINES <= E.cursorLine)
+      {
+         LOG_INFO("E.lineOffset (%i) + LINES (%i) < E.cursorLine (%i)\n", E.lineOffset, LINES, E.cursorLine);
+         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         {
+            /* todo: note: this should be shifting rather than just blind increment */
+            E.layoutMap[lineIdx].layouted = false;
+            E.layoutMap[lineIdx].textLineIdx += 1;
+         }
+         E.lineOffset++;
+      }
+      else if (E.cursorLine < E.lineOffset)
+      {
+         LOG_INFO("E.cursorLine (%i) < E.lineOffset (%i)\n", E.cursorLine, E.lineOffset);
+         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         {
+            /* todo: note: this should be shifting rather than just blind increment */
+            E.layoutMap[lineIdx].layouted = false;
+            E.layoutMap[lineIdx].textLineIdx -= 1;
+         }
+         E.lineOffset--;
+      }
+      else
+      {
+         LOG_INFO("E.layoutMap[E.cursorLine (%i) - E.lineOffset (%i)].layouted (%i) = false;\n", E.cursorLine, E.lineOffset, E.layoutMap[E.cursorLine - E.lineOffset].layouted);
+         E.layoutMap[oldCurLine - E.lineOffset].layouted = false;
+         E.layoutMap[E.cursorLine - E.lineOffset].layouted = false;
+      }
+
+      E.layoutMapState.updated = true;
+      E.layoutMapState.layouted = false;
+
+      /* if scroll past the edges, then all lines relayout. middle ones just move one step up */
+      /* if scroll within visible range, invalidate both lines. later with a cursor moved flag */
+   }
+
+   if (E.cursorColumn != oldCurCol)
+   {
+      if (oldCurCol + CHARS < E.cursorColumn) /* cursor move right */
+      {
+         LOG_INFO("oldCurCol (%i) + CHARS (%i) < E.cursorColumn (%i)\n", oldCurCol, CHARS, E.cursorColumn)
          for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
             E.layoutMap[lineIdx].layouted = false;
          E.columnOffset++;
       }
-      else if (newCurCol < E.columnOffset) /* cursor move left */
+      else if (E.cursorColumn < E.columnOffset) /* cursor move left */
       {
-         LOG_INFO("newCurCol (%i) < E.columnOffset (%i)\n", newCurCol, E.columnOffset)
+         LOG_INFO("E.cursorColumn (%i) < E.columnOffset (%i)\n", E.cursorColumn, E.columnOffset)
          for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
             E.layoutMap[lineIdx].layouted = false;
          E.columnOffset--;
@@ -206,46 +324,8 @@ void update()
          E.layoutMap[E.cursorLine - E.lineOffset].layouted = false;
       }
 
-      E.cursorColumn = newCurCol;
       E.layoutMapState.updated = true;
       E.layoutMapState.layouted = false;
-   }
-
-   if (newCurLine != E.cursorLine)
-   {
-      if (E.lineOffset + LINES <= newCurLine)
-      {
-         LOG_INFO("E.lineOffset (%i) + LINES (%i)< newCurLine (%i)\n", E.lineOffset, LINES, newCurLine);
-         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
-         {
-            E.layoutMap[lineIdx].layouted = false;
-            E.layoutMap[lineIdx].textLineIdx += 1;
-         }
-         E.lineOffset++;
-      }
-      else if (newCurLine < E.lineOffset)
-      {
-         LOG_INFO("newCurLine (%i) < E.lineOffset (%i)\n", newCurLine, E.lineOffset);
-         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
-         {
-            E.layoutMap[lineIdx].layouted = false;
-            E.layoutMap[lineIdx].textLineIdx -= 1;
-         }
-         E.lineOffset--;
-      }
-      else
-      {
-         LOG_INFO("E.layoutMap[newCurLine (%i) - E.lineOffset (%i)].layouted (%i) = false;\n", newCurLine, E.lineOffset, E.layoutMap[newCurLine - E.lineOffset].layouted);
-         E.layoutMap[E.cursorLine - E.lineOffset].layouted = false;
-         E.layoutMap[newCurLine - E.lineOffset].layouted = false;
-      }
-
-      E.cursorLine = newCurLine;
-      E.layoutMapState.updated = true;
-      E.layoutMapState.layouted = false;
-
-      /* if scroll past the edges, then all lines relayout. middle ones just move one step up */
-      /* if scroll within visible range, invalidate both lines. later with a cursor moved flag */
    }
 }
 
@@ -623,33 +703,8 @@ void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods)
    if (shiftQPress)
       glfwSetWindowShouldClose(window, GLFW_TRUE);
 
-   /* what if cursor is on the last line? what if it's on the first line?
-    * what if last column and the next line is short?*/
-   bool press = (action == GLFW_PRESS || action == GLFW_REPEAT);
-   if (press)
-   {
-      switch (key)
-      {
-         /* this crashes the application when key is clicked */
-         case GLFW_KEY_DOWN:
-            LOG_EVENT("keyFn: GLFW_KEY_DOWN\n");
-            textMoveCursorDown(E.text);
-            break;
-         case GLFW_KEY_UP:
-            LOG_EVENT("keyFn: GLFW_KEY_UP\n");
-            textMoveCursorUp(E.text);
-            break;
-         case GLFW_KEY_LEFT:
-            LOG_EVENT("keyFn: GLFW_KEY_LEFT\n");
-            textMoveCursorLeft(E.text);
-            break;
-         case GLFW_KEY_RIGHT:
-            LOG_EVENT("keyFn: GLFW_KEY_RIGHT\n");
-            textMoveCursorRight(E.text);
-            break;
-      }
-      update();
-   }
+   if (action == GLFW_PRESS || action == GLFW_REPEAT)
+      update(KEY_PRESS, (union UpdateState) { .glfwKey = key });
 }
 
 /**!

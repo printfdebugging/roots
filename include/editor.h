@@ -228,6 +228,10 @@ struct Editor
       bool uploaded;
    } layoutMapState;
 
+   /*
+    * The cursor does not exist for the text, it's just a marker the
+    * user has (in the buffer) to say "make edits here" etc.
+    */
    u32 cursorLine;
    u32 cursorColumn;
 
@@ -334,6 +338,17 @@ struct LineLayout
 
 /* editor.c */
 
+enum UpdateEvent
+{
+   EDITOR_STARTUP,
+   KEY_PRESS,
+};
+
+union UpdateState
+{
+   int glfwKey;
+};
+
 /**!
  * These are the core editor functions, so they can access the editor
  * directly.
@@ -343,7 +358,7 @@ void calcFrameTime();
 bool run();
 bool shouldClose();
 bool deInit();
-void update();
+void update(enum UpdateEvent event, union UpdateState state);
 void layout();
 void upload();
 void render();

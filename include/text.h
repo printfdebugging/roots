@@ -14,11 +14,7 @@ bool textWriteToFile(const char *filepath);
 u32 textGetLineCount(struct Text *text);
 char *textGetUTF8Line(struct Text *text, u32 line);
 void textDestroy(struct Text *text);
-bool textMoveCursorUp(struct Text *text);
-bool textMoveCursorDown(struct Text *text);
-bool textMoveCursorLeft(struct Text *text);
-bool textMoveCursorRight(struct Text *text);
-u32 textGetCursorLine(struct Text *text);
-u32 textGetCursorColumn(struct Text *text);
+
+u32 textGetLineLength(struct Text *text, u32 lineIdx);
 
 #endif

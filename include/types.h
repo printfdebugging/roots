@@ -21,13 +21,13 @@ typedef int b32;
 struct cString
 {
    char *data;
-   u64 count;
+   u32 count;
 };
 
 struct cStringView
 {
    char *data;
-   u64 count;
+   u32 count;
    struct cString *_source;
 };
 
