@@ -11,7 +11,7 @@
 	"editor.inlayHints.fontFamily": "Lilex Nerd Font",
 	"terminal.integrated.fontFamily": "Lilex Nerd Font",
 	"terminal.integrated.fontSize": 13,
-	"workbench.activityBar.location": "hidden",
+	"workbench.activityBar.location": "default",
 	"window.commandCenter": false,
 	"workbench.navigationControl.enabled": false,
 	"workbench.layoutControl.enabled": false,
@@ -27,5 +27,5 @@
 	"zenMode.hideLineNumbers": false,
 	"zenMode.hideActivityBar": true,
 	"zenMode.hideStatusBar": true,
-	"zenMode.restore": true
+	"zenMode.restore": false
 }
