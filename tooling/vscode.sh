@@ -2,7 +2,7 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && git rev-parse --show-toplevel)"
-SRC="${ROOT}/config/vscode"
+SRC="${ROOT}/tooling/vscode"
 DEST_WS="${ROOT}/.vscode"
 
 function vscode_platform() {
