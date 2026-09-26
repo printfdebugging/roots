@@ -304,9 +304,10 @@ void Update(enum UpdateEvent event, union UpdateState state)
 
    if (E.cursorColumn != oldCurCol)
    {
-      if (oldCurCol + CHARS < E.cursorColumn) /* cursor move right */
+      LOG_INFO("E.cursorColumn (%i) != oldCurCol (%i)\n", E.cursorColumn, oldCurCol);
+      if (E.columnOffset + CHARS < E.cursorColumn) /* cursor move right */
       {
-         LOG_INFO("oldCurCol (%i) + CHARS (%i) < E.cursorColumn (%i)\n", oldCurCol, CHARS, E.cursorColumn)
+         LOG_INFO("E.columnOffset (%i) + CHARS (%i) < E.cursorColumn (%i)\n", E.columnOffset, CHARS, E.cursorColumn)
          for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
             E.layoutMap[lineIdx].layouted = false;
          E.columnOffset++;
