@@ -10,7 +10,7 @@
 struct Text
 {
    char *filePath;
-   struct cString *lines;
+   struct String *lines;
    u32 lineCount;
 };
 
@@ -54,8 +54,8 @@ struct Text *TextLoadFromFile(const char *filepath)
       if (lineLen == 0)
          continue;
 
-      text->lines = realloc(text->lines, (sizeof(struct cString)) * (text->lineCount + 1));
-      text->lines[text->lineCount++] = (struct cString) {
+      text->lines = realloc(text->lines, (sizeof(struct String)) * (text->lineCount + 1));
+      text->lines[text->lineCount++] = (struct String) {
          .data = line,
          .count = (u32) lineLen,
       };
@@ -97,8 +97,8 @@ struct Text *TextLoadFromData(const char *data, u32 dataLength)
       buffer = memcpy(buffer, data + lastIndex, length);
       lastIndex = index;
 
-      text->lines = realloc(text->lines, (text->lineCount + 1) * sizeof(struct cString));
-      text->lines[text->lineCount++] = (struct cString) {
+      text->lines = realloc(text->lines, (text->lineCount + 1) * sizeof(struct String));
+      text->lines[text->lineCount++] = (struct String) {
          .data = buffer,
          .count = length,
       };

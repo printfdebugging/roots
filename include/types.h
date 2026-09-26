@@ -18,17 +18,17 @@ typedef float f32;
 typedef double f64;
 typedef int b32;
 
-struct cString
+struct String
 {
    char *data;
    u32 count;
 };
 
-struct cStringView
+struct StringView
 {
    char *data;
    u32 count;
-   struct cString *_source;
+   struct String *source;
 };
 
 #endif
