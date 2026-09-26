@@ -126,6 +126,21 @@ char *TextGetUTF8Line(struct Text *text, u32 line)
    return text->lines[line].data;
 }
 
+struct StringView TextGetLineUTF8AtOffset(struct Text *text, u32 line, u32 offset)
+{
+   u32 length = TextGetLineLength(text, line);
+   if (offset < length)
+   {
+      return (struct StringView) {
+         .data = &text->lines[line].data[offset],
+         .count = length - offset,
+         .source = &text->lines[line],
+      };
+   }
+
+   return (struct StringView) {};
+}
+
 void TextDestroy(struct Text *text)
 {
    for (u32 lineIdx = 0; lineIdx < text->lineCount; ++lineIdx)

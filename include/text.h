@@ -18,6 +18,8 @@ u32 TextGetLineCount(struct Text *text);
 
 char *TextGetUTF8Line(struct Text *text, u32 line);
 
+struct StringView TextGetLineUTF8AtOffset(struct Text *text, u32 line, u32 offset);
+
 void TextDestroy(struct Text *text);
 
 u32 TextGetLineLength(struct Text *text, u32 lineIdx);
