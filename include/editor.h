@@ -183,15 +183,6 @@ struct FontManager
 struct LayoutMap
 {
    u32 textLineIdx;
-
-   /* not used anywhere for now */
-   /*
-    * this would come in handy as when we scroll, we need to know if we need to iterate over the whole
-    * thing to zero it, or if we can just overwrite since the new count is larger than the old.
-    */
-   u32 count;
-
-   /* layoutKind = CURSOR_MOVE | SCROLL | ... (hints for the upload to either use morph or sub data..) */
    bool layouted;
    bool uploaded;
 };
