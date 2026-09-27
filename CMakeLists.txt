@@ -23,6 +23,7 @@ add_subdirectory(vendor/glad)
 add_subdirectory(vendor/cglm)
 add_subdirectory(vendor/stb)
 add_subdirectory(vendor/lua)
+add_subdirectory(vendor/libuv)
 
 add_subdirectory(vendor/tree-sitter)
 add_subdirectory(vendor/tree-sitter-parsers/tree-sitter-c)
@@ -71,6 +72,7 @@ target_include_directories(editor PUBLIC
 target_link_libraries(editor PRIVATE
    harfbuzz-gpu harfbuzz glfw glad cglm
    stb lua::lua unicode tree-sitter tree-sitter-c
+   libuv::libuv
    $<$<BOOL:${WIN32}>:dwmapi>
 )
 
