@@ -19,3 +19,6 @@
 [submodule "libs/lua"]
 	path = vendor/lua
 	url = https://github.com/printfdebugging/lua
+[submodule "vendor/tree-sitter"]
+	path = vendor/tree-sitter
+	url = https://github.com/tree-sitter/tree-sitter

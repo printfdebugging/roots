@@ -23,6 +23,7 @@ add_subdirectory(vendor/glad)
 add_subdirectory(vendor/cglm)
 add_subdirectory(vendor/stb)
 add_subdirectory(vendor/lua)
+add_subdirectory(vendor/tree-sitter)
 
 set(CMAKE_C_STANDARD 23)
 set(SOURCES main.c editor.c shader.c filesystem.c text.c renderer.c utils.c sanitizers.c)
@@ -66,7 +67,7 @@ target_include_directories(editor PUBLIC
 
 target_link_libraries(editor PRIVATE
    harfbuzz-gpu harfbuzz glfw glad cglm
-   stb lua::lua unicode
+   stb lua::lua unicode tree-sitter
    $<$<BOOL:${WIN32}>:dwmapi>
 )
 
