@@ -271,6 +271,18 @@ void Update(enum UpdateEvent event, union UpdateState state)
 
                break;
             }
+            case GLFW_KEY_HOME:
+            {
+               E.cursorColumn = 0;
+               break;
+            }
+            case GLFW_KEY_END:
+            {
+               u32 length = TextGetLineLength(E.text, E.cursorLine);
+               if (length > 0)
+                  E.cursorColumn = length - 1;
+               break;
+            }
          }
          break;
       }
@@ -329,14 +341,14 @@ void Update(enum UpdateEvent event, union UpdateState state)
          LOG_INFO("E.columnOffset (%i) + CHARS (%i) < E.cursorColumn (%i)\n", E.columnOffset, CHARS, E.cursorColumn)
          for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
             E.layoutMap[lineIdx].layouted = false;
-         E.columnOffset++;
+         E.columnOffset += (E.cursorColumn - (E.columnOffset + CHARS));
       }
       else if (E.cursorColumn < E.columnOffset) /* cursor move left */
       {
          LOG_INFO("E.cursorColumn (%i) < E.columnOffset (%i)\n", E.cursorColumn, E.columnOffset)
          for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
             E.layoutMap[lineIdx].layouted = false;
-         E.columnOffset--;
+         E.columnOffset -= (E.columnOffset - E.cursorColumn);
       }
       else /* moved over visible columns */
       {
