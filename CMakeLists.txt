@@ -60,6 +60,7 @@ target_compile_definitions(editor PRIVATE
    GLFW_INCLUDE_NONE
    TEXT_LINE_IMPLEMENTATION
    ASSETS_DIR="${CMAKE_CURRENT_SOURCE_DIR}/assets/"
+   SOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/"
    "$<$<CONFIG:Debug>:DEBUG>"
 )
 
