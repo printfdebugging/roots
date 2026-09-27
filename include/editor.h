@@ -385,6 +385,7 @@ void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods);
 /* fontmanager.c */
 void FontMgrInit(char *editorFontPath);
 void FontMgrDeInit();
+void FontMgrCacheGlyphInfo(struct Font *font, u32 glyphIndex);
 struct GlyphAtlas *FontMgrGetAtlas();
 struct Font *FontMgrGetFont(const char *filePath);
 struct Font *FontMgrGetDefaultFont();

@@ -466,46 +466,8 @@ void LayoutBuffer()
       for (u32 glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
       {
          hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
-         struct GlyphInfo *glyph = &font->glyphCache[glyphIndex];
-         if (!glyph->cached)
-         {
-            i32 xScale, yScale;
-            hb_font_get_scale(font->hbFont, &xScale, &yScale);
-            hb_gpu_draw_clear(font->hbDraw);
-            hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
-
-            hb_glyph_extents_t hbGlyphExtents = {};
-            hb_blob_t *hbBlob = NULL;
-
-            hbBlob = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
-            u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
-
-            *glyph = (struct GlyphInfo) {
-               .extents.xMin = 0,
-               .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
-               .extents.yMin = font->hbDescent,
-               .extents.yMax = font->hbAscent,
-               .advance = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
-               .upem = yScale,
-               .empty = (hbBlobLength == 0),
-               .cached = true,
-            };
-
-            /* upload glyph data to glyph atlas */
-            struct GlyphAtlas *glyphAtlas = FontMgrGetAtlas();
-            if (!glyph->empty)
-            {
-               const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
-               glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
-               glBufferSubData(GL_TEXTURE_BUFFER, glyphAtlas->cursorOffsetBytes, hbBlobLength, hbGlyphData);
-               glyph->atlasOffset = glyphAtlas->cursorOffsetBytes;
-               glyphAtlas->cursorOffsetBytes += hbBlobLength;
-
-               hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
-            }
-         }
-
-         _glyphInfo[glyphIdx] = *glyph;
+         FontMgrCacheGlyphInfo(font, glyphIndex);
+         _glyphInfo[glyphIdx] = font->glyphCache[glyphIndex];
       }
 
       hb_buffer_destroy(buffer);
@@ -758,6 +720,49 @@ void FontMgrDeInit()
 
    _fontMgrAtlasDeInit();
    E.fm.initialized = false;
+}
+
+void FontMgrCacheGlyphInfo(struct Font *font, u32 glyphIndex)
+{
+   if (font->glyphCache[glyphIndex].cached)
+      return;
+
+   struct GlyphInfo *glyph = &font->glyphCache[glyphIndex];
+
+   i32 xScale, yScale;
+   hb_font_get_scale(font->hbFont, &xScale, &yScale);
+   hb_gpu_draw_clear(font->hbDraw);
+   hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
+
+   hb_glyph_extents_t hbGlyphExtents = {};
+   hb_blob_t *hbBlob = NULL;
+
+   hbBlob = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
+   u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
+
+   *glyph = (struct GlyphInfo) {
+      .extents.xMin = 0,
+      .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+      .extents.yMin = font->hbDescent,
+      .extents.yMax = font->hbAscent,
+      .advance = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+      .upem = yScale,
+      .empty = (hbBlobLength == 0),
+      .cached = true,
+   };
+
+   /* upload glyph data to glyph atlas */
+   struct GlyphAtlas *glyphAtlas = FontMgrGetAtlas();
+   if (!glyph->empty)
+   {
+      const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
+      glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
+      glBufferSubData(GL_TEXTURE_BUFFER, glyphAtlas->cursorOffsetBytes, hbBlobLength, hbGlyphData);
+      glyph->atlasOffset = glyphAtlas->cursorOffsetBytes;
+      glyphAtlas->cursorOffsetBytes += hbBlobLength;
+
+      hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
+   }
 }
 
 struct GlyphAtlas *FontMgrGetAtlas()
