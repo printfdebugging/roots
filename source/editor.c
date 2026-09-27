@@ -299,7 +299,7 @@ void Update(enum UpdateEvent event, union UpdateState state)
    {
       if (E.lineOffset + LINES <= E.cursorLine)
       {
-         LOG_INFO("E.lineOffset (%i) + LINES (%i) < E.cursorLine (%i)\n", E.lineOffset, LINES, E.cursorLine);
+         LOG_INFO("E.lineOffset (%i) + LINES (%i) <= E.cursorLine (%i)\n", E.lineOffset, LINES, E.cursorLine);
          for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
          {
             /* todo: note: this should be shifting rather than just blind increment */
@@ -341,7 +341,9 @@ void Update(enum UpdateEvent event, union UpdateState state)
          LOG_INFO("E.columnOffset (%i) + CHARS (%i) < E.cursorColumn (%i)\n", E.columnOffset, CHARS, E.cursorColumn)
          for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
             E.layoutMap[lineIdx].layouted = false;
-         E.columnOffset += (E.cursorColumn - (E.columnOffset + CHARS));
+
+         u32 lastVisColIdx = E.columnOffset + CHARS - 1;
+         E.columnOffset += (E.cursorColumn - lastVisColIdx);
       }
       else if (E.cursorColumn < E.columnOffset) /* cursor move left */
       {
@@ -449,10 +451,6 @@ void LayoutBuffer()
       if (E.layoutMap[visLineIdx].layouted)
          continue;
 
-      char *lineBytes = TextGetUTF8Line(E.text, E.layoutMap[visLineIdx].textLineIdx);
-      if (!lineBytes)
-         continue;
-
       /**!
        * scale = #pixels one point represents
        * points * scale = pixels
@@ -462,7 +460,9 @@ void LayoutBuffer()
 
       struct Font *font = FontMgrGetDefaultFont();
       hb_buffer_t *buffer = hb_buffer_create();
-      hb_buffer_add_utf8(buffer, lineBytes, -1, 0, -1);
+
+      struct StringView view = TextGetLineUTF8AtOffset(E.text, E.layoutMap[visLineIdx].textLineIdx, E.columnOffset);
+      hb_buffer_add_utf8(buffer, view.data, (i32) view.count, 0, -1);
       hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
       hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
       hb_shape(font->hbFont, buffer, NULL, 0);
@@ -471,7 +471,8 @@ void LayoutBuffer()
       hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
 
       _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct GlyphInfo));
-      memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct GlyphInfo));
+      if (_glyphInfo)
+         memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct GlyphInfo));
 
       u32 glyphCount = hbGlyphCount < CHARS ? hbGlyphCount : CHARS;
 
@@ -499,6 +500,25 @@ void LayoutBuffer()
          glyphPosition.y += 0;
 
          struct GlyphVertex glyphQuadCorners[4];
+
+         u32 visualColumn = 0;
+         if (E.cursorColumn - E.columnOffset >= CHARS)
+            visualColumn = CHARS - 1;
+         else if (E.cursorColumn < E.columnOffset)
+            visualColumn = 0;
+         else
+            visualColumn = E.cursorColumn - E.columnOffset;
+
+         /* LOG_INFO(
+             "hasCursor: %i, E.cursorLine (%i) == E.layoutMap[visLineIdx].textLineIdx (%i) && visualColumn (%i) == glyphIdx (%i)\n",
+             (E.cursorLine == E.layoutMap[visLineIdx].textLineIdx && visualColumn == glyphIdx),
+             E.cursorLine,
+             E.layoutMap[visLineIdx].textLineIdx,
+             visualColumn,
+             glyphIdx
+         ) */
+
+         u32 lineOffset = visLineIdx * CHARS * VERTICES;
          for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
          {
             i32 cx = (cornerIdx >> 1) & 1;
@@ -515,16 +535,14 @@ void LayoutBuffer()
                .ny = cy ? -1.f : 1.f,
                .emPerPos = 1.0,
                .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
-               .hasCursor = false,
                .fgColor = (vec4s) { { ColorRGBAHex(0X839496FF) } },
                .bgColor = (vec4s) { { ColorRGBAHex(0X000000FF) } },
-               .hasCursor = (E.cursorLine == E.layoutMap[visLineIdx].textLineIdx && E.cursorColumn == glyphIdx),
-               /* next: fix this. for now, nothing has a cursor */
+               .hasCursor = (E.cursorLine == E.layoutMap[visLineIdx].textLineIdx && visualColumn == glyphIdx),
             };
          }
-         // LOG_INFO("E.cursorLine %i, E.layoutMap[visLineIdx].textLineIdx %i\n", E.cursorLine, E.layoutMap[visLineIdx].textLineIdx)
 
-         u32 glyphQuadOffset = (glyphIdx * 6) + (visLineIdx * CHARS * VERTICES);
+         u32 glyphOffset = glyphIdx * VERTICES;
+         u32 glyphQuadOffset = lineOffset + glyphOffset;
          E.vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
          E.vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
          E.vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
@@ -536,6 +554,24 @@ void LayoutBuffer()
           * when starting out, but later we would also want to cater for the vertical
           * writing styles. */
          glyphPosition.x += glyphInfo->extents.xMax;
+      }
+
+      /* this would do for now */
+      if (glyphCount < CHARS)
+      {
+         u32 lineOffset = (visLineIdx * CHARS * VERTICES);
+         for (u32 glyphIdx = glyphCount; glyphIdx < CHARS; ++glyphIdx)
+         {
+            u32 glyphOffset = glyphIdx * VERTICES;
+            u32 glyphQuadOffset = lineOffset + glyphOffset;
+
+            E.vertices[glyphQuadOffset + 0] = (struct GlyphVertex) { 0 };
+            E.vertices[glyphQuadOffset + 1] = (struct GlyphVertex) { 0 };
+            E.vertices[glyphQuadOffset + 2] = (struct GlyphVertex) { 0 };
+            E.vertices[glyphQuadOffset + 3] = (struct GlyphVertex) { 0 };
+            E.vertices[glyphQuadOffset + 4] = (struct GlyphVertex) { 0 };
+            E.vertices[glyphQuadOffset + 5] = (struct GlyphVertex) { 0 };
+         }
       }
 
       E.layoutMap[visLineIdx].layouted = true;
