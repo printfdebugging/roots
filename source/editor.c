@@ -24,7 +24,7 @@ static bool _msIsDarkMode();
 
 bool Run()
 {
-   const char *path = ASSETS_DIR "mini-test.md";
+   const char *path = ASSETS_DIR "test.md";
    if (!E.initialized)
       perror("E not initialized\n");
    if (!LoadTextFile(path))

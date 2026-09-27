@@ -172,8 +172,8 @@ struct FontManager
 };
 
 /* layout space constants */
-#define CHARS       14
-#define LINES       6
+#define CHARS       60
+#define LINES       20
 #define VERTICES    6
 #define VERTEX_SIZE sizeof(struct GlyphVertex)
 
