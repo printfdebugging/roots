@@ -184,14 +184,33 @@ void Update(enum UpdateEvent event, union UpdateState state)
    u32 oldCurLine = E.cursorLine;
    u32 oldCurCol = E.cursorColumn;
 
+   /* todo: later: this has update + layouting which is not the right shape to hold.
+    * something has to be done, cursor position has to be updated for sure before the
+    * second half of this function runs which is about layouting. */
    switch (event)
    {
+      /* layouting */
       case EDITOR_STARTUP:
       {
+         E.cursorColumn = 0;
+         E.cursorLine = 0;
+
+         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         {
+            E.layoutMap[lineIdx] = (struct LayoutMap) {
+               .textLineIdx = lineIdx,
+               .layouted = false,
+               .uploaded = false,
+            };
+         }
+
          break;
       }
       case KEY_PRESS:
       {
+         /* later: we don't consider the count etc and we should do that. we should
+          * also make sure that we are marking something as "needs cleanup for the
+          * rest of the empty quads" */
          switch (state.glfwKey)
          {
             /* this crashes the application when key is clicked */
