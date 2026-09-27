@@ -22,3 +22,6 @@
 [submodule "vendor/tree-sitter"]
 	path = vendor/tree-sitter
 	url = https://github.com/tree-sitter/tree-sitter
+[submodule "vendor/tree-sitter-parsers/tree-sitter-c"]
+	path = vendor/tree-sitter-parsers/tree-sitter-c
+	url = https://github.com/tree-sitter/tree-sitter-c
