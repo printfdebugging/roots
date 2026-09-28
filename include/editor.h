@@ -363,7 +363,7 @@ void LayoutBuffer();
 void UploadBuffer();
 void RenderBuffer();
 
-bool CreateWindow(struct GLFWwindowOptions opts);
+bool CreateGLFWwindow(struct GLFWwindowOptions opts);
 struct Rectangle GetWindowBounds();
 void SwapBuffers();
 bool LoadTextFile(const char *filePath);

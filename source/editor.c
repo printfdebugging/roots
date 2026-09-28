@@ -66,7 +66,7 @@ bool Init()
    if (!(E.fontFilePath = StringDuplicate(DEFAULT_FONT_FILE_PATH)))
       return false;
 
-   bool windowExists = CreateWindow(
+   bool windowExists = CreateGLFWwindow(
        (struct GLFWwindowOptions) {
           .width = 800,
           .height = 600,
@@ -580,7 +580,7 @@ void LayoutBuffer()
    }
 }
 
-bool CreateWindow(struct GLFWwindowOptions opts)
+bool CreateGLFWwindow(struct GLFWwindowOptions opts)
 {
    if (!glfwInit())
       return false;
