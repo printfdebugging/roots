@@ -25,6 +25,7 @@
 [submodule "vendor/tree-sitter-parsers/tree-sitter-c"]
 	path = vendor/tree-sitter-parsers/tree-sitter-c
 	url = https://github.com/tree-sitter/tree-sitter-c
+	ignore = dirty
 [submodule "vendor/libuv"]
 	path = vendor/libuv
 	url = https://github.com/libuv/libuv
