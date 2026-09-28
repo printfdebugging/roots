@@ -29,3 +29,6 @@
 [submodule "vendor/libuv"]
 	path = vendor/libuv
 	url = https://github.com/libuv/libuv
+[submodule "vendor/tree-sitter-parsers/tree-sitter-lua"]
+	path = vendor/tree-sitter-parsers/tree-sitter-lua
+	url = https://github.com/tree-sitter-grammars/tree-sitter-lua
