@@ -1,0 +1,11 @@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+
+Name: @ARG_NAME@
+Description: @ARG_NAME@ grammar for tree-sitter
+Version: 0.0.0
+Requires:
+Libs: -L${libdir} -l@ARG_NAME@
+Cflags: -I${includedir}
