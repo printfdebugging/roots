@@ -433,7 +433,7 @@ void RenderBuffer()
 
    /* note: not sure if this should be done after each buffer is rendered, or after all of them
     * are rendered. for now we just do it here since we only have a single buffer. */
-   SwapBuffers();
+   SwapGLBuffers();
 }
 
 struct GlyphInfo *_glyphInfo = NULL;
@@ -679,7 +679,7 @@ struct Rectangle GetWindowBounds()
    };
 }
 
-void SwapBuffers()
+void SwapGLBuffers()
 {
    glfwSwapBuffers(E.window);
 }

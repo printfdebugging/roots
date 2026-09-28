@@ -365,7 +365,7 @@ void RenderBuffer();
 
 bool CreateGLFWwindow(struct GLFWwindowOptions opts);
 struct Rectangle GetWindowBounds();
-void SwapBuffers();
+void SwapGLBuffers();
 bool LoadTextFile(const char *filePath);
 void EditorOpenFile(const char *path);
 
