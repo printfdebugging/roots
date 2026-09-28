@@ -16,9 +16,9 @@ release:
 		-DCMAKE_INSTALL_PREFIX=install \
 		-B build/Release && cmake --build build/Release
 
-install: clean debug
-	cmake --install build/Debug --prefix install --component dist
-	cmake --install build/Debug --prefix install --component dev
+install: clean release
+	cmake --install build/Release --prefix install --component dist
+	cmake --install build/Release --prefix install --component dev
 
 licenses:
 	@rm -rf install/share/licenses
