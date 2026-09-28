@@ -26,7 +26,7 @@ add_subdirectory(vendor/lua)
 add_subdirectory(vendor/libuv)
 
 add_subdirectory(vendor/tree-sitter)
-add_subdirectory(vendor/tree-sitter-parsers/tree-sitter-c)
+# add_subdirectory(vendor/tree-sitter-parsers/tree-sitter-c)
 
 set(CMAKE_C_STANDARD 23)
 set(SOURCES main.c editor.c shader.c filesystem.c text.c renderer.c utils.c sanitizers.c)
