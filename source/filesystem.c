@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "editor.h"
+#include "filesystem.h"
+#include "types.h"
 
 char *ReadFileContents(const char *filPath)
 {

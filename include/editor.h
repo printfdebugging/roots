@@ -405,9 +405,6 @@ void _fontMgrAtlasDeInit();
 void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader);
 void DeInitBufferRenderer(struct BufferRenderer *renderer);
 
-/* filesystem.c */
-char *ReadFileContents(const char *filPath);
-
 /* shader.c */
 bool ShaderGetCompileStatus(u32 shaderObject);
 bool ShaderGetLinkStatus(u32 shaderProgram);

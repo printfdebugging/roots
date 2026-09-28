@@ -1,4 +1,5 @@
 #include "editor.h"
+#include "filesystem.h"
 
 #include "glad/glad.h"
 
