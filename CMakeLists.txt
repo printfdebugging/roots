@@ -26,7 +26,11 @@ add_subdirectory(vendor/lua)
 add_subdirectory(vendor/libuv)
 
 add_subdirectory(vendor/tree-sitter)
-# add_subdirectory(vendor/tree-sitter-parsers/tree-sitter-c)
+set(TREE_SITTER_PARSERS_DIR "${CMAKE_SOURCE_DIR}/vendor/tree-sitter-parsers")
+
+include(cmake/TreeSitterParsers.cmake)
+add_tree_sitter_parser("${TREE_SITTER_PARSERS_DIR}/tree-sitter-c")
+add_tree_sitter_parser("${TREE_SITTER_PARSERS_DIR}/tree-sitter-lua")
 
 set(CMAKE_C_STANDARD 23)
 set(SOURCES main.c editor.c shader.c filesystem.c text.c renderer.c utils.c sanitizers.c)
@@ -70,8 +74,17 @@ target_include_directories(editor PUBLIC
 )
 
 target_link_libraries(editor PRIVATE
-   harfbuzz-gpu harfbuzz glfw glad cglm
-   stb lua::lua unicode tree-sitter tree-sitter-c
+   harfbuzz-gpu
+   harfbuzz
+   glfw
+   glad
+   cglm
+   stb
+   lua::lua
+   unicode
+   tree-sitter
+   tree-sitter-c
+   tree-sitter-lua
    libuv::libuv
    $<$<BOOL:${WIN32}>:dwmapi>
 )
