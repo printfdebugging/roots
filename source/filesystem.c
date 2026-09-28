@@ -33,7 +33,7 @@ char *ReadFileContents(const char *filPath)
    u64 readCount = fread(data, 1, (u32) length, file);
    if (readCount < (u32) length || readCount == 0)
    {
-      fprintf(stderr, "read returned %li which is either 0 or less than %li", readCount, length);
+      fprintf(stderr, "read returned %llu which is either 0 or less than %lli", readCount, length);
       goto failure;
    }
 
