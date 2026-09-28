@@ -18,8 +18,6 @@ MSYS2_PACKAGES=(
    "${MSYS2}-clang"
    "${MSYS2}-clang-tools-extra"
    "${MSYS2}-ccache"
-   "${MSYS2}-rust"
-   "${MSYS2}-nodejs"
    "${MSYS2}-git"
    "${MSYS2}-vulkan-headers"
    "${MSYS2}-vulkan-loader"
@@ -32,8 +30,6 @@ ARCH_PACKAGES=(
    clang 
    gdb 
    ccache 
-   rustup
-   nodejs
    vulkan-devel 
    libasan 
    git

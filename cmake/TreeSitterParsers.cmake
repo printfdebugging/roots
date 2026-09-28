@@ -1,5 +1,3 @@
-include("${CMAKE_CURRENT_LIST_DIR}/TreeSitterCLI.cmake")
-
 option(TREE_SITTER_REUSE_ALLOCATOR "Make grammar scanners use the tree-sitter library's allocator" OFF)
 
 set(TREE_SITTER_PARSER_CLANG_TIDY "" CACHE STRING "clang-tidy command for the grammar libraries, empty for none")
@@ -43,6 +41,13 @@ function(add_tree_sitter_parser PARSER_DIRECTORY)
       @ONLY
    )
 
+   string(REGEX REPLACE "^tree-sitter-" "" language "${ARG_NAME}")
+   install(
+      DIRECTORY "${PARSER_DIRECTORY}/queries/"
+      DESTINATION ${CMAKE_INSTALL_DATADIR}/roots/queries/${language}
+   )
+
+
    install(
       FILES "${CMAKE_CURRENT_BINARY_DIR}/${ARG_NAME}.pc"
       DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
@@ -52,15 +57,4 @@ function(add_tree_sitter_parser PARSER_DIRECTORY)
       DIRECTORY "${PARSER_DIRECTORY}/bindings/c/tree_sitter"
       DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
    )
-
-   if(TARGET tree-sitter-cli)
-      add_custom_target(${ARG_NAME}-test
-         COMMAND "${TREE_SITTER_CLI_BINARY}" test
-         WORKING_DIRECTORY "${PARSER_DIRECTORY}"
-         DEPENDS tree-sitter-cli
-         COMMENT "Running the ${ARG_NAME} grammar tests"
-         USES_TERMINAL
-         VERBATIM
-      )
-   endif()
 endfunction()
