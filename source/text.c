@@ -6,6 +6,7 @@
 
 #include "text.h"
 #include "types.h"
+#include "filesystem.h"
 
 struct Text
 {
@@ -23,15 +24,15 @@ struct Text *TextLoadFromFile(const char *filepath)
 #ifdef _WIN32
    /**!
     * fixme: strlen here can be avoided by returning a struct
-    * from readFileContents, or by passing an out variable for
+    * from ReadFileContents, or by passing an out variable for
     * the data and returning the length.
     */
-   char *data = readFileContents(filepath);
+   char *data = ReadFileContents(filepath);
    if (!data)
       return NULL;
 
-   struct Text *text = textLoadFromData(data, (u32) strlen(data));
-   text->filePath = stringDuplicate(filepath);
+   struct Text *text = TextLoadFromData(data, (u32) strlen(data));
+   text->filePath = StringDuplicate(filepath);
 
    free(data);
    return text;
