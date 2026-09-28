@@ -389,7 +389,7 @@ bool LoadTextFile(const char *filePath)
 
 /* warn: todo: add cleanup at some later stage when it works */
 /* returns a buffer id.. todo: write nicely later, let's first make it work */
-void OpenFile(const char *path)
+void EditorOpenFile(const char *path)
 {
    (void) path;
    /* todo: */

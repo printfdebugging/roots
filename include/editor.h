@@ -367,7 +367,7 @@ bool CreateGLFWwindow(struct GLFWwindowOptions opts);
 struct Rectangle GetWindowBounds();
 void SwapBuffers();
 bool LoadTextFile(const char *filePath);
-void OpenFile(const char *path);
+void EditorOpenFile(const char *path);
 
 void CreateTextShader(struct TextShader *shader);
 void DestroyTextShader(struct TextShader *shader);
