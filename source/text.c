@@ -6,6 +6,7 @@
 
 #include "text.h"
 #include "types.h"
+#include "utils.h"
 #include "filesystem.h"
 
 struct Text
