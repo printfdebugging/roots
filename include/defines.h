@@ -50,9 +50,9 @@
  * Config. This would be the first block to be exposed to a scripting
  * language. Probably with an EditorConfig struct.
  */
-#define DEFAULT_FONT_FILE_PATH ASSETS_DIR "LilexNerdFont-Regular.ttf"
+#define DEFAULT_FONT_FILE_PATH ASSETS_DIR "fonts/LilexNerdFont-Regular.ttf"
 #define DEFAULT_FONT_SIZE      34
-#define DEFAULT_WINDOW_ICON    ASSETS_DIR "icon.png"
+#define DEFAULT_WINDOW_ICON    ASSETS_DIR "images/icon.png"
 #define TABSTOP                3
 
 #define INVALID_ID -1

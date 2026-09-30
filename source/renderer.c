@@ -154,8 +154,8 @@ static u32 _createTextShader()
 {
    const char *hbShaderVersion = "#version 330 core\n";
    const char *hbShaderPreamble = "#define HB_GPU_DEMO_DRAW\n";
-   const char *hbVertexMain = ReadFileContents(ASSETS_DIR "harfbuzz.vert");
-   const char *hbFragmentMain = ReadFileContents(ASSETS_DIR "harfbuzz.frag");
+   const char *hbVertexMain = ReadFileContents(ASSETS_DIR "shaders/harfbuzz.vert");
+   const char *hbFragmentMain = ReadFileContents(ASSETS_DIR "shaders/harfbuzz.frag");
 
    u32 hbVertexShader;
    u32 hbFragmentShader;
