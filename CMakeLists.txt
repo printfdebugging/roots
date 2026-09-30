@@ -91,7 +91,7 @@ target_link_libraries(editor PRIVATE
 
 install(
    DIRECTORY assets/
-   DESTINATION ${CMAKE_INSTALL_DATADIR}/roots/assets
+   DESTINATION ${CMAKE_INSTALL_DATADIR}/roots
    COMPONENT dist
 )
 
