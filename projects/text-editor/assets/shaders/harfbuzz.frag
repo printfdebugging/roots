@@ -31,7 +31,7 @@ void main()
 
    float cov;
 #ifdef HB_GPU_DEMO_DRAW
-   cov    = hb_gpu_draw(v_texcoord, v_glyphLoc);
+   cov = hb_gpu_draw(v_texcoord, v_glyphLoc);
    vec4 c = vec4(v_fgColor.rgb * v_fgColor.a, v_fgColor.a) * cov;
 #else
    vec4 c = hb_gpu_paint(v_texcoord, v_glyphLoc, v_fgColor, cov);
@@ -47,7 +47,7 @@ void main()
          float brightness = c.a > 0.0
              ? dot(c.rgb, vec3(1.0 / 3.0)) / c.a
              : 0.0;
-         adj              = hb_gpu_stem_darken(adj, brightness, 1.0 / max(fwidth(v_texcoord).x, fwidth(v_texcoord).y));
+         adj = hb_gpu_stem_darken(adj, brightness, 1.0 / max(fwidth(v_texcoord).x, fwidth(v_texcoord).y));
       }
       if (u_gamma != 1.0)
          adj = pow(adj, u_gamma);
@@ -57,9 +57,9 @@ void main()
    if (u_debug > 0.0)
    {
       ivec2 counts = _hb_gpu_curve_counts(v_texcoord, v_glyphLoc);
-      float r      = clamp(float(counts.x) / 8.0, 0.0, 1.0);
-      float g      = clamp(float(counts.y) / 8.0, 0.0, 1.0);
-      fragColor    = vec4(r, g, c.a, max(max(r, g), c.a));
+      float r = clamp(float(counts.x) / 8.0, 0.0, 1.0);
+      float g = clamp(float(counts.y) / 8.0, 0.0, 1.0);
+      fragColor = vec4(r, g, c.a, max(max(r, g), c.a));
       return;
    }
 
