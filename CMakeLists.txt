@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 4.0)
 project(editor)
 
 include(GNUInstallDirs)
+include(cmake/UnitTestHelper.cmake)
+
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
