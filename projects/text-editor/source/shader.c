@@ -1,7 +1,6 @@
-#include <stdio.h>
-
-#include "editor.h"
 #include "glad/glad.h"
+
+#include <stdio.h>
 
 bool ShaderGetCompileStatus(uint32_t shaderObject)
 {
