@@ -5,9 +5,22 @@ include(GNUInstallDirs)
 set(CMAKE_C_STANDARD 23)
 
 add_library(font-manager source/font-manager.c)
+add_library(module::font-manager ALIAS font-manager)
 target_compile_definitions(font-manager PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
-target_include_directories(font-manager PUBLIC include)
-target_link_libraries(font-manager PUBLIC utils harfbuzz-gpu harfbuzz glad cglm unicode)
+
+target_include_directories(font-manager PUBLIC
+   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
+
+target_link_libraries(font-manager PUBLIC
+   module::utils
+   harfbuzz-gpu
+   harfbuzz
+   glad
+   cglm
+   unicode
+)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
    target_compile_options(font-manager PRIVATE
@@ -33,7 +46,14 @@ install(
 
 install(
    TARGETS font-manager
+   EXPORT fontManagerConfig
    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(
+   EXPORT fontManagerConfig
+   NAMESPACE module::
+   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/font-manager
 )

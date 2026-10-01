@@ -4,12 +4,14 @@ project(utils)
 include(GNUInstallDirs)
 set(CMAKE_C_STANDARD 23)
 
-add_library(utils
-   source/string.c
-)
-
+add_library(utils source/string.c)
+add_library(module::utils ALIAS utils)
 target_compile_definitions(utils PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
-target_include_directories(utils PUBLIC include)
+
+target_include_directories(utils PUBLIC
+   $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
+   $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
    target_compile_options(utils PRIVATE
@@ -29,13 +31,21 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utils.pc.in ${CMAKE_CURRENT_BINARY_DI
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/utils.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
 
 install(
-   DIRECTORY include/utils
+   DIRECTORY
+      include/utils
    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
 install(
    TARGETS utils
+   EXPORT utilsConfig
    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(
+   EXPORT utilsConfig
+   NAMESPACE module::
+   DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/utils
 )

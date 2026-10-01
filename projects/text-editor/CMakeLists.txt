@@ -40,8 +40,8 @@ target_compile_definitions(text-editor PRIVATE
 target_include_directories(text-editor PUBLIC include)
 
 target_link_libraries(text-editor PRIVATE
-   utils
-   font-manager
+   module::utils
+   module::font-manager
 
    glfw
    glad
