@@ -2,7 +2,7 @@ export CC      := clang
 export CXX     := clang++
 
 run: debug
-	./build/Debug/bin/editor
+	./build/Debug/bin/text-editor
 
 debug:
 	cmake \
