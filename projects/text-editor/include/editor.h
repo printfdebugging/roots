@@ -8,10 +8,9 @@
 #include "cglm/struct.h"
 #include "unicode/unicode.h"
 
-#include "font-manager.h"
+#include "font-manager/font-manager.h"
 
 #include "defines.h"
-#include "types.h"
 #include "text.h"
 
 struct Point

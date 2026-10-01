@@ -1,7 +1,9 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include "types.h"
+#include "utils/string.h"
+
+#include <stdint.h>
 
 /* note: todo: the text api has to change */
 /* return string views into sub portions of the text */

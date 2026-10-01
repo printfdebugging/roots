@@ -1,6 +1,7 @@
-#include <string.h>
+#include "utils/string.h"
 
-#include "editor.h"
+#include <string.h>
+#include <stdlib.h>
 
 /**!
  * Duplicates the string, i.e. allocates memory for the bytes and a `\0`,

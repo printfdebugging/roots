@@ -1,8 +1,8 @@
+#include "filesystem.h"
+
 #include <stdio.h>
 #include <stdlib.h>
-
-#include "filesystem.h"
-#include "types.h"
+#include <stdint.h>
 
 char *ReadFileContents(const char *filPath)
 {

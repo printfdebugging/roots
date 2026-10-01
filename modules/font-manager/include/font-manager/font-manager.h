@@ -6,6 +6,8 @@
 #include "hb-ot.h"
 #include "cglm/struct.h"
 
+#include <stdint.h>
+
 /* todo: document it properly */
 /* todo: also pass the text offsets, so it's easy to map clicks to cursor position changes */
 struct GlyphVertex

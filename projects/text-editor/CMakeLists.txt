@@ -11,9 +11,7 @@ add_executable(text-editor
    source/filesystem.c
    source/text.c
    source/renderer.c
-   source/utils.c
    source/sanitizers.c
-   source/font-manager.c
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -42,8 +40,9 @@ target_compile_definitions(text-editor PRIVATE
 target_include_directories(text-editor PUBLIC include)
 
 target_link_libraries(text-editor PRIVATE
-   harfbuzz-gpu
-   harfbuzz
+   utils
+   font-manager
+
    glfw
    glad
    cglm

@@ -1,5 +1,5 @@
-#ifndef TYPES_H
-#define TYPES_H
+#ifndef UTILS_STRING_H
+#define UTILS_STRING_H
 
 #include <stdint.h>
 

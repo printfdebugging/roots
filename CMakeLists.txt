@@ -35,4 +35,7 @@ include(cmake/TreeSitterParsers.cmake)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-c)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-lua)
 
+add_subdirectory(modules/utils)
+add_subdirectory(modules/font-manager)
+
 add_subdirectory(projects/text-editor)
