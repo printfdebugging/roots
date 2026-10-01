@@ -3,14 +3,14 @@
 #include "editor.h"
 #include "glad/glad.h"
 
-bool ShaderGetCompileStatus(u32 shaderObject)
+bool ShaderGetCompileStatus(uint32_t shaderObject)
 {
-   i32 compileStatus;
+   int32_t compileStatus;
    glGetShaderiv(shaderObject, GL_COMPILE_STATUS, &compileStatus);
    if (compileStatus)
       return true;
 
-   i32 logLength;
+   int32_t logLength;
    glGetShaderiv(shaderObject, GL_INFO_LOG_LENGTH, &logLength);
 
    char infoLog[logLength];
@@ -19,14 +19,14 @@ bool ShaderGetCompileStatus(u32 shaderObject)
    return false;
 }
 
-bool ShaderGetLinkStatus(u32 shaderProgram)
+bool ShaderGetLinkStatus(uint32_t shaderProgram)
 {
-   i32 linkStatus;
+   int32_t linkStatus;
    glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);
    if (linkStatus)
       return true;
 
-   i32 logLength;
+   int32_t logLength;
    glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
 
    char infoLog[logLength];

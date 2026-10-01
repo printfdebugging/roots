@@ -49,9 +49,9 @@ struct Text *TextLoadFromFile(const char *filepath)
    struct Text *text = calloc(1, sizeof(struct Text));
 
    char *line = NULL;
-   u64 lineCap = 0;
-   i32 lineLen = 0;
-   while ((lineLen = (i32) getline(&line, &lineCap, file)) != -1)
+   uint64_t lineCap = 0;
+   int32_t lineLen = 0;
+   while ((lineLen = (int32_t) getline(&line, &lineCap, file)) != -1)
    {
       if (lineLen == 0)
          continue;

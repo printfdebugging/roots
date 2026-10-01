@@ -11,7 +11,7 @@
  */
 char *StringDuplicate(const char *str)
 {
-   u64 strLen = strlen(str);
+   uint64_t strLen = strlen(str);
    if (strLen == 0)
       return NULL;
 

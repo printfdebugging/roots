@@ -3,10 +3,10 @@
 
 #include "glad/glad.h"
 
-static u32 CURRENT_SHADER_PROGRAM = 0;
+static uint32_t CURRENT_SHADER_PROGRAM = 0;
 
-static u32 _createTextShader();
-static void _rendererUseShaderProgram(u32 shaderProgram);
+static uint32_t _createTextShader();
+static void _rendererUseShaderProgram(uint32_t shaderProgram);
 
 /* this has to now happen once for each BufferRenderer (doens't exist yet.) */
 /* todo: warning: refactor it asap */
@@ -42,7 +42,7 @@ void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shad
 
    /* set attribute locations */
 
-   u32 program = shader->hbShaderProgram;
+   uint32_t program = shader->hbShaderProgram;
    int32_t attribLocation = -1;
    int32_t glyphQuadObjectStride = sizeof(struct GlyphVertex);
 
@@ -54,36 +54,36 @@ void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shad
     */
 
    attribLocation = glGetAttribLocation(program, "a_position");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, x));
+   glEnableVertexAttribArray((uint32_t) attribLocation);
+   glVertexAttribPointer((uint32_t) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, x));
 
    attribLocation = glGetAttribLocation(program, "a_texcoord");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, tx));
+   glEnableVertexAttribArray((uint32_t) attribLocation);
+   glVertexAttribPointer((uint32_t) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, tx));
 
    attribLocation = glGetAttribLocation(program, "a_normal");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribPointer((u32) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, nx));
+   glEnableVertexAttribArray((uint32_t) attribLocation);
+   glVertexAttribPointer((uint32_t) attribLocation, 2, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, nx));
 
    attribLocation = glGetAttribLocation(program, "a_emPerPos");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribPointer((u32) attribLocation, 1, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, emPerPos));
+   glEnableVertexAttribArray((uint32_t) attribLocation);
+   glVertexAttribPointer((uint32_t) attribLocation, 1, GL_FLOAT, GL_FALSE, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, emPerPos));
 
    attribLocation = glGetAttribLocation(program, "a_glyphLoc");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlasOffset));
+   glEnableVertexAttribArray((uint32_t) attribLocation);
+   glVertexAttribIPointer((uint32_t) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, atlasOffset));
 
    attribLocation = glGetAttribLocation(program, "a_hasCursor");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribIPointer((u32) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, hasCursor));
+   glEnableVertexAttribArray((uint32_t) attribLocation);
+   glVertexAttribIPointer((uint32_t) attribLocation, 1, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, hasCursor));
 
    attribLocation = glGetAttribLocation(program, "a_fgColor");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribIPointer((u32) attribLocation, 4, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, fgColor));
+   glEnableVertexAttribArray((uint32_t) attribLocation);
+   glVertexAttribIPointer((uint32_t) attribLocation, 4, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, fgColor));
 
    attribLocation = glGetAttribLocation(program, "a_bgColor");
-   glEnableVertexAttribArray((u32) attribLocation);
-   glVertexAttribIPointer((u32) attribLocation, 4, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, bgColor));
+   glEnableVertexAttribArray((uint32_t) attribLocation);
+   glVertexAttribIPointer((uint32_t) attribLocation, 4, GL_UNSIGNED_INT, glyphQuadObjectStride, (const void *) offsetof(struct GlyphVertex, bgColor));
 }
 
 /* todo: this also needs fixing asap */
@@ -110,7 +110,7 @@ void CreateTextShader(struct TextShader *shader)
       .stemDarkeningLoc = -1,
    };
 
-   u32 program = shader->hbShaderProgram;
+   uint32_t program = shader->hbShaderProgram;
    _rendererUseShaderProgram(program);
 
    shader->uniformLocations = (struct TextShaderUniformLocations) {
@@ -137,7 +137,7 @@ void lineShaderDeinit(struct TextShader *shader)
 
 void UploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms)
 {
-   u32 program = shader->hbShaderProgram;
+   uint32_t program = shader->hbShaderProgram;
    _rendererUseShaderProgram(program);
 
    struct TextShaderUniformLocations *locations = &shader->uniformLocations;
@@ -150,15 +150,15 @@ void UploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUnifor
    glUniform1i(locations->hbGpuAtlasLoc, (int32_t) uniforms->hbGpuAtlas);
 }
 
-static u32 _createTextShader()
+static uint32_t _createTextShader()
 {
    const char *hbShaderVersion = "#version 330 core\n";
    const char *hbShaderPreamble = "#define HB_GPU_DEMO_DRAW\n";
    const char *hbVertexMain = ReadFileContents(ASSETS_DIR "shaders/harfbuzz.vert");
    const char *hbFragmentMain = ReadFileContents(ASSETS_DIR "shaders/harfbuzz.frag");
 
-   u32 hbVertexShader;
-   u32 hbFragmentShader;
+   uint32_t hbVertexShader;
+   uint32_t hbFragmentShader;
 
    const char *hbVertexShaderSources[] = {
       hbShaderVersion,
@@ -188,7 +188,7 @@ static u32 _createTextShader()
    if (!ShaderGetCompileStatus(hbFragmentShader))
       perror("fragment shader compilation failed");
 
-   u32 program = glCreateProgram();
+   uint32_t program = glCreateProgram();
    glAttachShader(program, hbVertexShader);
    glAttachShader(program, hbFragmentShader);
    glLinkProgram(program);
@@ -203,7 +203,7 @@ static u32 _createTextShader()
    return program;
 }
 
-static void _rendererUseShaderProgram(u32 shaderProgram)
+static void _rendererUseShaderProgram(uint32_t shaderProgram)
 {
    assert(shaderProgram != 0);
    if (shaderProgram != CURRENT_SHADER_PROGRAM)

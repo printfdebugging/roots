@@ -401,7 +401,7 @@ void RenderBuffer()
    struct Rectangle bounds = GetWindowBounds();
 
    mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
-   mvp = glms_ortho(0, (f32) bounds.w, 0, (f32) bounds.h, 0.0f, 100.0f);
+   mvp = glms_ortho(0, (float) bounds.w, 0, (float) bounds.h, 0.0f, 100.0f);
    mvp = glms_translate(mvp, (vec3s) { { 0.0f, 0.0f, 0.0f } }); /* not set as of now */
 
    ivec4s viewport = { 0 };
@@ -410,7 +410,7 @@ void RenderBuffer()
    glClearColor(ColorRGBAHex(0X002b36FF));
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   f32 fontScale = FontMgrGetDefaultFontScale();
+   float fontScale = FontMgrGetDefaultFontScale();
 
    E.bufRenderer->uniforms = (struct TextShaderUniforms) {
       .matViewProjection = mvp,
@@ -442,8 +442,8 @@ void LayoutBuffer()
    if (!E.lineShader || !E.text || !E.window)
       return;
 
-   f32 lineHeight = FontMgrGetDefaultFontLineHeight();
-   f32 fontScale = FontMgrGetDefaultFontScale();
+   float lineHeight = FontMgrGetDefaultFontLineHeight();
+   float fontScale = FontMgrGetDefaultFontScale();
 
    struct Rectangle bounds = GetWindowBounds();
    for (uint32_t visLineIdx = 0; visLineIdx < LINES; ++visLineIdx)
@@ -456,7 +456,7 @@ void LayoutBuffer()
        * points * scale = pixels
        * pixels / scale = points
        */
-      vec2s linePos = { .x = 0, .y = ((f32) bounds.h - ((f32) (visLineIdx + 1) * lineHeight)) / fontScale };
+      vec2s linePos = { .x = 0, .y = ((float) bounds.h - ((float) (visLineIdx + 1) * lineHeight)) / fontScale };
 
       struct Font *font = FontMgrGetDefaultFont();
       hb_buffer_t *buffer = hb_buffer_create();
@@ -527,10 +527,10 @@ void LayoutBuffer()
             double ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
 
             glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
-               .x = (f32) glyphPosition.x,
-               .y = (f32) glyphPosition.y,
-               .tx = (f32) ex,
-               .ty = (f32) ey,
+               .x = (float) glyphPosition.x,
+               .y = (float) glyphPosition.y,
+               .tx = (float) ex,
+               .ty = (float) ey,
                .nx = cx ? 1.f : -1.f,
                .ny = cy ? -1.f : 1.f,
                .emPerPos = 1.0,

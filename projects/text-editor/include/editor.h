@@ -100,7 +100,7 @@ struct GLFWwindowOptions
 
 struct LayoutMap
 {
-   u32 textLineIdx;
+   uint32_t textLineIdx;
    bool layouted;
    bool uploaded;
 };
@@ -115,7 +115,7 @@ struct Editor
 
    struct GlyphVertex *vertices;
    /* this is fixed by the constants above */
-   u32 verticesCount;
+   uint32_t verticesCount;
    struct LayoutMap layoutMap[LINES];
 
    /*
@@ -141,14 +141,14 @@ struct Editor
     * The cursor does not exist for the text, it's just a marker the
     * user has (in the buffer) to say "make edits here" etc.
     */
-   u32 cursorLine;
-   u32 cursorColumn;
+   uint32_t cursorLine;
+   uint32_t cursorColumn;
 
-   u32 lineOffset;
-   u32 columnOffset;
+   uint32_t lineOffset;
+   uint32_t columnOffset;
 
    /* config */
-   f32 fontSize;
+   float fontSize;
    char *fontFilePath;
    bool initialized;
 
@@ -161,9 +161,9 @@ struct TextShaderUniforms
 {
    mat4s matViewProjection;
    ivec4s viewport;
-   f32 scale;
+   float scale;
    int32_t hbGpuAtlas;
-   f32 gamma;
+   float gamma;
    bool debug;
    bool stemDarkening;
 };
@@ -188,7 +188,7 @@ struct TextShaderUniformLocations
  */
 struct TextShader
 {
-   u32 hbShaderProgram;
+   uint32_t hbShaderProgram;
    struct TextShaderUniformLocations uniformLocations;
 };
 
@@ -202,12 +202,12 @@ struct BufferRenderer
    struct TextShaderUniforms uniforms;
 
    /* OpenGL primitives */
-   u32 vao;
-   u32 vbo;
+   uint32_t vao;
+   uint32_t vbo;
 
    /* note: this is inconsiquencial in layouting, considering that we
     * are going for a fixed buffer approach for now */
-   u32 count;
+   uint32_t count;
    bool uploaded;
 };
 
@@ -222,7 +222,7 @@ struct LineLayout
    /* this lives here for now, but not for long,
     * we would have a separate array for these.. */
    bool dirty;
-   u32 count;
+   uint32_t count;
 };
 
 /* editor.c */
@@ -276,8 +276,8 @@ void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shad
 void DeInitBufferRenderer(struct BufferRenderer *renderer);
 
 /* shader.c */
-bool ShaderGetCompileStatus(u32 shaderObject);
-bool ShaderGetLinkStatus(u32 shaderProgram);
+bool ShaderGetCompileStatus(uint32_t shaderObject);
+bool ShaderGetLinkStatus(uint32_t shaderProgram);
 
 /* utils.c */
 char *StringDuplicate(const char *str);
