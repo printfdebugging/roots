@@ -5,8 +5,7 @@
 #include <string.h>
 
 #include "text.h"
-#include "utils.h"
-#include "filesystem.h"
+#include "utils/string.h"
 
 struct Text
 {

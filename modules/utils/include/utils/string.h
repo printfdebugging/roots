@@ -25,4 +25,7 @@ struct StringView
  */
 char *StringDuplicate(const char *str);
 
+/* todo: rename to a string helper  and return a String, with the length that is */
+char *ReadFileContents(const char *filPath);
+
 #endif

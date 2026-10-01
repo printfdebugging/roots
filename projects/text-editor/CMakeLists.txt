@@ -8,7 +8,6 @@ add_executable(text-editor
    source/main.c
    source/editor.c
    source/shader.c
-   source/filesystem.c
    source/text.c
    source/renderer.c
    source/sanitizers.c
