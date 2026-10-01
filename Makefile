@@ -46,8 +46,8 @@ perf: debug
 
 reformat:
 	find \
-		include/* \
-		source/* \
+		modules/* \
+		projects/* \
 		-iname '*.h' -o \
 		-iname '*.c' -o \
 		-iname '*.vert' -o \
