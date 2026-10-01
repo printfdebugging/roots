@@ -1,16 +1,16 @@
 #ifndef EDITOR_H
 #define EDITOR_H
 
-#include <stdint.h>
-#include <assert.h>
+#include "text.h"
+
+#include "font-manager/font-manager.h"
+#include "unicode/unicode.h"
 
 #include "GLFW/glfw3.h"
 #include "cglm/struct.h"
-#include "unicode/unicode.h"
 
-#include "font-manager/font-manager.h"
-
-#include "text.h"
+#include <stdint.h>
+#include <assert.h>
 
 #define DEFAULT_FONT_FILE_PATH ASSETS_DIR "fonts/LilexNerdFont-Regular.ttf"
 #define DEFAULT_FONT_SIZE      34

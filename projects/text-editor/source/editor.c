@@ -1,14 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include "glad/glad.h"
-#include "stb_image.h"
-
 #include "editor.h"
 
 #include "utils/macros.h"
 #include "utils/constants.h"
+
+#include "glad/glad.h"
+#include "stb_image.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32

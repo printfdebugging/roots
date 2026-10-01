@@ -1,9 +1,10 @@
 #include "editor.h"
 
-#include "glad/glad.h"
 #include "utils/macros.h"
 #include "utils/string.h"
 #include "utils/shader.h"
+
+#include "glad/glad.h"
 
 static uint32_t CURRENT_SHADER_PROGRAM = 0;
 

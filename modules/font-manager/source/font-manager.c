@@ -1,8 +1,9 @@
 #include "font-manager/font-manager.h"
 
-#include "glad/glad.h"
 #include "utils/string.h"
 #include "utils/constants.h"
+
+#include "glad/glad.h"
 
 #include <string.h>
 
