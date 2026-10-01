@@ -7,9 +7,6 @@
 [submodule "glad"]
 	path = vendor/glad
 	url = https://github.com/printfdebugging/glad
-[submodule "unicode"]
-	path = vendor/unicode
-	url = https://github.com/printfdebugging/unicode
 [submodule "harfbuzz"]
 	path = vendor/harfbuzz
 	url = https://github.com/harfbuzz/harfbuzz

@@ -23,7 +23,6 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/clangd.in ${CMAKE_CURRENT_SOURCE_DIR}
 
 add_subdirectory(vendor/glfw)
 add_subdirectory(vendor/harfbuzz)
-add_subdirectory(vendor/unicode)
 add_subdirectory(vendor/glad)
 add_subdirectory(vendor/cglm)
 add_subdirectory(vendor/stb)
@@ -36,6 +35,7 @@ add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-c)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-lua)
 
 add_subdirectory(modules/utils)
+add_subdirectory(modules/unicode)
 add_subdirectory(modules/font-manager)
 
 add_subdirectory(projects/text-editor)
