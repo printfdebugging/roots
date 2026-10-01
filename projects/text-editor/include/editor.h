@@ -10,8 +10,20 @@
 
 #include "font-manager/font-manager.h"
 
-#include "defines.h"
 #include "text.h"
+
+#define DEFAULT_FONT_FILE_PATH ASSETS_DIR "fonts/LilexNerdFont-Regular.ttf"
+#define DEFAULT_FONT_SIZE      34
+#define DEFAULT_WINDOW_ICON    ASSETS_DIR "images/icon.png"
+#define TABSTOP                3
+
+#define INVALID_ID -1
+
+#define NUL             0x00
+#define SPACE           0x20
+#define NEWLINE         0x0a
+#define HORIZONTAL_TAB  0x09
+#define CARRIAGE_RETURN 0x0d
 
 struct Point
 {

@@ -7,6 +7,9 @@
 
 #include "editor.h"
 
+#include "utils/macros.h"
+#include "utils/constants.h"
+
 #ifdef _WIN32
 #define GLFW_EXPOSE_NATIVE_WIN32
 #include <dwmapi.h>
