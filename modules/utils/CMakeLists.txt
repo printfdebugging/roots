@@ -4,14 +4,20 @@ project(utils)
 include(GNUInstallDirs)
 set(CMAKE_C_STANDARD 23)
 
-add_library(utils source/string.c)
+add_library(utils
+   source/string.c
+   source/shader.c
+)
+
 add_library(module::utils ALIAS utils)
 target_compile_definitions(utils PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
+target_link_libraries(utils PUBLIC glad)
 
 target_include_directories(utils PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
    target_compile_options(utils PRIVATE

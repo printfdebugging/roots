@@ -7,7 +7,6 @@ set(CMAKE_C_STANDARD 23)
 add_executable(text-editor
    source/main.c
    source/editor.c
-   source/shader.c
    source/text.c
    source/renderer.c
    source/sanitizers.c

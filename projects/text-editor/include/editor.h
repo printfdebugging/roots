@@ -286,8 +286,4 @@ void keyFn(GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, in
 void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader);
 void DeInitBufferRenderer(struct BufferRenderer *renderer);
 
-/* shader.c */
-bool ShaderGetCompileStatus(uint32_t shaderObject);
-bool ShaderGetLinkStatus(uint32_t shaderProgram);
-
 #endif

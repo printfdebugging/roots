@@ -3,6 +3,7 @@
 #include "glad/glad.h"
 #include "utils/macros.h"
 #include "utils/string.h"
+#include "utils/shader.h"
 
 static uint32_t CURRENT_SHADER_PROGRAM = 0;
 

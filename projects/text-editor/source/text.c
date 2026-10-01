@@ -1,11 +1,12 @@
 #ifdef TEXT_LINE_IMPLEMENTATION
 
+#include "text.h"
+
+#include "utils/string.h"
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#include "text.h"
-#include "utils/string.h"
 
 struct Text
 {
