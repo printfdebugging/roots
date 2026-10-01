@@ -3,13 +3,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-/**!
- * Duplicates the string, i.e. allocates memory for the bytes and a `\0`,
- * and then uses `strcpy` to copy the string to the allocated memory.
- *
- * The caller is responsible for managing the `lifetime` of the returned
- * string i.e. freeing it. Returns `NULL` on error.
- */
 char *StringDuplicate(const char *str)
 {
    uint64_t strLen = strlen(str);
