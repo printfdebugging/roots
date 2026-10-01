@@ -1,20 +1,19 @@
-
+cmake_minimum_required(VERSION 4.0)
 project(text-editor)
 
 include(GNUInstallDirs)
-set(BUILD_SHARED_LIBS OFF)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-set(CMAKE_COLOR_DIAGNOSTICS ON)
-set(CMAKE_BUILD_WITH_INSTALL_RPATH OFF)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH ON)
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
-set(CGLM_STATIC ON)
-
-
 set(CMAKE_C_STANDARD 23)
-set(SOURCES main.c editor.c shader.c filesystem.c text.c renderer.c utils.c sanitizers.c)
-list(TRANSFORM SOURCES PREPEND source/)
-add_executable(text-editor "${SOURCES}")
+
+add_executable(text-editor
+   source/main.c
+   source/editor.c
+   source/shader.c
+   source/filesystem.c
+   source/text.c
+   source/renderer.c
+   source/utils.c
+   source/sanitizers.c
+)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
    target_compile_options(text-editor PRIVATE
