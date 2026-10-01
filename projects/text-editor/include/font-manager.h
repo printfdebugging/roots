@@ -1,29 +1,24 @@
 #ifndef FONT_MANAGER_H
 #define FONT_MANAGER_H
 
-#include "types.h"
-
 #include "hb.h"
 #include "hb-gpu.h"
 #include "hb-ot.h"
 #include "cglm/struct.h"
 
-/* temporary alias */
-typedef u32 rune;
-
 /* todo: document it properly */
 /* todo: also pass the text offsets, so it's easy to map clicks to cursor position changes */
 struct GlyphVertex
 {
-   f32 x;
-   f32 y;
-   f32 tx;
-   f32 ty;
-   f32 nx;
-   f32 ny;
-   f32 emPerPos;
-   u32 atlasOffset;
-   u32 hasCursor;
+   float x;
+   float y;
+   float tx;
+   float ty;
+   float nx;
+   float ny;
+   float emPerPos;
+   uint32_t atlasOffset;
+   uint32_t hasCursor;
 
    /*
    todo:
@@ -39,18 +34,18 @@ struct GlyphVertex
 
 struct Extents
 {
-   f64 xMin;
-   f64 yMin;
-   f64 xMax;
-   f64 yMax;
+   double xMin;
+   double yMin;
+   double xMax;
+   double yMax;
 };
 
 struct GlyphAtlas
 {
-   u32 texture;
-   i32 textureUnit;
-   u32 textureBufferObject;
-   u32 capacityBytes;
+   uint32_t texture;
+   int32_t textureUnit;
+   uint32_t textureBufferObject;
+   uint32_t capacityBytes;
 
    /**!
     * note: This doesn't start at 0, but at `TEXEL_SIZE`. Empty glyphs
@@ -58,16 +53,16 @@ struct GlyphAtlas
     * to 0, and if we start at 0 here, that would then use the first uploaded
     * glyph for the spaces..
     */
-   u32 cursorOffsetBytes;
+   uint32_t cursorOffsetBytes;
 };
 
 struct GlyphInfo
 {
-   f64 advance;
-   i32 upem;
-   u32 atlasOffset;
-   b32 empty;
-   b32 cached;
+   double advance;
+   int32_t upem;
+   uint32_t atlasOffset;
+   bool empty;
+   bool cached;
    struct Extents extents;
 };
 
@@ -81,9 +76,9 @@ struct Font
    hb_gpu_draw_t *hbDraw;
 
    /* font metrics */
-   i32 hbAscent;
-   i32 hbDescent;
-   i32 hbMaxHeight;
+   int32_t hbAscent;
+   int32_t hbDescent;
+   int32_t hbMaxHeight;
 
    struct GlyphInfo *glyphCache;
 };
@@ -91,7 +86,7 @@ struct Font
 struct FontManager
 {
    struct Font *font;
-   u32 fontCount;
+   uint32_t fontCount;
 
    /**!
     * Path the default editor font.
@@ -118,15 +113,15 @@ struct FontManager
 /* fontmanager.c */
 void FontMgrInit(char *editorFontPath);
 void FontMgrDeInit();
-void FontMgrCacheGlyphInfo(struct Font *font, u32 glyphIndex);
+void FontMgrCacheGlyphInfo(struct Font *font, uint32_t glyphIndex);
 struct GlyphAtlas *FontMgrGetAtlas();
 struct Font *FontMgrGetFont(const char *filePath);
 struct Font *FontMgrGetDefaultFont();
 
-f32 FontMgrGetDefaultFontScale();
-f32 FontMgrGetDefaultFontLineHeight();
+float FontMgrGetDefaultFontScale();
+float FontMgrGetDefaultFontLineHeight();
 
-struct Font *FontMgrGetFontWithRune(rune codepoint);
+struct Font *FontMgrGetFontWithRune(uint32_t codepoint);
 
 void FontInit(struct Font *font, const char *filePath);
 void FontDeInit(struct Font *font);

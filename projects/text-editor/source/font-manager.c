@@ -31,7 +31,7 @@ void FontMgrDeInit()
    if (!fm.initialized)
       return;
 
-   for (u32 fontIdx = 0; fontIdx < fm.fontCount; ++fontIdx)
+   for (uint32_t fontIdx = 0; fontIdx < fm.fontCount; ++fontIdx)
       FontDeInit(&fm.font[fontIdx]);
 
    free(fm.font);
@@ -41,14 +41,14 @@ void FontMgrDeInit()
    fm.initialized = false;
 }
 
-void FontMgrCacheGlyphInfo(struct Font *font, u32 glyphIndex)
+void FontMgrCacheGlyphInfo(struct Font *font, uint32_t glyphIndex)
 {
    if (font->glyphCache[glyphIndex].cached)
       return;
 
    struct GlyphInfo *glyph = &font->glyphCache[glyphIndex];
 
-   i32 xScale, yScale;
+   int32_t xScale, yScale;
    hb_font_get_scale(font->hbFont, &xScale, &yScale);
    hb_gpu_draw_clear(font->hbDraw);
    hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
@@ -57,7 +57,7 @@ void FontMgrCacheGlyphInfo(struct Font *font, u32 glyphIndex)
    hb_blob_t *hbBlob = NULL;
 
    hbBlob = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
-   u32 hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
+   uint32_t hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
 
    *glyph = (struct GlyphInfo) {
       .extents.xMin = 0,
@@ -96,7 +96,7 @@ struct Font *FontMgrGetFont(const char *filePath)
    if (!fm.initialized)
       return NULL;
 
-   for (u32 fontIdx = 0; fontIdx < fm.fontCount; ++fontIdx)
+   for (uint32_t fontIdx = 0; fontIdx < fm.fontCount; ++fontIdx)
       if (strcmp(fm.font[fontIdx].fontPath, filePath) == 0)
          return &fm.font[fontIdx];
 
@@ -114,27 +114,27 @@ struct Font *FontMgrGetDefaultFont()
    return fm.editorFont;
 }
 
-f32 FontMgrGetDefaultFontScale()
+float FontMgrGetDefaultFontScale()
 {
    if (!fm.initialized)
       return 0;
 
-   i32 xScale, yScale;
+   int32_t xScale, yScale;
    hb_font_get_scale(fm.editorFont->hbFont, &xScale, &yScale);
    /* note: todo: temporarily setting this to this default value */
-   return 30 / (f32) yScale;
+   return 30 / (float) yScale;
 }
 
-f32 FontMgrGetDefaultFontLineHeight()
+float FontMgrGetDefaultFontLineHeight()
 {
    if (!fm.initialized)
       return 0;
 
-   f32 lineHeight = (f32) fm.editorFont->hbAscent - (f32) fm.editorFont->hbDescent;
+   float lineHeight = (float) fm.editorFont->hbAscent - (float) fm.editorFont->hbDescent;
    return lineHeight * FontMgrGetDefaultFontScale();
 }
 
-struct Font *FontMgrGetFontWithRune(rune codepoint)
+struct Font *FontMgrGetFontWithRune(uint32_t codepoint)
 {
    (void) codepoint;
    perror("todo");
@@ -186,7 +186,7 @@ void _fontMgrAtlasInit()
    glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
    glBufferData(GL_TEXTURE_BUFFER, glyphAtlas->capacityBytes, NULL, GL_STATIC_DRAW);
 
-   glActiveTexture(GL_TEXTURE0 + (u32) glyphAtlas->textureUnit);
+   glActiveTexture(GL_TEXTURE0 + (uint32_t) glyphAtlas->textureUnit);
    glGenTextures(1, &glyphAtlas->texture);
    glBindTexture(GL_TEXTURE_BUFFER, glyphAtlas->texture);
    glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, glyphAtlas->textureBufferObject);
