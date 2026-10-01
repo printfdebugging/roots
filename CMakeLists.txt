@@ -3,6 +3,7 @@ project(editor)
 
 include(GNUInstallDirs)
 include(cmake/UnitTestHelper.cmake)
+include(cmake/TreeSitterParsers.cmake)
 
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -31,8 +32,6 @@ add_subdirectory(vendor/stb)
 add_subdirectory(vendor/lua)
 add_subdirectory(vendor/libuv)
 add_subdirectory(vendor/tree-sitter)
-
-include(cmake/TreeSitterParsers.cmake)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-c)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-lua)
 
