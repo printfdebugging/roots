@@ -16,4 +16,6 @@ struct StringView
    struct String *source;
 };
 
+char *StringDuplicate(const char *str);
+
 #endif

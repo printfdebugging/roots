@@ -279,7 +279,4 @@ void DeInitBufferRenderer(struct BufferRenderer *renderer);
 bool ShaderGetCompileStatus(uint32_t shaderObject);
 bool ShaderGetLinkStatus(uint32_t shaderProgram);
 
-/* utils.c */
-char *StringDuplicate(const char *str);
-
 #endif
