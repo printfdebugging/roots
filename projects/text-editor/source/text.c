@@ -13,7 +13,7 @@ struct Text
 {
    char *filePath;
    struct String *lines;
-   u32 lineCount;
+   uint32_t lineCount;
 };
 
 struct Text *TextLoadFromFile(const char *filepath)
@@ -32,7 +32,7 @@ struct Text *TextLoadFromFile(const char *filepath)
    if (!data)
       return NULL;
 
-   struct Text *text = TextLoadFromData(data, (u32) strlen(data));
+   struct Text *text = TextLoadFromData(data, (uint32_t) strlen(data));
    text->filePath = StringDuplicate(filepath);
 
    free(data);
@@ -59,7 +59,7 @@ struct Text *TextLoadFromFile(const char *filepath)
       text->lines = realloc(text->lines, (sizeof(struct String)) * (text->lineCount + 1));
       text->lines[text->lineCount++] = (struct String) {
          .data = line,
-         .count = (u32) lineLen,
+         .count = (uint32_t) lineLen,
       };
       line = NULL;
    }
@@ -73,13 +73,13 @@ struct Text *TextLoadFromFile(const char *filepath)
 #endif
 }
 
-struct Text *TextLoadFromData(const char *data, u32 dataLength)
+struct Text *TextLoadFromData(const char *data, uint32_t dataLength)
 {
    if (data == NULL)
       perror("got null data");
 
-   u32 index = 0;
-   u32 lastIndex = 0;
+   uint32_t index = 0;
+   uint32_t lastIndex = 0;
 
    struct Text *text = calloc(1, sizeof(struct Text));
    if (!text) perror("failed to allcoate Text");
@@ -89,7 +89,7 @@ struct Text *TextLoadFromData(const char *data, u32 dataLength)
       if ((data[index++] != '\n') && index != dataLength)
          continue;
 
-      u32 length = index - lastIndex;
+      uint32_t length = index - lastIndex;
 
       char *buffer = calloc(length + 1, sizeof(char));
       if (!buffer)
@@ -116,21 +116,21 @@ bool TextWriteToFile(const char *filepath)
    return true;
 }
 
-u32 TextGetLineCount(struct Text *text)
+uint32_t TextGetLineCount(struct Text *text)
 {
    return text->lineCount;
 }
 
-char *TextGetUTF8Line(struct Text *text, u32 line)
+char *TextGetUTF8Line(struct Text *text, uint32_t line)
 {
    if (text->lineCount <= line)
       return NULL;
    return text->lines[line].data;
 }
 
-struct StringView TextGetLineUTF8AtOffset(struct Text *text, u32 line, u32 offset)
+struct StringView TextGetLineUTF8AtOffset(struct Text *text, uint32_t line, uint32_t offset)
 {
-   u32 length = TextGetLineLength(text, line);
+   uint32_t length = TextGetLineLength(text, line);
    if (offset < length)
    {
       return (struct StringView) {
@@ -145,13 +145,13 @@ struct StringView TextGetLineUTF8AtOffset(struct Text *text, u32 line, u32 offse
 
 void TextDestroy(struct Text *text)
 {
-   for (u32 lineIdx = 0; lineIdx < text->lineCount; ++lineIdx)
+   for (uint32_t lineIdx = 0; lineIdx < text->lineCount; ++lineIdx)
       free(text->lines[lineIdx].data);
    free(text->lines);
    free(text->filePath);
 }
 
-u32 TextGetLineLength(struct Text *text, u32 lineIdx)
+uint32_t TextGetLineLength(struct Text *text, uint32_t lineIdx)
 {
    if (lineIdx <= text->lineCount - 1)
       return text->lines[lineIdx].count;

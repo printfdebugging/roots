@@ -10,18 +10,18 @@ struct Text;
 
 struct Text *TextLoadFromFile(const char *filepath);
 
-struct Text *TextLoadFromData(const char *data, u32 dataLength);
+struct Text *TextLoadFromData(const char *data, uint32_t dataLength);
 
 bool TextWriteToFile(const char *filepath);
 
-u32 TextGetLineCount(struct Text *text);
+uint32_t TextGetLineCount(struct Text *text);
 
-char *TextGetUTF8Line(struct Text *text, u32 line);
+char *TextGetUTF8Line(struct Text *text, uint32_t line);
 
-struct StringView TextGetLineUTF8AtOffset(struct Text *text, u32 line, u32 offset);
+struct StringView TextGetLineUTF8AtOffset(struct Text *text, uint32_t line, uint32_t offset);
 
 void TextDestroy(struct Text *text);
 
-u32 TextGetLineLength(struct Text *text, u32 lineIdx);
+uint32_t TextGetLineLength(struct Text *text, uint32_t lineIdx);
 
 #endif

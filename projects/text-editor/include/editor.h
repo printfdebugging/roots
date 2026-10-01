@@ -16,21 +16,21 @@
 
 struct Point
 {
-   f64 x;
-   f64 y;
+   double x;
+   double y;
 };
 
 /**!
  * @brief Integers are used intentionally here. We won't be doing floating
- * point anything when it comes to layouting etc. We just don't want that
+ * point32_t anything when it comes to layouting etc. We just don't want that
  * hassle. So we would do all the layouting in screen space coordinates.
  */
 struct Rectangle
 {
-   i64 x;
-   i64 y;
-   i64 w;
-   i64 h;
+   int64_t x;
+   int64_t y;
+   int64_t w;
+   int64_t h;
 };
 
 /**!
@@ -53,8 +53,8 @@ struct Text;
 /*
  * struct Buffer
  * {
- *    i32 winId;
- *    i32 txtId;
+ *    int32_t winId;
+ *    int32_t txtId;
  * };
  */
 
@@ -66,11 +66,11 @@ struct GLFWwindowOptions
 {
    bool visible;
    bool transparent;
-   i32 width;
-   i32 height;
+   int32_t width;
+   int32_t height;
    const char *title;
    const char *icon;
-   i32 sharedWinId;
+   int32_t sharedWinId;
 
    GLFWframebuffersizefun fbResizeFn;
    GLFWscrollfun scrollFn;
@@ -153,8 +153,8 @@ struct Editor
    bool initialized;
 
    /* frame book-keeping */
-   f64 tLast;
-   f64 tDelta;
+   double tLast;
+   double tDelta;
 };
 
 struct TextShaderUniforms
@@ -162,7 +162,7 @@ struct TextShaderUniforms
    mat4s matViewProjection;
    ivec4s viewport;
    f32 scale;
-   i32 hbGpuAtlas;
+   int32_t hbGpuAtlas;
    f32 gamma;
    bool debug;
    bool stemDarkening;
@@ -170,15 +170,15 @@ struct TextShaderUniforms
 
 struct TextShaderUniformLocations
 {
-   i32 matViewProjectionLoc;
-   i32 viewportLoc;
-   i32 scaleLoc;
-   i32 positionLoc;
-   i32 hbGpuAtlasLoc;
-   i32 gammaLoc;
-   i32 foregroundLoc;
-   i32 debugLoc;
-   i32 stemDarkeningLoc;
+   int32_t matViewProjectionLoc;
+   int32_t viewportLoc;
+   int32_t scaleLoc;
+   int32_t positionLoc;
+   int32_t hbGpuAtlasLoc;
+   int32_t gammaLoc;
+   int32_t foregroundLoc;
+   int32_t debugLoc;
+   int32_t stemDarkeningLoc;
 };
 
 /**!
@@ -235,7 +235,7 @@ enum UpdateEvent
 
 union UpdateState
 {
-   int glfwKey;
+   int32_t glfwKey;
 };
 
 /**!
@@ -266,10 +266,10 @@ void CreateTextShader(struct TextShader *shader);
 void DestroyTextShader(struct TextShader *shader);
 void UploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms);
 
-void scrollFn(GLFWwindow *window, f64 x, f64 y);
-void fbResizeFn(GLFWwindow *window, i32 width, i32 height);
-void curPosFn(GLFWwindow *window, f64 x, f64 y);
-void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods);
+void scrollFn(GLFWwindow *window, double x, double y);
+void fbResizeFn(GLFWwindow *window, int32_t width, int32_t height);
+void curPosFn(GLFWwindow *window, double x, double y);
+void keyFn(GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods);
 
 /* renderer.c */
 void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader);

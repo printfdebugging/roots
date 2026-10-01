@@ -15,7 +15,7 @@ char *ReadFileContents(const char *filPath)
    }
 
    fseek(file, 0, SEEK_END);
-   i64 length = ftell(file);
+   int64_t length = ftell(file);
    fseek(file, 0, SEEK_SET);
 
    if (length < 0)
@@ -24,14 +24,14 @@ char *ReadFileContents(const char *filPath)
       goto failure;
    }
 
-   if (!(data = calloc(1, (u32) length + 1)))
+   if (!(data = calloc(1, (uint32_t) length + 1)))
    {
       fprintf(stderr, "failed to allocate memory for data to store file %s\n", filPath);
       goto failure;
    }
 
-   u64 readCount = fread(data, 1, (u32) length, file);
-   if (readCount < (u32) length || readCount == 0)
+   uint64_t readCount = fread(data, 1, (uint32_t) length, file);
+   if (readCount < (uint32_t) length || readCount == 0)
    {
       fprintf(stderr, "read returned %llu which is either 0 or less than %lli", readCount, length);
       goto failure;

@@ -100,7 +100,7 @@ bool Init()
    InitBufferRenderer(E.bufRenderer, E.lineShader);
    glBufferData(GL_ARRAY_BUFFER, E.verticesCount * VERTEX_SIZE, NULL, GL_STATIC_DRAW);
 
-   for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+   for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
       E.layoutMap[lineIdx].textLineIdx = lineIdx;
 
    E.initialized = true;
@@ -109,7 +109,7 @@ bool Init()
 
 void CalcFrameTime()
 {
-   f64 tNow = glfwGetTime();
+   double tNow = glfwGetTime();
    E.tDelta = tNow - E.tLast;
    E.tLast = tNow;
 }
@@ -155,13 +155,13 @@ void UploadBuffer()
    glBindVertexArray(E.bufRenderer->vao);
    glBindBuffer(GL_ARRAY_BUFFER, E.bufRenderer->vbo);
 
-   for (u32 idx = 0; idx < LINES; ++idx)
+   for (uint32_t idx = 0; idx < LINES; ++idx)
    {
       if (E.layoutMap[idx].layouted && !E.layoutMap[idx].uploaded)
       {
-         u32 offset = CHARS * VERTICES * idx;
-         u32 byteOffset = offset * VERTEX_SIZE;
-         u32 count = CHARS * VERTICES * VERTEX_SIZE;
+         uint32_t offset = CHARS * VERTICES * idx;
+         uint32_t byteOffset = offset * VERTEX_SIZE;
+         uint32_t count = CHARS * VERTICES * VERTEX_SIZE;
          glBufferSubData(GL_ARRAY_BUFFER, byteOffset, count, E.vertices + offset);
          E.layoutMap[idx].uploaded = true;
       }
@@ -180,9 +180,9 @@ void UploadBuffer()
  */
 void Update(enum UpdateEvent event, union UpdateState state)
 {
-   u32 lineCount = TextGetLineCount(E.text);
-   u32 oldCurLine = E.cursorLine;
-   u32 oldCurCol = E.cursorColumn;
+   uint32_t lineCount = TextGetLineCount(E.text);
+   uint32_t oldCurLine = E.cursorLine;
+   uint32_t oldCurCol = E.cursorColumn;
 
    /* todo: later: this has update + layouting which is not the right shape to hold.
     * something has to be done, cursor position has to be updated for sure before the
@@ -195,7 +195,7 @@ void Update(enum UpdateEvent event, union UpdateState state)
          E.cursorColumn = 0;
          E.cursorLine = 0;
 
-         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
          {
             E.layoutMap[lineIdx] = (struct LayoutMap) {
                .textLineIdx = lineIdx,
@@ -225,7 +225,7 @@ void Update(enum UpdateEvent event, union UpdateState state)
                E.cursorLine += 1;
 
                /* dup */
-               u32 lineLen = TextGetLineLength(E.text, E.cursorLine);
+               uint32_t lineLen = TextGetLineLength(E.text, E.cursorLine);
                if (lineLen < E.cursorColumn)
                   E.cursorColumn = lineLen - 1;
 
@@ -243,7 +243,7 @@ void Update(enum UpdateEvent event, union UpdateState state)
                E.cursorLine -= 1;
 
                /* dup */
-               u32 lineLen = TextGetLineLength(E.text, E.cursorLine);
+               uint32_t lineLen = TextGetLineLength(E.text, E.cursorLine);
                if (lineLen < E.cursorColumn)
                   E.cursorColumn = lineLen - 1;
 
@@ -265,7 +265,7 @@ void Update(enum UpdateEvent event, union UpdateState state)
             {
                LOG_EVENT("update: GLFW_KEY_RIGHT\n");
 
-               u32 lineLen = TextGetLineLength(E.text, E.cursorLine);
+               uint32_t lineLen = TextGetLineLength(E.text, E.cursorLine);
                if (E.cursorColumn < lineLen - 1)
                   E.cursorColumn += 1;
 
@@ -278,7 +278,7 @@ void Update(enum UpdateEvent event, union UpdateState state)
             }
             case GLFW_KEY_END:
             {
-               u32 length = TextGetLineLength(E.text, E.cursorLine);
+               uint32_t length = TextGetLineLength(E.text, E.cursorLine);
                if (length > 0)
                   E.cursorColumn = length - 1;
                break;
@@ -300,7 +300,7 @@ void Update(enum UpdateEvent event, union UpdateState state)
       if (E.lineOffset + LINES <= E.cursorLine)
       {
          LOG_INFO("E.lineOffset (%i) + LINES (%i) <= E.cursorLine (%i)\n", E.lineOffset, LINES, E.cursorLine);
-         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
          {
             /* todo: note: this should be shifting rather than just blind increment */
             E.layoutMap[lineIdx].layouted = false;
@@ -311,7 +311,7 @@ void Update(enum UpdateEvent event, union UpdateState state)
       else if (E.cursorLine < E.lineOffset)
       {
          LOG_INFO("E.cursorLine (%i) < E.lineOffset (%i)\n", E.cursorLine, E.lineOffset);
-         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
          {
             /* todo: note: this should be shifting rather than just blind increment */
             E.layoutMap[lineIdx].layouted = false;
@@ -339,16 +339,16 @@ void Update(enum UpdateEvent event, union UpdateState state)
       if (E.columnOffset + CHARS <= E.cursorColumn) /* cursor move right */
       {
          LOG_INFO("E.columnOffset (%i) + CHARS (%i) < E.cursorColumn (%i)\n", E.columnOffset, CHARS, E.cursorColumn)
-         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
             E.layoutMap[lineIdx].layouted = false;
 
-         u32 lastVisColIdx = E.columnOffset + CHARS - 1;
+         uint32_t lastVisColIdx = E.columnOffset + CHARS - 1;
          E.columnOffset += (E.cursorColumn - lastVisColIdx);
       }
       else if (E.cursorColumn < E.columnOffset) /* cursor move left */
       {
          LOG_INFO("E.cursorColumn (%i) < E.columnOffset (%i)\n", E.cursorColumn, E.columnOffset)
-         for (u32 lineIdx = 0; lineIdx < LINES; ++lineIdx)
+         for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
             E.layoutMap[lineIdx].layouted = false;
          E.columnOffset -= (E.columnOffset - E.cursorColumn);
       }
@@ -427,7 +427,7 @@ void RenderBuffer()
    if (E.bufRenderer->uploaded)
    {
       glBindVertexArray(E.bufRenderer->vao);
-      glDrawArrays(GL_TRIANGLES, 0, (i32) E.verticesCount);
+      glDrawArrays(GL_TRIANGLES, 0, (int32_t) E.verticesCount);
    }
 
    /* note: not sure if this should be done after each buffer is rendered, or after all of them
@@ -446,7 +446,7 @@ void LayoutBuffer()
    f32 fontScale = FontMgrGetDefaultFontScale();
 
    struct Rectangle bounds = GetWindowBounds();
-   for (u32 visLineIdx = 0; visLineIdx < LINES; ++visLineIdx)
+   for (uint32_t visLineIdx = 0; visLineIdx < LINES; ++visLineIdx)
    {
       if (E.layoutMap[visLineIdx].layouted)
          continue;
@@ -462,21 +462,21 @@ void LayoutBuffer()
       hb_buffer_t *buffer = hb_buffer_create();
 
       struct StringView view = TextGetLineUTF8AtOffset(E.text, E.layoutMap[visLineIdx].textLineIdx, E.columnOffset);
-      hb_buffer_add_utf8(buffer, view.data, (i32) view.count, 0, -1);
+      hb_buffer_add_utf8(buffer, view.data, (int32_t) view.count, 0, -1);
       hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
       hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
       hb_shape(font->hbFont, buffer, NULL, 0);
 
-      u32 hbGlyphCount = 0;
+      uint32_t hbGlyphCount = 0;
       hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
 
       _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct GlyphInfo));
       if (_glyphInfo)
          memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct GlyphInfo));
 
-      u32 glyphCount = hbGlyphCount < CHARS ? hbGlyphCount : CHARS;
+      uint32_t glyphCount = hbGlyphCount < CHARS ? hbGlyphCount : CHARS;
 
-      for (u32 glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
+      for (uint32_t glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
       {
          hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
          FontMgrCacheGlyphInfo(font, glyphIndex);
@@ -491,7 +491,7 @@ void LayoutBuffer()
       };
 
       /* we loop over the available slots */
-      for (u32 glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
+      for (uint32_t glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
       {
          [[maybe_unused]] bool hasCursor;
          struct GlyphInfo *glyphInfo = &_glyphInfo[glyphIdx];
@@ -501,7 +501,7 @@ void LayoutBuffer()
 
          struct GlyphVertex glyphQuadCorners[4];
 
-         u32 visualColumn = 0;
+         uint32_t visualColumn = 0;
          if (E.cursorColumn - E.columnOffset >= CHARS)
             visualColumn = CHARS - 1;
          else if (E.cursorColumn < E.columnOffset)
@@ -518,13 +518,13 @@ void LayoutBuffer()
              glyphIdx
          ) */
 
-         u32 lineOffset = visLineIdx * CHARS * VERTICES;
+         uint32_t lineOffset = visLineIdx * CHARS * VERTICES;
          for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
          {
-            i32 cx = (cornerIdx >> 1) & 1;
-            i32 cy = cornerIdx & 1;
-            f64 ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
-            f64 ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
+            int32_t cx = (cornerIdx >> 1) & 1;
+            int32_t cy = cornerIdx & 1;
+            double ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
+            double ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
 
             glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
                .x = (f32) glyphPosition.x,
@@ -541,8 +541,8 @@ void LayoutBuffer()
             };
          }
 
-         u32 glyphOffset = glyphIdx * VERTICES;
-         u32 glyphQuadOffset = lineOffset + glyphOffset;
+         uint32_t glyphOffset = glyphIdx * VERTICES;
+         uint32_t glyphQuadOffset = lineOffset + glyphOffset;
          E.vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
          E.vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
          E.vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
@@ -559,11 +559,11 @@ void LayoutBuffer()
       /* this would do for now */
       if (glyphCount < CHARS)
       {
-         u32 lineOffset = (visLineIdx * CHARS * VERTICES);
-         for (u32 glyphIdx = glyphCount; glyphIdx < CHARS; ++glyphIdx)
+         uint32_t lineOffset = (visLineIdx * CHARS * VERTICES);
+         for (uint32_t glyphIdx = glyphCount; glyphIdx < CHARS; ++glyphIdx)
          {
-            u32 glyphOffset = glyphIdx * VERTICES;
-            u32 glyphQuadOffset = lineOffset + glyphOffset;
+            uint32_t glyphOffset = glyphIdx * VERTICES;
+            uint32_t glyphQuadOffset = lineOffset + glyphOffset;
 
             E.vertices[glyphQuadOffset + 0] = (struct GlyphVertex) { 0 };
             E.vertices[glyphQuadOffset + 1] = (struct GlyphVertex) { 0 };
@@ -600,8 +600,8 @@ bool CreateGLFWwindow(struct GLFWwindowOptions opts)
    glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
 #endif
 
-   const i32 windowWidth = opts.width ? opts.width : 1600;
-   const i32 windowHeight = opts.height ? opts.height : 800;
+   const int32_t windowWidth = opts.width ? opts.width : 1600;
+   const int32_t windowHeight = opts.height ? opts.height : 800;
    const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
 
    /* todo: re-implement it later */
@@ -611,10 +611,10 @@ bool CreateGLFWwindow(struct GLFWwindowOptions opts)
    if (!window)
       return false;
 
-   const i32 maxWidth = 2230;
-   const i32 maxHeight = 1420;
-   const i32 minWidth = 800;
-   const i32 minHeight = 600;
+   const int32_t maxWidth = 2230;
+   const int32_t maxHeight = 1420;
+   const int32_t minWidth = 800;
+   const int32_t minHeight = 600;
 
    glfwSetWindowSizeLimits(window, minWidth, minHeight, maxWidth, maxHeight);
    glfwMakeContextCurrent(window);
@@ -667,7 +667,7 @@ struct Rectangle GetWindowBounds()
    if (!E.window)
       return (struct Rectangle) {};
 
-   i32 windowWidth, windowHeight;
+   int32_t windowWidth, windowHeight;
    glfwGetWindowSize(E.window, &windowWidth, &windowHeight);
 
    return (struct Rectangle) {
@@ -704,20 +704,20 @@ static bool _msIsDarkMode()
 }
 #endif
 
-void fbResizeFn(GLFWwindow *window, i32 width, i32 height)
+void fbResizeFn(GLFWwindow *window, int32_t width, int32_t height)
 {
    (void) window;
    glViewport(0, 0, width, height);
 }
 
-void scrollFn(GLFWwindow *window, f64 x, f64 y)
+void scrollFn(GLFWwindow *window, double x, double y)
 {
    (void) window;
    (void) x;
    (void) y;
 }
 
-void curPosFn(GLFWwindow *window, f64 x, f64 y)
+void curPosFn(GLFWwindow *window, double x, double y)
 {
    (void) window;
    (void) x;

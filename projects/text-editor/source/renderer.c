@@ -43,8 +43,8 @@ void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shad
    /* set attribute locations */
 
    u32 program = shader->hbShaderProgram;
-   i32 attribLocation = -1;
-   i32 glyphQuadObjectStride = sizeof(struct GlyphVertex);
+   int32_t attribLocation = -1;
+   int32_t glyphQuadObjectStride = sizeof(struct GlyphVertex);
 
    /**!
     * warning: These should be called only after the buffer object
@@ -142,12 +142,12 @@ void UploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUnifor
 
    struct TextShaderUniformLocations *locations = &shader->uniformLocations;
    glUniformMatrix4fv(locations->matViewProjectionLoc, 1, GL_FALSE, uniforms->matViewProjection.col[0].raw);
-   glUniform2f(locations->viewportLoc, (f32) uniforms->viewport.raw[2], (f32) uniforms->viewport.raw[3]);
-   glUniform1f(locations->scaleLoc, (f32) uniforms->scale);
+   glUniform2f(locations->viewportLoc, (float) uniforms->viewport.raw[2], (float) uniforms->viewport.raw[3]);
+   glUniform1f(locations->scaleLoc, (float) uniforms->scale);
    glUniform1f(locations->stemDarkeningLoc, uniforms->stemDarkening);
    glUniform1f(locations->debugLoc, uniforms->debug);
    glUniform1f(locations->gammaLoc, uniforms->gamma);
-   glUniform1i(locations->hbGpuAtlasLoc, (i32) uniforms->hbGpuAtlas);
+   glUniform1i(locations->hbGpuAtlasLoc, (int32_t) uniforms->hbGpuAtlas);
 }
 
 static u32 _createTextShader()
