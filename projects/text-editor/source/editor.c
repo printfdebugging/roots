@@ -24,7 +24,7 @@ static bool _msIsDarkMode();
 
 bool Run()
 {
-   const char *path = SOURCE_DIR "source/editor.c";
+   const char *path = SOURCE_DIR "projects/text-editor/source/editor.c";
 
    if (!E.initialized)
       perror("E not initialized\n");

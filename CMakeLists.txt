@@ -34,7 +34,7 @@ add_tree_sitter_parser("${TREE_SITTER_PARSERS_DIR}/tree-sitter-lua")
 
 set(CMAKE_C_STANDARD 23)
 set(SOURCES main.c editor.c shader.c filesystem.c text.c renderer.c utils.c sanitizers.c)
-list(TRANSFORM SOURCES PREPEND source/)
+list(TRANSFORM SOURCES PREPEND projects/text-editor/source/)
 add_executable(editor "${SOURCES}")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
@@ -70,7 +70,7 @@ target_compile_definitions(editor PRIVATE
 )
 
 target_include_directories(editor PUBLIC
-   include
+   projects/text-editor/include
 )
 
 target_link_libraries(editor PRIVATE
