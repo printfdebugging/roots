@@ -13,6 +13,7 @@ add_executable(text-editor
    source/renderer.c
    source/utils.c
    source/sanitizers.c
+   source/font-manager.c
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
