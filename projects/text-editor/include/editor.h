@@ -55,21 +55,6 @@ struct text;
  * so first step is to split line renderers from layouting :) again*/
 //};
 
-struct window_options {
-	bool visible;
-	bool transparent;
-	int32_t width;
-	int32_t height;
-	const char *title;
-	const char *icon;
-	int32_t sharedWinId;
-
-	GLFWframebuffersizefun framebuffer_resize_callback;
-	GLFWscrollfun scroll_callback;
-	GLFWcursorposfun cursor_position_callback;
-	GLFWkeyfun key_callback;
-};
-
 /**!
  * Font manager is a subsystem we request for the font objects.
  * This way, we don't have to manage the lifetime of these objects. And
@@ -226,19 +211,11 @@ void buffer_renderer_init(struct buffer_renderer *renderer, struct text_shader *
 void buffer_renderer_deinit(struct buffer_renderer *renderer);
 void buffer_render();
 
-bool window_create(struct window_options opts);
-struct rectangle window_get_bounds();
-void window_swap_buffers();
-bool file_open(const char *filePath);
+bool file_open(const char *filePath); /* note: remove me */
 void EditorOpenFile(const char *path);
 
 void text_shader_create(struct text_shader *shader);
 void text_shader_destroy(struct text_shader *shader);
 void text_shader_upload_uniforms(struct text_shader *shader, struct text_shader_uniforms *uniforms);
-
-void window_scroll_callback(GLFWwindow *window, double x, double y);
-void window_frame_buffer_resize_callback(GLFWwindow *window, int32_t width, int32_t height);
-void window_cursor_position_callback(GLFWwindow *window, double x, double y);
-void window_key_callback(GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods);
 
 #endif

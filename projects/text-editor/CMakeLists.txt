@@ -41,6 +41,7 @@ target_link_libraries(text-editor PRIVATE
    module::utils
    module::font-manager
    module::unicode
+   module::platform
 
    glfw
    glad

@@ -2,6 +2,7 @@
 
 #include "utils/macros.h"
 #include "utils/constants.h"
+#include "platform/window.h"
 
 #include "glad/glad.h"
 #include "stb_image.h"
@@ -64,23 +65,22 @@ bool editor_init() {
 	if (!(E.font_file_path = string_duplicate(DEFAULT_FONT_FILE_PATH)))
 		return false;
 
-	bool window_exists = window_create(
-		 (struct window_options) {
-			 .width = 800,
-			 .height = 600,
-			 .title = "GLFWwindow",
-			 .transparent = false,
-			 .visible = true,
-			 .icon = DEFAULT_WINDOW_ICON,
-			 .sharedWinId = INVALID_ID,
-			 .framebuffer_resize_callback = window_frame_buffer_resize_callback,
-			 .key_callback = window_key_callback,
-			 .scroll_callback = window_scroll_callback,
-			 .cursor_position_callback = window_cursor_position_callback,
-		 }
-	);
+	struct window_options opts = {
+		.width = 800,
+		.height = 600,
+		.title = "GLFWwindow",
+		.transparent = false,
+		.visible = true,
+		.icon = DEFAULT_WINDOW_ICON,
+		.shared_context_window = NULL,
+		.framebuffer_resize_callback = window_frame_buffer_resize_callback,
+		.key_callback = window_key_callback,
+		.scroll_callback = window_scroll_callback,
+		.cursor_position_callback = window_cursor_position_callback,
+	};
 
-	if (!window_exists)
+	E.window = window_create(opts);
+	if (!E.window)
 		perror("failed to create a window");
 
 	glfwSetErrorCallback(_glfwErrFn);
@@ -361,7 +361,7 @@ void EditorOpenFile(const char *path) {
 /* todo: remove editor from here */
 void buffer_render() {
 	struct glyph_atlas *atlas = font_manager_get_atlas();
-	struct rectangle bounds = window_get_bounds();
+	struct rectangle bounds = window_get_bounds(E.window);
 
 	mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
 	mvp = glms_ortho(0, (float) bounds.w, 0, (float) bounds.h, 0.0f, 100.0f);
@@ -394,7 +394,7 @@ void buffer_render() {
 
 	/* note: not sure if this should be done after each buffer is rendered, or after all of them
 	 * are rendered. for now we just do it here since we only have a single buffer. */
-	window_swap_buffers();
+	window_swap_buffers(E.window);
 }
 
 struct glyph_info *_glyphInfo = NULL;
@@ -406,7 +406,7 @@ void buffer_layout() {
 	float lineHeight = font_manager_get_default_font_line_height();
 	float fontScale = font_manager_get_default_font_scale();
 
-	struct rectangle bounds = window_get_bounds();
+	struct rectangle bounds = window_get_bounds(E.window);
 	for (uint32_t visual_line_index = 0; visual_line_index < LINES; ++visual_line_index) {
 		if (E.layout_map[visual_line_index].layouted)
 			continue;
@@ -532,106 +532,6 @@ void buffer_layout() {
 		E.layout_map[visual_line_index].layouted = true;
 		E.layout_map[visual_line_index].uploaded = false;
 	}
-}
-
-bool window_create(struct window_options opts) {
-	if (!glfwInit())
-		return false;
-
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_TRANSPARENT_FRAMEBUFFER, opts.transparent);
-	glfwWindowHint(GLFW_SCALE_TO_MONITOR, GLFW_TRUE);
-	glfwWindowHint(GLFW_VISIBLE, opts.visible);
-	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
-	glfwWindowHint(GLFW_SAMPLES, 4);
-#ifdef __APPLE__
-	glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
-#endif
-
-#ifdef DEBUG
-	glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
-#endif
-
-	const int32_t windowWidth = opts.width ? opts.width : 1600;
-	const int32_t windowHeight = opts.height ? opts.height : 800;
-	const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
-
-	/* todo: re-implement it later */
-	GLFWwindow *sharedWindow = NULL;
-
-	GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, sharedWindow);
-	if (!window)
-		return false;
-
-	const int32_t maxWidth = 2230;
-	const int32_t maxHeight = 1420;
-	const int32_t minWidth = 800;
-	const int32_t minHeight = 600;
-
-	glfwSetWindowSizeLimits(window, minWidth, minHeight, maxWidth, maxHeight);
-	glfwMakeContextCurrent(window);
-	gladLoadGL((GLADloadfunc) glfwGetProcAddress);
-	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-	glfwSwapInterval(1);
-
-#ifndef __APPLE__
-	GLFWimage img;
-	int chanCount;
-	opts.icon = opts.icon ? opts.icon : DEFAULT_WINDOW_ICON;
-	img.pixels = stbi_load(opts.icon, &img.width, &img.height, &chanCount, 0);
-
-	if (!img.pixels) {
-		glfwDestroyWindow(window);
-		return false;
-	}
-
-	glfwSetWindowIcon(window, 1, &img);
-	free(img.pixels);
-#endif
-
-#ifdef _WIN32
-	HWND hwnd = glfwGetWin32Window(window);
-	DWORD value = _msIsDarkMode();
-	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
-#endif
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_MULTISAMPLE);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-	glLineWidth(2);
-
-	if (opts.cursor_position_callback) glfwSetCursorPosCallback(window, opts.cursor_position_callback);
-	if (opts.scroll_callback) glfwSetScrollCallback(window, opts.scroll_callback);
-	if (opts.framebuffer_resize_callback) glfwSetFramebufferSizeCallback(window, opts.framebuffer_resize_callback);
-	if (opts.key_callback) glfwSetKeyCallback(window, opts.key_callback);
-
-	if (!window)
-		return false;
-
-	E.window = window;
-	return true;
-}
-
-struct rectangle window_get_bounds() {
-	if (!E.window)
-		return (struct rectangle) {};
-
-	int32_t width, height;
-	glfwGetWindowSize(E.window, &width, &height);
-
-	return (struct rectangle) {
-		.x = 0,
-		.y = 0,
-		.w = width,
-		.h = height,
-	};
-}
-
-void window_swap_buffers() {
-	glfwSwapBuffers(E.window);
 }
 
 void _glfwErrFn(int code, const char *description) {
