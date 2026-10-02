@@ -23,23 +23,22 @@ flat out uint v_glyphLoc;
 flat out vec4 v_fgColor;
 flat out vec4 v_bgColor;
 
-void main()
-{
-   vec2 pos = a_position;
-   vec2 tex = a_texcoord;
-   float scale = u_scale;
-   float epp = a_emPerPos;
+void main() {
+	vec2 pos = a_position;
+	vec2 tex = a_texcoord;
+	float scale = u_scale;
+	float epp = a_emPerPos;
 
-   epp /= scale;
-   pos = (pos + tex) * scale;
+	epp /= scale;
+	pos = (pos + tex) * scale;
 
-   vec4 jac = vec4(epp, 0.0, 0.0, -epp);
-   hb_gpu_dilate(pos, tex, a_normal, jac, u_matViewProjection, u_viewport);
+	vec4 jac = vec4(epp, 0.0, 0.0, -epp);
+	hb_gpu_dilate(pos, tex, a_normal, jac, u_matViewProjection, u_viewport);
 
-   gl_Position = u_matViewProjection * vec4(pos, 0.0, 1.0);
-   v_texcoord = tex;
-   v_glyphLoc = a_glyphLoc;
-   v_hasCursor = a_hasCursor;
-   v_fgColor = a_fgColor;
-   v_bgColor = a_bgColor;
+	gl_Position = u_matViewProjection * vec4(pos, 0.0, 1.0);
+	v_texcoord = tex;
+	v_glyphLoc = a_glyphLoc;
+	v_hasCursor = a_hasCursor;
+	v_fgColor = a_fgColor;
+	v_bgColor = a_bgColor;
 }

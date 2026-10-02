@@ -3,7 +3,7 @@ AlignAfterOpenBracket: BlockIndent
 AlignConsecutiveAssignments: false
 AlignConsecutiveDeclarations: false
 AlignOperands: DontAlign
-AlignConsecutiveMacros: true
+AlignConsecutiveMacros: false
 AllowAllParametersOfDeclarationOnNextLine: true
 AllowShortFunctionsOnASingleLine: false
 AllowShortIfStatementsOnASingleLine: true
@@ -13,7 +13,7 @@ AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false
 BinPackLongBracedList: true
-BreakBeforeBraces: Allman
+BreakBeforeBraces: Attach
 ColumnLimit: 0
 ExperimentalAutoDetectBinPacking: false
 IndentCaseLabels: true
@@ -21,7 +21,7 @@ PointerAlignment: Right
 TabWidth: 3
 IndentWidth: 3
 BracedInitializerIndentWidth: 3
-UseTab: Never
+UseTab: Always
 IndentPPDirectives: None
 AlignArrayOfStructures: None
 AlwaysBreakBeforeMultilineStrings: false
@@ -37,4 +37,3 @@ AccessModifierOffset: -4
 Cpp11BracedListStyle: false
 BreakConstructorInitializersBeforeComma: true
 ConstructorInitializerAllOnOneLineOrOnePerLine: false
-# DisableFormat: true

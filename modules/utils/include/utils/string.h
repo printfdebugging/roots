@@ -3,17 +3,15 @@
 
 #include <stdint.h>
 
-struct string
-{
-   char *data;
-   uint32_t count;
+struct string {
+	char *data;
+	uint32_t count;
 };
 
-struct string_view
-{
-   char *data;
-   uint32_t count;
-   struct string *source;
+struct string_view {
+	char *data;
+	uint32_t count;
+	struct string *source;
 };
 
 /**!

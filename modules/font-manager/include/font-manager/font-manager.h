@@ -10,106 +10,100 @@
 
 /* todo: document it properly */
 /* todo: also pass the text offsets, so it's easy to map clicks to cursor position changes */
-struct glyph_vertex
-{
-   float x;
-   float y;
-   float tx;
-   float ty;
-   float nx;
-   float ny;
-   float epp;
-   uint32_t atlas_offset;
-   uint32_t has_cursor;
+struct glyph_vertex {
+	float x;
+	float y;
+	float tx;
+	float ty;
+	float nx;
+	float ny;
+	float epp;
+	uint32_t atlas_offset;
+	uint32_t has_cursor;
 
-   /*
-   todo:
-      vec4 textPos;
-         [0] = textId
-         [1] = line
-         [2] = byteOffset
-   */
+	/*
+	todo:
+		vec4 textPos;
+			[0] = textId
+			[1] = line
+			[2] = byteOffset
+	*/
 
-   vec4s fg_color;
-   vec4s bg_color;
+	vec4s fg_color;
+	vec4s bg_color;
 };
 
-struct extents
-{
-   double min_x;
-   double min_y;
-   double max_x;
-   double max_y;
+struct extents {
+	double min_x;
+	double min_y;
+	double max_x;
+	double max_y;
 };
 
-struct glyph_atlas
-{
-   uint32_t texture;
-   int32_t texture_unit;
-   uint32_t texture_buffer_object;
-   uint32_t capacity_bytes;
+struct glyph_atlas {
+	uint32_t texture;
+	int32_t texture_unit;
+	uint32_t texture_buffer_object;
+	uint32_t capacity_bytes;
 
-   /**!
-    * note: This doesn't start at 0, but at `TEXEL_SIZE`. Empty glyphs
-    * don't have any glyph data, so their `GlyphInfo.atlasOffset` is set
-    * to 0, and if we start at 0 here, that would then use the first uploaded
-    * glyph for the spaces..
-    */
-   uint32_t cursor_offset_bytes;
+	/**!
+	 * note: This doesn't start at 0, but at `TEXEL_SIZE`. Empty glyphs
+	 * don't have any glyph data, so their `GlyphInfo.atlasOffset` is set
+	 * to 0, and if we start at 0 here, that would then use the first uploaded
+	 * glyph for the spaces..
+	 */
+	uint32_t cursor_offset_bytes;
 };
 
-struct glyph_info
-{
-   double advance;
-   int32_t upem;
-   uint32_t atlas_offset;
-   bool empty;
-   bool cached;
-   struct extents extents;
+struct glyph_info {
+	double advance;
+	int32_t upem;
+	uint32_t atlas_offset;
+	bool empty;
+	bool cached;
+	struct extents extents;
 };
 
-struct font
-{
-   char *font_path;
+struct font {
+	char *font_path;
 
-   /* font objects & the encoder */
-   hb_face_t *hb_face;
-   hb_font_t *hb_font;
-   hb_gpu_draw_t *hb_draw;
+	/* font objects & the encoder */
+	hb_face_t *hb_face;
+	hb_font_t *hb_font;
+	hb_gpu_draw_t *hb_draw;
 
-   /* font metrics */
-   int32_t hb_ascent;
-   int32_t hb_descent;
-   int32_t hb_max_height;
+	/* font metrics */
+	int32_t hb_ascent;
+	int32_t hb_descent;
+	int32_t hb_max_height;
 
-   struct glyph_info *glyph_cache;
+	struct glyph_info *glyph_cache;
 };
 
-struct font_manager
-{
-   struct font *font;
-   uint32_t font_count;
+struct font_manager {
+	struct font *font;
+	uint32_t font_count;
 
-   /**!
-    * Path the default editor font.
-    */
-   const char *editor_font_path;
+	/**!
+	 * Path the default editor font.
+	 */
+	const char *editor_font_path;
 
-   /**!
-    * The default font of the editor. Every rune is first shaped
-    * with this font and if it doesn't have a glyph, we check other
-    * cached fonts then the system fonts using fontconfig.
-    */
-   struct font *editor_font;
+	/**!
+	 * The default font of the editor. Every rune is first shaped
+	 * with this font and if it doesn't have a glyph, we check other
+	 * cached fonts then the system fonts using fontconfig.
+	 */
+	struct font *editor_font;
 
-   /**!
-    * OpenGL textures with the glyph data. `GlyphInfo.atlasOffset` is an
-    * offset into this texture. We only cache the glyphs being used, so
-    * even if we are using a few fonts, it should be fine for the most part.
-    */
-   struct glyph_atlas atlas;
+	/**!
+	 * OpenGL textures with the glyph data. `GlyphInfo.atlasOffset` is an
+	 * offset into this texture. We only cache the glyphs being used, so
+	 * even if we are using a few fonts, it should be fine for the most part.
+	 */
+	struct glyph_atlas atlas;
 
-   bool initialized;
+	bool initialized;
 };
 
 /* fontmanager.c */

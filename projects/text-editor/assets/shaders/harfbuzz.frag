@@ -17,55 +17,50 @@ out vec4 fragColor;
 
 const vec4 TRANSPARENT_COLOR = vec4(vec3(0.0f), 1.0);
 
-void main()
-{
-   /* glyphLoc start at 1, 0 means empty character, usually used for whitespaces */
-   if (v_glyphLoc == 0.0)
-   {
-      if (v_hasCursor == 0.0f)
-         fragColor = vec4(0.0f);
-      else
-         fragColor = vec4(vec3(0.0f), 1.0f);
-      return;
-   }
+void main() {
+	/* glyphLoc start at 1, 0 means empty character, usually used for whitespaces */
+	if (v_glyphLoc == 0.0) {
+		if (v_hasCursor == 0.0f)
+			fragColor = vec4(0.0f);
+		else
+			fragColor = vec4(vec3(0.0f), 1.0f);
+		return;
+	}
 
-   float cov;
+	float cov;
 #ifdef HB_GPU_DEMO_DRAW
-   cov = hb_gpu_draw(v_texcoord, v_glyphLoc);
-   vec4 c = vec4(v_fgColor.rgb * v_fgColor.a, v_fgColor.a) * cov;
+	cov = hb_gpu_draw(v_texcoord, v_glyphLoc);
+	vec4 c = vec4(v_fgColor.rgb * v_fgColor.a, v_fgColor.a) * cov;
 #else
-   vec4 c = hb_gpu_paint(v_texcoord, v_glyphLoc, v_fgColor, cov);
+	vec4 c = hb_gpu_paint(v_texcoord, v_glyphLoc, v_fgColor, cov);
 #endif
 
-   /* Apply stem darkening and gamma correction to the edge
-    * coverage only, so interior color is unaffected. */
-   if (cov > 0.0 && cov < 1.0)
-   {
-      float adj = cov;
-      if (u_stem_darkening > 0.0)
-      {
-         float brightness = c.a > 0.0
-             ? dot(c.rgb, vec3(1.0 / 3.0)) / c.a
-             : 0.0;
-         adj = hb_gpu_stem_darken(adj, brightness, 1.0 / max(fwidth(v_texcoord).x, fwidth(v_texcoord).y));
-      }
-      if (u_gamma != 1.0)
-         adj = pow(adj, u_gamma);
-      c *= adj / cov;
-   }
+	/* Apply stem darkening and gamma correction to the edge
+	 * coverage only, so interior color is unaffected. */
+	if (cov > 0.0 && cov < 1.0) {
+		float adj = cov;
+		if (u_stem_darkening > 0.0) {
+			float brightness = c.a > 0.0
+				 ? dot(c.rgb, vec3(1.0 / 3.0)) / c.a
+				 : 0.0;
+			adj = hb_gpu_stem_darken(adj, brightness, 1.0 / max(fwidth(v_texcoord).x, fwidth(v_texcoord).y));
+		}
+		if (u_gamma != 1.0)
+			adj = pow(adj, u_gamma);
+		c *= adj / cov;
+	}
 
-   if (u_debug > 0.0)
-   {
-      ivec2 counts = _hb_gpu_curve_counts(v_texcoord, v_glyphLoc);
-      float r = clamp(float(counts.x) / 8.0, 0.0, 1.0);
-      float g = clamp(float(counts.y) / 8.0, 0.0, 1.0);
-      fragColor = vec4(r, g, c.a, max(max(r, g), c.a));
-      return;
-   }
+	if (u_debug > 0.0) {
+		ivec2 counts = _hb_gpu_curve_counts(v_texcoord, v_glyphLoc);
+		float r = clamp(float(counts.x) / 8.0, 0.0, 1.0);
+		float g = clamp(float(counts.y) / 8.0, 0.0, 1.0);
+		fragColor = vec4(r, g, c.a, max(max(r, g), c.a));
+		return;
+	}
 
-   /* todo: define a global constant */
-   if (c.a == 0 && v_hasCursor != 0.0)
-      c = TRANSPARENT_COLOR;
+	/* todo: define a global constant */
+	if (c.a == 0 && v_hasCursor != 0.0)
+		c = TRANSPARENT_COLOR;
 
-   fragColor = c;
+	fragColor = c;
 }
