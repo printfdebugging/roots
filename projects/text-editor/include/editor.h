@@ -6,6 +6,7 @@
 #include "font-manager/font-manager.h"
 #include "unicode/unicode.h"
 #include "utils/containers.h"
+#include "platform/logging.h"
 
 #include "GLFW/glfw3.h"
 #include "cglm/struct.h"
@@ -38,14 +39,6 @@ struct text;
 #define LINES 20
 #define VERTICES 6
 #define VERTEX_SIZE sizeof(struct glyph_vertex)
-
-#ifdef LOGGING
-#define LOG_INFO(...) fprintf(stderr, __VA_ARGS__);
-#define LOG_EVENT(...) fprintf(stderr, __VA_ARGS__);
-#else
-#define LOG_INFO(...)
-#define LOG_EVENT(...)
-#endif
 
 struct text_layout_map {
 	uint32_t text_line_index;
