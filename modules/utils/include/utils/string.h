@@ -3,17 +3,17 @@
 
 #include <stdint.h>
 
-struct String
+struct string
 {
    char *data;
    uint32_t count;
 };
 
-struct StringView
+struct string_view
 {
    char *data;
    uint32_t count;
-   struct String *source;
+   struct string *source;
 };
 
 /**!
@@ -23,9 +23,9 @@ struct StringView
  * The caller is responsible for managing the `lifetime` of the returned
  * string i.e. freeing it. Returns `NULL` on error.
  */
-char *StringDuplicate(const char *str);
+char *string_duplicate(const char *str);
 
 /* todo: rename to a string helper  and return a String, with the length that is */
-char *ReadFileContents(const char *filPath);
+char *string_read_file_contents(const char *file_path);
 
 #endif

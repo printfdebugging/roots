@@ -8,14 +8,14 @@
 #include <stdio.h>
 #include <string.h>
 
-struct Text
+struct text
 {
-   char *filePath;
-   struct String *lines;
-   uint32_t lineCount;
+   char *file_path;
+   struct string *lines;
+   uint32_t line_count;
 };
 
-struct Text *TextLoadFromFile(const char *filepath)
+struct text *text_load_from_file(const char *file_path)
 {
    /**!
     * warning: `getline` is a UNIX only function, so can't
@@ -27,38 +27,38 @@ struct Text *TextLoadFromFile(const char *filepath)
     * from ReadFileContents, or by passing an out variable for
     * the data and returning the length.
     */
-   char *data = ReadFileContents(filepath);
+   char *data = string_read_file_contents(file_path);
    if (!data)
       return NULL;
 
-   struct Text *text = TextLoadFromData(data, (uint32_t) strlen(data));
-   text->filePath = StringDuplicate(filepath);
+   struct text *text = text_load_from_data(data, (uint32_t) strlen(data));
+   text->file_path = string_duplicate(file_path);
 
    free(data);
    return text;
 
 #else
    FILE *file = NULL;
-   if (!(file = fopen(filepath, "r")))
+   if (!(file = fopen(file_path, "r")))
    {
-      fprintf(stderr, "failed to open file: %s", filepath);
+      fprintf(stderr, "failed to open file: %s", file_path);
       return NULL;
    }
 
-   struct Text *text = calloc(1, sizeof(struct Text));
+   struct text *text = calloc(1, sizeof(struct text));
 
    char *line = NULL;
-   uint64_t lineCap = 0;
-   int32_t lineLen = 0;
-   while ((lineLen = (int32_t) getline(&line, &lineCap, file)) != -1)
+   uint64_t line_capacity = 0;
+   int32_t line_length = 0;
+   while ((line_length = (int32_t) getline(&line, &line_capacity, file)) != -1)
    {
-      if (lineLen == 0)
+      if (line_length == 0)
          continue;
 
-      text->lines = realloc(text->lines, (sizeof(struct String)) * (text->lineCount + 1));
-      text->lines[text->lineCount++] = (struct String) {
+      text->lines = realloc(text->lines, (sizeof(struct string)) * (text->line_count + 1));
+      text->lines[text->line_count++] = (struct string) {
          .data = line,
-         .count = (uint32_t) lineLen,
+         .count = (uint32_t) line_length,
       };
       line = NULL;
    }
@@ -72,34 +72,34 @@ struct Text *TextLoadFromFile(const char *filepath)
 #endif
 }
 
-struct Text *TextLoadFromData(const char *data, uint32_t dataLength)
+struct text *text_load_from_data(const char *data, uint32_t data_length)
 {
    if (data == NULL)
       perror("got null data");
 
    uint32_t index = 0;
-   uint32_t lastIndex = 0;
+   uint32_t last_index = 0;
 
-   struct Text *text = calloc(1, sizeof(struct Text));
+   struct text *text = calloc(1, sizeof(struct text));
    if (!text) perror("failed to allcoate Text");
 
-   while (index < dataLength)
+   while (index < data_length)
    {
-      if ((data[index++] != '\n') && index != dataLength)
+      if ((data[index++] != '\n') && index != data_length)
          continue;
 
-      uint32_t length = index - lastIndex;
+      uint32_t length = index - last_index;
 
       char *buffer = calloc(length + 1, sizeof(char));
       if (!buffer)
          perror("failed to allocate buffer\n");
 
       buffer[length] = '\0';
-      buffer = memcpy(buffer, data + lastIndex, length);
-      lastIndex = index;
+      buffer = memcpy(buffer, data + last_index, length);
+      last_index = index;
 
-      text->lines = realloc(text->lines, (text->lineCount + 1) * sizeof(struct String));
-      text->lines[text->lineCount++] = (struct String) {
+      text->lines = realloc(text->lines, (text->line_count + 1) * sizeof(struct string));
+      text->lines[text->line_count++] = (struct string) {
          .data = buffer,
          .count = length,
       };
@@ -108,52 +108,52 @@ struct Text *TextLoadFromData(const char *data, uint32_t dataLength)
    return text;
 }
 
-bool TextWriteToFile(const char *filepath)
+bool text_write_to_file(const char *file_path)
 {
-   (void) filepath;
+   (void) file_path;
    perror("todo");
    return true;
 }
 
-uint32_t TextGetLineCount(struct Text *text)
+uint32_t text_get_line_count(struct text *text)
 {
-   return text->lineCount;
+   return text->line_count;
 }
 
-char *TextGetUTF8Line(struct Text *text, uint32_t line)
+char *text_get_line_utf8(struct text *text, uint32_t line)
 {
-   if (text->lineCount <= line)
+   if (text->line_count <= line)
       return NULL;
    return text->lines[line].data;
 }
 
-struct StringView TextGetLineUTF8AtOffset(struct Text *text, uint32_t line, uint32_t offset)
+struct string_view text_get_line_utf8_at_offset(struct text *text, uint32_t line, uint32_t offset)
 {
-   uint32_t length = TextGetLineLength(text, line);
+   uint32_t length = text_get_line_length(text, line);
    if (offset < length)
    {
-      return (struct StringView) {
+      return (struct string_view) {
          .data = &text->lines[line].data[offset],
          .count = length - offset,
          .source = &text->lines[line],
       };
    }
 
-   return (struct StringView) {};
+   return (struct string_view) {};
 }
 
-void TextDestroy(struct Text *text)
+void text_destroy(struct text *text)
 {
-   for (uint32_t lineIdx = 0; lineIdx < text->lineCount; ++lineIdx)
+   for (uint32_t lineIdx = 0; lineIdx < text->line_count; ++lineIdx)
       free(text->lines[lineIdx].data);
    free(text->lines);
-   free(text->filePath);
+   free(text->file_path);
 }
 
-uint32_t TextGetLineLength(struct Text *text, uint32_t lineIdx)
+uint32_t text_get_line_length(struct text *text, uint32_t line_index)
 {
-   if (lineIdx <= text->lineCount - 1)
-      return text->lines[lineIdx].count;
+   if (line_index <= text->line_count - 1)
+      return text->lines[line_index].count;
    return 0;
 }
 

@@ -10,7 +10,7 @@
 
 /* todo: document it properly */
 /* todo: also pass the text offsets, so it's easy to map clicks to cursor position changes */
-struct GlyphVertex
+struct glyph_vertex
 {
    float x;
    float y;
@@ -18,9 +18,9 @@ struct GlyphVertex
    float ty;
    float nx;
    float ny;
-   float emPerPos;
-   uint32_t atlasOffset;
-   uint32_t hasCursor;
+   float epp;
+   uint32_t atlas_offset;
+   uint32_t has_cursor;
 
    /*
    todo:
@@ -30,24 +30,24 @@ struct GlyphVertex
          [2] = byteOffset
    */
 
-   vec4s fgColor;
-   vec4s bgColor;
+   vec4s fg_color;
+   vec4s bg_color;
 };
 
-struct Extents
+struct extents
 {
-   double xMin;
-   double yMin;
-   double xMax;
-   double yMax;
+   double min_x;
+   double min_y;
+   double max_x;
+   double max_y;
 };
 
-struct GlyphAtlas
+struct glyph_atlas
 {
    uint32_t texture;
-   int32_t textureUnit;
-   uint32_t textureBufferObject;
-   uint32_t capacityBytes;
+   int32_t texture_unit;
+   uint32_t texture_buffer_object;
+   uint32_t capacity_bytes;
 
    /**!
     * note: This doesn't start at 0, but at `TEXEL_SIZE`. Empty glyphs
@@ -55,81 +55,82 @@ struct GlyphAtlas
     * to 0, and if we start at 0 here, that would then use the first uploaded
     * glyph for the spaces..
     */
-   uint32_t cursorOffsetBytes;
+   uint32_t cursor_offset_bytes;
 };
 
-struct GlyphInfo
+struct glyph_info
 {
    double advance;
    int32_t upem;
-   uint32_t atlasOffset;
+   uint32_t atlas_offset;
    bool empty;
    bool cached;
-   struct Extents extents;
+   struct extents extents;
 };
 
-struct Font
+struct font
 {
-   char *fontPath;
+   char *font_path;
 
    /* font objects & the encoder */
-   hb_face_t *hbFace;
-   hb_font_t *hbFont;
-   hb_gpu_draw_t *hbDraw;
+   hb_face_t *hb_face;
+   hb_font_t *hb_font;
+   hb_gpu_draw_t *hb_draw;
 
    /* font metrics */
-   int32_t hbAscent;
-   int32_t hbDescent;
-   int32_t hbMaxHeight;
+   int32_t hb_ascent;
+   int32_t hb_descent;
+   int32_t hb_max_height;
 
-   struct GlyphInfo *glyphCache;
+   struct glyph_info *glyph_cache;
 };
 
-struct FontManager
+struct font_manager
 {
-   struct Font *font;
-   uint32_t fontCount;
+   struct font *font;
+   uint32_t font_count;
 
    /**!
     * Path the default editor font.
     */
-   const char *editorFontPath;
+   const char *editor_font_path;
 
    /**!
     * The default font of the editor. Every rune is first shaped
     * with this font and if it doesn't have a glyph, we check other
     * cached fonts then the system fonts using fontconfig.
     */
-   struct Font *editorFont;
+   struct font *editor_font;
 
    /**!
     * OpenGL textures with the glyph data. `GlyphInfo.atlasOffset` is an
     * offset into this texture. We only cache the glyphs being used, so
     * even if we are using a few fonts, it should be fine for the most part.
     */
-   struct GlyphAtlas glyphAtlas;
+   struct glyph_atlas atlas;
 
    bool initialized;
 };
 
 /* fontmanager.c */
-void FontMgrInit(char *editorFontPath);
-void FontMgrDeInit();
-void FontMgrCacheGlyphInfo(struct Font *font, uint32_t glyphIndex);
-struct GlyphAtlas *FontMgrGetAtlas();
-struct Font *FontMgrGetFont(const char *filePath);
-struct Font *FontMgrGetDefaultFont();
+/* note: todo: this should take font_manager_options */
+void font_manager_init(char *editor_font_path);
+void font_manager_deinit();
+void font_manager_cache_glyph_info(struct font *font, uint32_t glyphidx);
+struct glyph_atlas *font_manager_get_atlas();
+struct font *font_manager_get_font(const char *file_path);
+struct font *font_manager_get_default_font();
 
-float FontMgrGetDefaultFontScale();
-float FontMgrGetDefaultFontLineHeight();
+float font_manager_get_default_font_scale();
+float font_manager_get_default_font_line_height();
 
-struct Font *FontMgrGetFontWithRune(uint32_t codepoint);
+struct font *font_manager_get_font_with_rune(uint32_t codepoint);
 
-void FontInit(struct Font *font, const char *filePath);
-void FontDeInit(struct Font *font);
+void font_init(struct font *font, const char *filepath);
+void font_deinit(struct font *font);
 
-void _fontMgrAtlasInit();
-void _fontMgrAtlasDeInit();
+void _font_manager_atlas_init();
+void _font_manager_atlas_deinit();
 
 // void _linePrintChars();
 // void _lineSubstituteNewlines();

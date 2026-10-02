@@ -4,34 +4,34 @@
 
 #include <stdio.h>
 
-bool ShaderGetCompileStatus(uint32_t shaderObject)
+bool shader_get_compile_status(uint32_t object)
 {
-   int32_t compileStatus;
-   glGetShaderiv(shaderObject, GL_COMPILE_STATUS, &compileStatus);
-   if (compileStatus)
+   int32_t status;
+   glGetShaderiv(object, GL_COMPILE_STATUS, &status);
+   if (status)
       return true;
 
-   int32_t logLength;
-   glGetShaderiv(shaderObject, GL_INFO_LOG_LENGTH, &logLength);
+   int32_t length;
+   glGetShaderiv(object, GL_INFO_LOG_LENGTH, &length);
 
-   char infoLog[logLength];
-   glGetShaderInfoLog(shaderObject, logLength, NULL, infoLog);
-   fprintf(stderr, "failed to compile shader, error message: %s\n", infoLog);
+   char log[length];
+   glGetShaderInfoLog(object, length, NULL, log);
+   fprintf(stderr, "failed to compile shader, error message: %s\n", log);
    return false;
 }
 
-bool ShaderGetLinkStatus(uint32_t shaderProgram)
+bool shader_get_link_status(uint32_t program)
 {
-   int32_t linkStatus;
-   glGetProgramiv(shaderProgram, GL_LINK_STATUS, &linkStatus);
-   if (linkStatus)
+   int32_t status;
+   glGetProgramiv(program, GL_LINK_STATUS, &status);
+   if (status)
       return true;
 
-   int32_t logLength;
-   glGetProgramiv(shaderProgram, GL_INFO_LOG_LENGTH, &logLength);
+   int32_t length;
+   glGetProgramiv(program, GL_INFO_LOG_LENGTH, &length);
 
-   char infoLog[logLength];
-   glGetProgramInfoLog(shaderProgram, logLength, NULL, infoLog);
-   fprintf(stderr, "failed to link shader program: %s\n", infoLog);
+   char log[length];
+   glGetProgramInfoLog(program, length, NULL, log);
+   fprintf(stderr, "failed to link shader program: %s\n", log);
    return false;
 }

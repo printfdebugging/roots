@@ -8,22 +8,22 @@
 /* note: todo: the text api has to change */
 /* return string views into sub portions of the text */
 
-struct Text;
+struct text;
 
-struct Text *TextLoadFromFile(const char *filepath);
+struct text *text_load_from_file(const char *filepath);
 
-struct Text *TextLoadFromData(const char *data, uint32_t dataLength);
+struct text *text_load_from_data(const char *data, uint32_t data_length);
 
-bool TextWriteToFile(const char *filepath);
+bool text_write_to_file(const char *filepath);
 
-uint32_t TextGetLineCount(struct Text *text);
+uint32_t text_get_line_count(struct text *text);
 
-char *TextGetUTF8Line(struct Text *text, uint32_t line);
+char *text_get_line_utf8(struct text *text, uint32_t line);
 
-struct StringView TextGetLineUTF8AtOffset(struct Text *text, uint32_t line, uint32_t offset);
+struct string_view text_get_line_utf8_at_offset(struct text *text, uint32_t line, uint32_t offset);
 
-void TextDestroy(struct Text *text);
+void text_destroy(struct text *text);
 
-uint32_t TextGetLineLength(struct Text *text, uint32_t lineIdx);
+uint32_t text_get_line_length(struct text *text, uint32_t line_index);
 
 #endif

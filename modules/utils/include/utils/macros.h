@@ -1,15 +1,15 @@
 #ifndef UTILS_MACROS_H
 #define UTILS_MACROS_H
 
-#define ColorRGBHex(color)               \
+#define color_rgb_hex(color)             \
    (((color >> 16) & 0xFF) / 255.0f),    \
        (((color >> 8) & 0xFF) / 255.0f), \
        (((color) & 0xFF) / 255.0f)
 
-#define ColorRGBAHex(color)           \
+#define color_rgba_hex(color)         \
    (((color >> 24) & 0xFF) / 255.0f), \
-       ColorRGBHex(color)
+       color_rgb_hex(color)
 
-#define ArraySize(t) (sizeof(t) / sizeof(*t))
+#define array_size(t) (sizeof(t) / sizeof(*t))
 
 #endif

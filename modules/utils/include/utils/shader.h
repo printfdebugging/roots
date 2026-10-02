@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-bool ShaderGetCompileStatus(uint32_t shaderObject);
-bool ShaderGetLinkStatus(uint32_t shaderProgram);
+bool shader_get_compile_status(uint32_t object);
+bool shader_get_link_status(uint32_t program);
 
 #endif

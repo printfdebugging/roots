@@ -7,14 +7,14 @@
 
 #include <string.h>
 
-static struct FontManager fm = { 0 };
+static struct font_manager fm = { 0 };
 
 /**!
  * note: FontManager is just a wrapper around harfbuzz & OpenGL functions,
  * and manages shared objects.. So the OpenGL function pointers should be
  * loaded before this function is called. That's done by GLFW.
  */
-void FontMgrInit(char *editorFontPath)
+void font_manager_init(char *editor_font_path)
 {
    if (fm.initialized)
       return;
@@ -22,136 +22,136 @@ void FontMgrInit(char *editorFontPath)
    /* `fontManagerGetFont` checks this and returns early if false (default) */
    fm.initialized = true;
 
-   _fontMgrAtlasInit();
-   fm.editorFontPath = StringDuplicate(editorFontPath);
-   fm.editorFont = FontMgrGetFont(editorFontPath);
+   _font_manager_atlas_init();
+   fm.editor_font_path = string_duplicate(editor_font_path);
+   fm.editor_font = font_manager_get_font(editor_font_path);
 }
 
-void FontMgrDeInit()
+void font_manager_deinit()
 {
    if (!fm.initialized)
       return;
 
-   for (uint32_t fontIdx = 0; fontIdx < fm.fontCount; ++fontIdx)
-      FontDeInit(&fm.font[fontIdx]);
+   for (uint32_t idx = 0; idx < fm.font_count; ++idx)
+      font_deinit(&fm.font[idx]);
 
    free(fm.font);
-   free((void *) fm.editorFontPath);
+   free((void *) fm.editor_font_path);
 
-   _fontMgrAtlasDeInit();
+   _font_manager_atlas_deinit();
    fm.initialized = false;
 }
 
-void FontMgrCacheGlyphInfo(struct Font *font, uint32_t glyphIndex)
+void font_manager_cache_glyph_info(struct font *font, uint32_t glyphidx)
 {
-   if (font->glyphCache[glyphIndex].cached)
+   if (font->glyph_cache[glyphidx].cached)
       return;
 
-   struct GlyphInfo *glyph = &font->glyphCache[glyphIndex];
+   struct glyph_info *glyph = &font->glyph_cache[glyphidx];
 
    int32_t xScale, yScale;
-   hb_font_get_scale(font->hbFont, &xScale, &yScale);
-   hb_gpu_draw_clear(font->hbDraw);
-   hb_gpu_draw_glyph(font->hbDraw, font->hbFont, glyphIndex);
+   hb_font_get_scale(font->hb_font, &xScale, &yScale);
+   hb_gpu_draw_clear(font->hb_draw);
+   hb_gpu_draw_glyph(font->hb_draw, font->hb_font, glyphidx);
 
    hb_glyph_extents_t hbGlyphExtents = {};
    hb_blob_t *hbBlob = NULL;
 
-   hbBlob = hb_gpu_draw_encode(font->hbDraw, &hbGlyphExtents);
+   hbBlob = hb_gpu_draw_encode(font->hb_draw, &hbGlyphExtents);
    uint32_t hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
 
-   *glyph = (struct GlyphInfo) {
-      .extents.xMin = 0,
-      .extents.xMax = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
-      .extents.yMin = font->hbDescent,
-      .extents.yMax = font->hbAscent,
-      .advance = hb_font_get_glyph_h_advance(font->hbFont, glyphIndex),
+   *glyph = (struct glyph_info) {
+      .extents.min_x = 0,
+      .extents.max_x = hb_font_get_glyph_h_advance(font->hb_font, glyphidx),
+      .extents.min_y = font->hb_descent,
+      .extents.max_y = font->hb_ascent,
+      .advance = hb_font_get_glyph_h_advance(font->hb_font, glyphidx),
       .upem = yScale,
       .empty = (hbBlobLength == 0),
       .cached = true,
    };
 
    /* upload glyph data to glyph atlas */
-   struct GlyphAtlas *glyphAtlas = FontMgrGetAtlas();
+   struct glyph_atlas *glyphAtlas = font_manager_get_atlas();
    if (!glyph->empty)
    {
       const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
-      glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
-      glBufferSubData(GL_TEXTURE_BUFFER, glyphAtlas->cursorOffsetBytes, hbBlobLength, hbGlyphData);
-      glyph->atlasOffset = glyphAtlas->cursorOffsetBytes;
-      glyphAtlas->cursorOffsetBytes += hbBlobLength;
+      glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->texture_buffer_object);
+      glBufferSubData(GL_TEXTURE_BUFFER, glyphAtlas->cursor_offset_bytes, hbBlobLength, hbGlyphData);
+      glyph->atlas_offset = glyphAtlas->cursor_offset_bytes;
+      glyphAtlas->cursor_offset_bytes += hbBlobLength;
 
-      hb_gpu_draw_recycle_blob(font->hbDraw, hbBlob);
+      hb_gpu_draw_recycle_blob(font->hb_draw, hbBlob);
    }
 }
 
-struct GlyphAtlas *FontMgrGetAtlas()
+struct glyph_atlas *font_manager_get_atlas()
 {
    if (!fm.initialized)
       return NULL;
-   return &fm.glyphAtlas;
+   return &fm.atlas;
 }
 
-struct Font *FontMgrGetFont(const char *filePath)
+struct font *font_manager_get_font(const char *file_path)
 {
    if (!fm.initialized)
       return NULL;
 
-   for (uint32_t fontIdx = 0; fontIdx < fm.fontCount; ++fontIdx)
-      if (strcmp(fm.font[fontIdx].fontPath, filePath) == 0)
-         return &fm.font[fontIdx];
+   for (uint32_t idx = 0; idx < fm.font_count; ++idx)
+      if (strcmp(fm.font[idx].font_path, file_path) == 0)
+         return &fm.font[idx];
 
-   fm.font = realloc(fm.font, sizeof(struct Font) * (fm.fontCount + 1));
-   struct Font *font = &fm.font[fm.fontCount++];
-   FontInit(font, filePath);
+   fm.font = realloc(fm.font, sizeof(struct font) * (fm.font_count + 1));
+   struct font *font = &fm.font[fm.font_count++];
+   font_init(font, file_path);
 
    return font;
 }
 
-struct Font *FontMgrGetDefaultFont()
+struct font *font_manager_get_default_font()
 {
    if (!fm.initialized)
       return NULL;
-   return fm.editorFont;
+   return fm.editor_font;
 }
 
-float FontMgrGetDefaultFontScale()
+float font_manager_get_default_font_scale()
 {
    if (!fm.initialized)
       return 0;
 
    int32_t xScale, yScale;
-   hb_font_get_scale(fm.editorFont->hbFont, &xScale, &yScale);
+   hb_font_get_scale(fm.editor_font->hb_font, &xScale, &yScale);
    /* note: todo: temporarily setting this to this default value */
    return 30 / (float) yScale;
 }
 
-float FontMgrGetDefaultFontLineHeight()
+float font_manager_get_default_font_line_height()
 {
    if (!fm.initialized)
       return 0;
 
-   float lineHeight = (float) fm.editorFont->hbAscent - (float) fm.editorFont->hbDescent;
-   return lineHeight * FontMgrGetDefaultFontScale();
+   float lineHeight = (float) fm.editor_font->hb_ascent - (float) fm.editor_font->hb_descent;
+   return lineHeight * font_manager_get_default_font_scale();
 }
 
-struct Font *FontMgrGetFontWithRune(uint32_t codepoint)
+struct font *font_manager_get_font_with_rune(uint32_t codepoint)
 {
    (void) codepoint;
    perror("todo");
    return NULL;
 }
 
-void FontInit(struct Font *font, const char *filePath)
+void font_init(struct font *font, const char *filepath)
 {
-   font->fontPath = StringDuplicate(filePath);
-   font->glyphCache = calloc(U16_MAX, sizeof(struct GlyphInfo));
+   font->font_path = string_duplicate(filepath);
+   font->glyph_cache = calloc(U16_MAX, sizeof(struct glyph_info));
 
    hb_blob_t *hbBlob = NULL;
-   if (!(hbBlob = hb_blob_create_from_file(font->fontPath)) ||
-       !(font->hbFace = hb_face_create(hbBlob, 0)) ||
-       !(font->hbFont = hb_font_create(font->hbFace)) ||
-       !(font->hbDraw = hb_gpu_draw_create_or_fail()))
+   if (!(hbBlob = hb_blob_create_from_file(font->font_path)) ||
+       !(font->hb_face = hb_face_create(hbBlob, 0)) ||
+       !(font->hb_font = hb_font_create(font->hb_face)) ||
+       !(font->hb_draw = hb_gpu_draw_create_or_fail()))
    {
       perror("failed to initialize harfbuzz");
    }
@@ -161,41 +161,41 @@ void FontInit(struct Font *font, const char *filePath)
    const hb_ot_metrics_tag_t ASCENT_HHEA = HB_TAG('H', 'a', 's', 'c');
    const hb_ot_metrics_tag_t DESCENT_HHEA = HB_TAG('H', 'd', 's', 'c');
 
-   hb_ot_metrics_get_position(font->hbFont, ASCENT_HHEA, &font->hbAscent);
-   hb_ot_metrics_get_position(font->hbFont, DESCENT_HHEA, &font->hbDescent);
-   hb_ot_metrics_get_position(font->hbFont, HB_OT_METRICS_TAG_CAP_HEIGHT, &font->hbMaxHeight);
+   hb_ot_metrics_get_position(font->hb_font, ASCENT_HHEA, &font->hb_ascent);
+   hb_ot_metrics_get_position(font->hb_font, DESCENT_HHEA, &font->hb_descent);
+   hb_ot_metrics_get_position(font->hb_font, HB_OT_METRICS_TAG_CAP_HEIGHT, &font->hb_max_height);
 }
 
-void FontDeInit(struct Font *font)
+void font_deinit(struct font *font)
 {
-   hb_font_destroy(font->hbFont);
-   hb_face_destroy(font->hbFace);
-   hb_gpu_draw_destroy(font->hbDraw);
+   hb_font_destroy(font->hb_font);
+   hb_face_destroy(font->hb_face);
+   hb_gpu_draw_destroy(font->hb_draw);
 
-   free(font->fontPath);
-   free(font->glyphCache);
+   free(font->font_path);
+   free(font->glyph_cache);
 }
 
-void _fontMgrAtlasInit()
+void _font_manager_atlas_init()
 {
-   struct GlyphAtlas *glyphAtlas = &fm.glyphAtlas;
+   struct glyph_atlas *atlas = &fm.atlas;
 
-   glyphAtlas->capacityBytes = ATLAS_PAGE_SIZE;
-   glyphAtlas->cursorOffsetBytes = TEXEL_SIZE;
-   glyphAtlas->textureUnit = 0;
-   glGenBuffers(1, &glyphAtlas->textureBufferObject);
-   glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->textureBufferObject);
-   glBufferData(GL_TEXTURE_BUFFER, glyphAtlas->capacityBytes, NULL, GL_STATIC_DRAW);
+   atlas->capacity_bytes = ATLAS_PAGE_SIZE;
+   atlas->cursor_offset_bytes = TEXEL_SIZE;
+   atlas->texture_unit = 0;
+   glGenBuffers(1, &atlas->texture_buffer_object);
+   glBindBuffer(GL_TEXTURE_BUFFER, atlas->texture_buffer_object);
+   glBufferData(GL_TEXTURE_BUFFER, atlas->capacity_bytes, NULL, GL_STATIC_DRAW);
 
-   glActiveTexture(GL_TEXTURE0 + (uint32_t) glyphAtlas->textureUnit);
-   glGenTextures(1, &glyphAtlas->texture);
-   glBindTexture(GL_TEXTURE_BUFFER, glyphAtlas->texture);
-   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, glyphAtlas->textureBufferObject);
+   glActiveTexture(GL_TEXTURE0 + (uint32_t) atlas->texture_unit);
+   glGenTextures(1, &atlas->texture);
+   glBindTexture(GL_TEXTURE_BUFFER, atlas->texture);
+   glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA16I, atlas->texture_buffer_object);
 }
 
-void _fontMgrAtlasDeInit()
+void _font_manager_atlas_deinit()
 {
-   struct GlyphAtlas *glyphAtlas = &fm.glyphAtlas;
-   glDeleteBuffers(1, &glyphAtlas->textureBufferObject);
+   struct glyph_atlas *glyphAtlas = &fm.atlas;
+   glDeleteBuffers(1, &glyphAtlas->texture_buffer_object);
    glDeleteTextures(1, &glyphAtlas->texture);
 }

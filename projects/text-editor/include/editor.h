@@ -25,7 +25,7 @@
 #define HORIZONTAL_TAB  0x09
 #define CARRIAGE_RETURN 0x0d
 
-struct Point
+struct point
 {
    double x;
    double y;
@@ -36,7 +36,7 @@ struct Point
  * point32_t anything when it comes to layouting etc. We just don't want that
  * hassle. So we would do all the layouting in screen space coordinates.
  */
-struct Rectangle
+struct rectangle
 {
    int64_t x;
    int64_t y;
@@ -49,7 +49,7 @@ struct Rectangle
  * a `GapBuffer` implementation, a `Rope` implementation, and the user would
  * be able to choose which implementation they want to use.
  */
-struct Text;
+struct text;
 
 /**!
  * @brief Usually it's said that buffers are shared between frames, but the
@@ -73,7 +73,7 @@ struct Text;
  * so first step is to split line renderers from layouting :) again*/
 //};
 
-struct GLFWwindowOptions
+struct window_options
 {
    bool visible;
    bool transparent;
@@ -83,10 +83,10 @@ struct GLFWwindowOptions
    const char *icon;
    int32_t sharedWinId;
 
-   GLFWframebuffersizefun fbResizeFn;
-   GLFWscrollfun scrollFn;
-   GLFWcursorposfun curPosFn;
-   GLFWkeyfun keyFn;
+   GLFWframebuffersizefun framebuffer_resize_callback;
+   GLFWscrollfun scroll_callback;
+   GLFWcursorposfun cursor_position_callback;
+   GLFWkeyfun key_callback;
 };
 
 /**!
@@ -99,7 +99,7 @@ struct GLFWwindowOptions
 #define CHARS       60
 #define LINES       20
 #define VERTICES    6
-#define VERTEX_SIZE sizeof(struct GlyphVertex)
+#define VERTEX_SIZE sizeof(struct glyph_vertex)
 
 #ifdef LOGGING
 #define LOG_INFO(...)  fprintf(stderr, __VA_ARGS__);
@@ -109,25 +109,25 @@ struct GLFWwindowOptions
 #define LOG_EVENT(...)
 #endif
 
-struct LayoutMap
+struct text_layout_map
 {
-   uint32_t textLineIdx;
+   uint32_t text_line_index;
    bool layouted;
    bool uploaded;
 };
 
-struct Editor
+struct editor
 {
    /* arrays */
-   struct Text *text;
+   struct text *text;
    struct GLFWwindow *window;
-   struct BufferRenderer *bufRenderer;
-   struct TextShader *lineShader; /* shared among Buffer objects */
+   struct buffer_renderer *buffer_renderer;
+   struct text_shader *text_shader; /* shared among Buffer objects */
 
-   struct GlyphVertex *vertices;
+   struct glyph_vertex *vertices;
    /* this is fixed by the constants above */
    uint32_t verticesCount;
-   struct LayoutMap layoutMap[LINES];
+   struct text_layout_map layout_map[LINES];
 
    /*
     * This is a baton which the update -> layout -> upload stages
@@ -146,50 +146,50 @@ struct Editor
       bool updated;
       bool layouted;
       bool uploaded;
-   } layoutMapState;
+   } layout_map_state;
 
    /*
     * The cursor does not exist for the text, it's just a marker the
     * user has (in the buffer) to say "make edits here" etc.
     */
-   uint32_t cursorLine;
-   uint32_t cursorColumn;
+   uint32_t cursor_line;
+   uint32_t cursor_column;
 
-   uint32_t lineOffset;
-   uint32_t columnOffset;
+   uint32_t line_offset;
+   uint32_t column_offset;
 
    /* config */
-   float fontSize;
-   char *fontFilePath;
+   float font_size;
+   char *font_file_path;
    bool initialized;
 
    /* frame book-keeping */
-   double tLast;
-   double tDelta;
+   double time_last;
+   double time_delta;
 };
 
-struct TextShaderUniforms
+struct text_shader_uniforms
 {
-   mat4s matViewProjection;
+   mat4s mvp;
    ivec4s viewport;
    float scale;
-   int32_t hbGpuAtlas;
+   int32_t hb_gpu_atlas;
    float gamma;
    bool debug;
-   bool stemDarkening;
+   bool stem_darkening;
 };
 
-struct TextShaderUniformLocations
+struct text_shader_uniform_locations
 {
-   int32_t matViewProjectionLoc;
-   int32_t viewportLoc;
-   int32_t scaleLoc;
-   int32_t positionLoc;
-   int32_t hbGpuAtlasLoc;
-   int32_t gammaLoc;
-   int32_t foregroundLoc;
-   int32_t debugLoc;
-   int32_t stemDarkeningLoc;
+   int32_t mvp;
+   int32_t viewport;
+   int32_t scale;
+   int32_t position;
+   int32_t hb_gpu_atlas;
+   int32_t gamma;
+   int32_t foreground;
+   int32_t debug;
+   int32_t stem_darkening;
 };
 
 /**!
@@ -197,20 +197,20 @@ struct TextShaderUniformLocations
  * does not contain any state, but allows one to quickly set
  * the state using `TextShaderUniforms` and draw/redraw a line..
  */
-struct TextShader
+struct text_shader
 {
-   uint32_t hbShaderProgram;
-   struct TextShaderUniformLocations uniformLocations;
+   uint32_t hb_shader_program;
+   struct text_shader_uniform_locations uniform_locations;
 };
 
 /* for now BufferRender and LineLayout don't know about each other, that's fine. */
-struct BufferRenderer
+struct buffer_renderer
 {
    /**!
     * Uniforms of the line, like the position from where we start
     * drawing, the MVP matrix, the scale, gpu atlas, so on..
     */
-   struct TextShaderUniforms uniforms;
+   struct text_shader_uniforms uniforms;
 
    /* OpenGL primitives */
    uint32_t vao;
@@ -222,68 +222,52 @@ struct BufferRenderer
    bool uploaded;
 };
 
-struct LineLayout
-{
-   /**!
-    * The vbo data, kept for compuation on the CPU, like the
-    * hit-test, scrolling etc.
-    */
-   struct GlyphVertex *vertices;
-
-   /* this lives here for now, but not for long,
-    * we would have a separate array for these.. */
-   bool dirty;
-   uint32_t count;
-};
-
-/* editor.c */
-
-enum UpdateEvent
+enum editor_update_event
 {
    EDITOR_STARTUP,
    KEY_PRESS,
 };
 
-union UpdateState
+union editor_update_state
 {
-   int32_t glfwKey;
+   int32_t glfw_key;
 };
 
 /**!
  * These are the core editor functions, so they can access the editor
  * directly.
  */
-bool Init();
-void CalcFrameTime();
-bool Run();
-bool ShouldClose();
-bool DeInit();
-void Update(enum UpdateEvent event, union UpdateState state);
-void Layout();
-void Upload();
-void Render();
+bool editor_init();
+void editor_calculate_frame_time();
+bool editor_run();
+bool editor_should_close();
+bool editor_deinit();
+void editor_update(enum editor_update_event event, union editor_update_state state);
+void editor_layout();
+void editor_upload_to_gpu();
+void editor_render();
 
-void LayoutBuffer();
-void UploadBuffer();
-void RenderBuffer();
+void buffer_layout();
+void buffer_upload_to_gpu();
+void buffer_render();
 
-bool CreateGLFWwindow(struct GLFWwindowOptions opts);
-struct Rectangle GetWindowBounds();
-void SwapGLBuffers();
-bool LoadTextFile(const char *filePath);
+bool window_create(struct window_options opts);
+struct rectangle window_get_bounds();
+void swap_buffers();
+bool file_open(const char *filePath);
 void EditorOpenFile(const char *path);
 
-void CreateTextShader(struct TextShader *shader);
-void DestroyTextShader(struct TextShader *shader);
-void UploadTextShaderUniforms(struct TextShader *shader, struct TextShaderUniforms *uniforms);
+void text_shader_create(struct text_shader *shader);
+void text_shader_destroy(struct text_shader *shader);
+void text_shader_upload_uniforms(struct text_shader *shader, struct text_shader_uniforms *uniforms);
 
-void scrollFn(GLFWwindow *window, double x, double y);
-void fbResizeFn(GLFWwindow *window, int32_t width, int32_t height);
-void curPosFn(GLFWwindow *window, double x, double y);
-void keyFn(GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods);
+void window_scroll_callback(GLFWwindow *window, double x, double y);
+void window_frame_buffer_resize_callback(GLFWwindow *window, int32_t width, int32_t height);
+void window_cursor_position_callback(GLFWwindow *window, double x, double y);
+void window_key_callback(GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods);
 
 /* renderer.c */
-void InitBufferRenderer(struct BufferRenderer *renderer, struct TextShader *shader);
-void DeInitBufferRenderer(struct BufferRenderer *renderer);
+void buffer_renderer_init(struct buffer_renderer *renderer, struct text_shader *shader);
+void buffer_renderer_deinit(struct buffer_renderer *renderer);
 
 #endif

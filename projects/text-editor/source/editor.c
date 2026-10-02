@@ -16,7 +16,7 @@
 #include "GLFW/glfw3native.h"
 #endif
 
-static struct Editor E = { 0 };
+static struct editor E = { 0 };
 
 void _glfwErrFn(int code, const char *description);
 
@@ -24,52 +24,52 @@ void _glfwErrFn(int code, const char *description);
 static bool _msIsDarkMode();
 #endif
 
-bool Run()
+bool editor_run()
 {
    const char *path = SOURCE_DIR "source/editor.c";
 
    if (!E.initialized)
       perror("E not initialized\n");
-   if (!LoadTextFile(path))
+   if (!file_open(path))
       perror("Failed to load Text file\n");
 
-   Update(EDITOR_STARTUP, (union UpdateState) {});
+   editor_update(EDITOR_STARTUP, (union editor_update_state) {});
 
-   while (!ShouldClose())
+   while (!editor_should_close())
    {
-      CalcFrameTime();
+      editor_calculate_frame_time();
       glfwPollEvents();
 
-      Layout();
-      Upload();
-      Render();
+      editor_layout();
+      editor_upload_to_gpu();
+      editor_render();
    }
 
    return true;
 }
 
-bool ShouldClose()
+bool editor_should_close()
 {
    if (!E.initialized)
       return true;
 
-   bool shouldClose = true;
-   shouldClose &= glfwWindowShouldClose(E.window);
+   bool should_close = true;
+   should_close &= glfwWindowShouldClose(E.window);
 
-   return shouldClose;
+   return should_close;
 }
 
-bool Init()
+bool editor_init()
 {
    if (E.initialized)
       return true;
 
-   E.fontSize = DEFAULT_FONT_SIZE;
-   if (!(E.fontFilePath = StringDuplicate(DEFAULT_FONT_FILE_PATH)))
+   E.font_size = DEFAULT_FONT_SIZE;
+   if (!(E.font_file_path = string_duplicate(DEFAULT_FONT_FILE_PATH)))
       return false;
 
-   bool windowExists = CreateGLFWwindow(
-       (struct GLFWwindowOptions) {
+   bool window_exists = window_create(
+       (struct window_options) {
           .width = 800,
           .height = 600,
           .title = "GLFWwindow",
@@ -77,57 +77,57 @@ bool Init()
           .visible = true,
           .icon = DEFAULT_WINDOW_ICON,
           .sharedWinId = INVALID_ID,
-          .fbResizeFn = fbResizeFn,
-          .keyFn = keyFn,
-          .scrollFn = scrollFn,
-          .curPosFn = curPosFn,
+          .framebuffer_resize_callback = window_frame_buffer_resize_callback,
+          .key_callback = window_key_callback,
+          .scroll_callback = window_scroll_callback,
+          .cursor_position_callback = window_cursor_position_callback,
        }
    );
 
-   if (!windowExists)
+   if (!window_exists)
       perror("failed to create a window");
 
    glfwSetErrorCallback(_glfwErrFn);
 
-   if (!(E.lineShader = calloc(1, sizeof(struct TextShader))))
+   if (!(E.text_shader = calloc(1, sizeof(struct text_shader))))
       return false;
-   if (!(E.bufRenderer = calloc(1, sizeof(struct BufferRenderer))))
+   if (!(E.buffer_renderer = calloc(1, sizeof(struct buffer_renderer))))
       return false;
 
    E.verticesCount = CHARS * LINES * VERTICES;
    if (!(E.vertices = calloc(E.verticesCount, VERTEX_SIZE)))
       return false;
 
-   FontMgrInit(E.fontFilePath);
-   CreateTextShader(E.lineShader);
-   InitBufferRenderer(E.bufRenderer, E.lineShader);
+   font_manager_init(E.font_file_path);
+   text_shader_create(E.text_shader);
+   buffer_renderer_init(E.buffer_renderer, E.text_shader);
    glBufferData(GL_ARRAY_BUFFER, E.verticesCount * VERTEX_SIZE, NULL, GL_STATIC_DRAW);
 
-   for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
-      E.layoutMap[lineIdx].textLineIdx = lineIdx;
+   for (uint32_t idx = 0; idx < LINES; ++idx)
+      E.layout_map[idx].text_line_index = idx;
 
    E.initialized = true;
    return true;
 }
 
-void CalcFrameTime()
+void editor_calculate_frame_time()
 {
-   double tNow = glfwGetTime();
-   E.tDelta = tNow - E.tLast;
-   E.tLast = tNow;
+   double time_now = glfwGetTime();
+   E.time_delta = time_now - E.time_last;
+   E.time_last = time_now;
 }
 
-bool DeInit()
+bool editor_deinit()
 {
-   DestroyTextShader(E.lineShader);
-   DeInitBufferRenderer(E.bufRenderer);
-   FontMgrDeInit();
+   text_shader_destroy(E.text_shader);
+   buffer_renderer_deinit(E.buffer_renderer);
+   font_manager_deinit();
 
-   TextDestroy(E.text);
+   text_destroy(E.text);
    free(E.text);
 
-   free(E.lineShader);
-   free(E.fontFilePath);
+   free(E.text_shader);
+   free(E.font_file_path);
    free(E.vertices);
 
    glfwDestroyWindow(E.window);
@@ -136,41 +136,41 @@ bool DeInit()
    return true;
 }
 
-void Render()
+void editor_render()
 {
-   RenderBuffer();
+   buffer_render();
 }
 
-void Upload()
+void editor_upload_to_gpu()
 {
-   if (!E.layoutMapState.uploaded)
+   if (!E.layout_map_state.uploaded)
    {
-      UploadBuffer();
-      E.layoutMapState.uploaded = true;
+      buffer_upload_to_gpu();
+      E.layout_map_state.uploaded = true;
    }
 }
 
-void UploadBuffer()
+void buffer_upload_to_gpu()
 {
    if (E.verticesCount == 0)
       return;
 
-   glBindVertexArray(E.bufRenderer->vao);
-   glBindBuffer(GL_ARRAY_BUFFER, E.bufRenderer->vbo);
+   glBindVertexArray(E.buffer_renderer->vao);
+   glBindBuffer(GL_ARRAY_BUFFER, E.buffer_renderer->vbo);
 
    for (uint32_t idx = 0; idx < LINES; ++idx)
    {
-      if (E.layoutMap[idx].layouted && !E.layoutMap[idx].uploaded)
+      if (E.layout_map[idx].layouted && !E.layout_map[idx].uploaded)
       {
          uint32_t offset = CHARS * VERTICES * idx;
          uint32_t byteOffset = offset * VERTEX_SIZE;
          uint32_t count = CHARS * VERTICES * VERTEX_SIZE;
          glBufferSubData(GL_ARRAY_BUFFER, byteOffset, count, E.vertices + offset);
-         E.layoutMap[idx].uploaded = true;
+         E.layout_map[idx].uploaded = true;
       }
    }
 
-   E.bufRenderer->uploaded = true;
+   E.buffer_renderer->uploaded = true;
 }
 
 /*
@@ -181,11 +181,11 @@ void UploadBuffer()
  * This should be triggered by events like cursor moved, or window resized, etc etc..
  * This should probably take a "who calls the update and for what" param
  */
-void Update(enum UpdateEvent event, union UpdateState state)
+void editor_update(enum editor_update_event event, union editor_update_state state)
 {
-   uint32_t lineCount = TextGetLineCount(E.text);
-   uint32_t oldCurLine = E.cursorLine;
-   uint32_t oldCurCol = E.cursorColumn;
+   uint32_t line_count = text_get_line_count(E.text);
+   uint32_t old_cursor_line = E.cursor_line;
+   uint32_t old_cursor_column = E.cursor_column;
 
    /* todo: later: this has update + layouting which is not the right shape to hold.
     * something has to be done, cursor position has to be updated for sure before the
@@ -195,13 +195,13 @@ void Update(enum UpdateEvent event, union UpdateState state)
       /* layouting */
       case EDITOR_STARTUP:
       {
-         E.cursorColumn = 0;
-         E.cursorLine = 0;
+         E.cursor_column = 0;
+         E.cursor_line = 0;
 
          for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
          {
-            E.layoutMap[lineIdx] = (struct LayoutMap) {
-               .textLineIdx = lineIdx,
+            E.layout_map[lineIdx] = (struct text_layout_map) {
+               .text_line_index = lineIdx,
                .layouted = false,
                .uploaded = false,
             };
@@ -214,23 +214,23 @@ void Update(enum UpdateEvent event, union UpdateState state)
          /* later: we don't consider the count etc and we should do that. we should
           * also make sure that we are marking something as "needs cleanup for the
           * rest of the empty quads" */
-         switch (state.glfwKey)
+         switch (state.glfw_key)
          {
             /* this crashes the application when key is clicked */
             case GLFW_KEY_DOWN:
             {
                LOG_EVENT("update: GLFW_KEY_DOWN\n");
 
-               bool alreadyOnTheLastLine = E.cursorLine == lineCount - 1;
+               bool alreadyOnTheLastLine = E.cursor_line == line_count - 1;
                if (alreadyOnTheLastLine)
                   break;
 
-               E.cursorLine += 1;
+               E.cursor_line += 1;
 
                /* dup */
-               uint32_t lineLen = TextGetLineLength(E.text, E.cursorLine);
-               if (lineLen < E.cursorColumn)
-                  E.cursorColumn = lineLen - 1;
+               uint32_t line_length = text_get_line_length(E.text, E.cursor_line);
+               if (line_length < E.cursor_column)
+                  E.cursor_column = line_length - 1;
 
                break;
             }
@@ -239,16 +239,16 @@ void Update(enum UpdateEvent event, union UpdateState state)
                LOG_EVENT("update: GLFW_KEY_UP\n");
 
                /* already on the first line */
-               bool alreadyOnTheFirstLine = E.cursorLine == 0;
+               bool alreadyOnTheFirstLine = E.cursor_line == 0;
                if (alreadyOnTheFirstLine)
                   break;
 
-               E.cursorLine -= 1;
+               E.cursor_line -= 1;
 
                /* dup */
-               uint32_t lineLen = TextGetLineLength(E.text, E.cursorLine);
-               if (lineLen < E.cursorColumn)
-                  E.cursorColumn = lineLen - 1;
+               uint32_t lineLen = text_get_line_length(E.text, E.cursor_line);
+               if (lineLen < E.cursor_column)
+                  E.cursor_column = lineLen - 1;
 
                break;
             }
@@ -256,11 +256,11 @@ void Update(enum UpdateEvent event, union UpdateState state)
             {
                LOG_EVENT("update: GLFW_KEY_LEFT\n");
 
-               bool alreadyOnTheFirstColumn = E.cursorColumn == 0;
+               bool alreadyOnTheFirstColumn = E.cursor_column == 0;
                if (alreadyOnTheFirstColumn)
                   break;
 
-               E.cursorColumn -= 1;
+               E.cursor_column -= 1;
 
                break;
             }
@@ -268,22 +268,22 @@ void Update(enum UpdateEvent event, union UpdateState state)
             {
                LOG_EVENT("update: GLFW_KEY_RIGHT\n");
 
-               uint32_t lineLen = TextGetLineLength(E.text, E.cursorLine);
-               if (E.cursorColumn < lineLen - 1)
-                  E.cursorColumn += 1;
+               uint32_t lineLen = text_get_line_length(E.text, E.cursor_line);
+               if (E.cursor_column < lineLen - 1)
+                  E.cursor_column += 1;
 
                break;
             }
             case GLFW_KEY_HOME:
             {
-               E.cursorColumn = 0;
+               E.cursor_column = 0;
                break;
             }
             case GLFW_KEY_END:
             {
-               uint32_t length = TextGetLineLength(E.text, E.cursorLine);
+               uint32_t length = text_get_line_length(E.text, E.cursor_line);
                if (length > 0)
-                  E.cursorColumn = length - 1;
+                  E.cursor_column = length - 1;
                break;
             }
          }
@@ -298,81 +298,81 @@ void Update(enum UpdateEvent event, union UpdateState state)
     * are wrong and all the sudden you get a crash.
     */
 
-   if (E.cursorLine != oldCurLine)
+   if (E.cursor_line != old_cursor_line)
    {
-      if (E.lineOffset + LINES <= E.cursorLine)
+      if (E.line_offset + LINES <= E.cursor_line)
       {
          LOG_INFO("E.lineOffset (%i) + LINES (%i) <= E.cursorLine (%i)\n", E.lineOffset, LINES, E.cursorLine);
          for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
          {
             /* todo: note: this should be shifting rather than just blind increment */
-            E.layoutMap[lineIdx].layouted = false;
-            E.layoutMap[lineIdx].textLineIdx += 1;
+            E.layout_map[lineIdx].layouted = false;
+            E.layout_map[lineIdx].text_line_index += 1;
          }
-         E.lineOffset++;
+         E.line_offset++;
       }
-      else if (E.cursorLine < E.lineOffset)
+      else if (E.cursor_line < E.line_offset)
       {
          LOG_INFO("E.cursorLine (%i) < E.lineOffset (%i)\n", E.cursorLine, E.lineOffset);
          for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
          {
             /* todo: note: this should be shifting rather than just blind increment */
-            E.layoutMap[lineIdx].layouted = false;
-            E.layoutMap[lineIdx].textLineIdx -= 1;
+            E.layout_map[lineIdx].layouted = false;
+            E.layout_map[lineIdx].text_line_index -= 1;
          }
-         E.lineOffset--;
+         E.line_offset--;
       }
       else
       {
          LOG_INFO("E.layoutMap[E.cursorLine (%i) - E.lineOffset (%i)].layouted (%i) = false;\n", E.cursorLine, E.lineOffset, E.layoutMap[E.cursorLine - E.lineOffset].layouted);
-         E.layoutMap[oldCurLine - E.lineOffset].layouted = false;
-         E.layoutMap[E.cursorLine - E.lineOffset].layouted = false;
+         E.layout_map[old_cursor_line - E.line_offset].layouted = false;
+         E.layout_map[E.cursor_line - E.line_offset].layouted = false;
       }
 
-      E.layoutMapState.updated = true;
-      E.layoutMapState.layouted = false;
+      E.layout_map_state.updated = true;
+      E.layout_map_state.layouted = false;
 
       /* if scroll past the edges, then all lines relayout. middle ones just move one step up */
       /* if scroll within visible range, invalidate both lines. later with a cursor moved flag */
    }
 
-   if (E.cursorColumn != oldCurCol)
+   if (E.cursor_column != old_cursor_column)
    {
       LOG_INFO("E.cursorColumn (%i) != oldCurCol (%i)\n", E.cursorColumn, oldCurCol);
-      if (E.columnOffset + CHARS <= E.cursorColumn) /* cursor move right */
+      if (E.column_offset + CHARS <= E.cursor_column) /* cursor move right */
       {
          LOG_INFO("E.columnOffset (%i) + CHARS (%i) < E.cursorColumn (%i)\n", E.columnOffset, CHARS, E.cursorColumn)
          for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
-            E.layoutMap[lineIdx].layouted = false;
+            E.layout_map[lineIdx].layouted = false;
 
-         uint32_t lastVisColIdx = E.columnOffset + CHARS - 1;
-         E.columnOffset += (E.cursorColumn - lastVisColIdx);
+         uint32_t lastVisColIdx = E.column_offset + CHARS - 1;
+         E.column_offset += (E.cursor_column - lastVisColIdx);
       }
-      else if (E.cursorColumn < E.columnOffset) /* cursor move left */
+      else if (E.cursor_column < E.column_offset) /* cursor move left */
       {
          LOG_INFO("E.cursorColumn (%i) < E.columnOffset (%i)\n", E.cursorColumn, E.columnOffset)
          for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
-            E.layoutMap[lineIdx].layouted = false;
-         E.columnOffset -= (E.columnOffset - E.cursorColumn);
+            E.layout_map[lineIdx].layouted = false;
+         E.column_offset -= (E.column_offset - E.cursor_column);
       }
       else /* moved over visible columns */
       {
          LOG_INFO("E.layoutMap[E.cursorLine (%i) - E.lineOffset (%i)].layouted (%i) = false;\n", E.cursorLine, E.lineOffset, E.layoutMap[E.cursorLine - E.lineOffset].layouted);
-         E.layoutMap[E.cursorLine - E.lineOffset].layouted = false;
+         E.layout_map[E.cursor_line - E.line_offset].layouted = false;
       }
 
-      E.layoutMapState.updated = true;
-      E.layoutMapState.layouted = false;
+      E.layout_map_state.updated = true;
+      E.layout_map_state.layouted = false;
    }
 }
 
-void Layout()
+void editor_layout()
 {
-   if (!E.layoutMapState.layouted)
+   if (!E.layout_map_state.layouted)
    {
-      LayoutBuffer();
-      E.layoutMapState.layouted = true;
-      E.layoutMapState.uploaded = false;
+      buffer_layout();
+      E.layout_map_state.layouted = true;
+      E.layout_map_state.uploaded = false;
    }
 }
 
@@ -380,11 +380,11 @@ void Layout()
  * Loads the text file from `filePath` into a `Text` object,
  * and returns an index to it, or `INVALID_ID` on error.
  */
-bool LoadTextFile(const char *filePath)
+bool file_open(const char *filePath)
 {
    if (!filePath)
       return false;
-   if (!(E.text = TextLoadFromFile(filePath)))
+   if (!(E.text = text_load_from_file(filePath)))
       return false;
    return true;
 }
@@ -398,10 +398,10 @@ void EditorOpenFile(const char *path)
 }
 
 /* todo: remove editor from here */
-void RenderBuffer()
+void buffer_render()
 {
-   struct GlyphAtlas *atlas = FontMgrGetAtlas();
-   struct Rectangle bounds = GetWindowBounds();
+   struct glyph_atlas *atlas = font_manager_get_atlas();
+   struct rectangle bounds = window_get_bounds();
 
    mat4s mvp = { GLM_MAT4_IDENTITY_INIT };
    mvp = glms_ortho(0, (float) bounds.w, 0, (float) bounds.h, 0.0f, 100.0f);
@@ -410,48 +410,48 @@ void RenderBuffer()
    ivec4s viewport = { 0 };
    glGetIntegerv(GL_VIEWPORT, viewport.raw);
 
-   glClearColor(ColorRGBAHex(0X002b36FF));
+   glClearColor(color_rgba_hex(0X002b36FF));
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   float fontScale = FontMgrGetDefaultFontScale();
+   float font_scale = font_manager_get_default_font_scale();
 
-   E.bufRenderer->uniforms = (struct TextShaderUniforms) {
-      .matViewProjection = mvp,
+   E.buffer_renderer->uniforms = (struct text_shader_uniforms) {
+      .mvp = mvp,
       .viewport = viewport,
-      .scale = fontScale,
-      .hbGpuAtlas = atlas->textureUnit,
+      .scale = font_scale,
+      .hb_gpu_atlas = atlas->texture_unit,
       .gamma = 1.0f,
       .debug = false,
-      .stemDarkening = false,
+      .stem_darkening = false,
    };
 
-   UploadTextShaderUniforms(E.lineShader, &E.bufRenderer->uniforms);
+   text_shader_upload_uniforms(E.text_shader, &E.buffer_renderer->uniforms);
 
-   if (E.bufRenderer->uploaded)
+   if (E.buffer_renderer->uploaded)
    {
-      glBindVertexArray(E.bufRenderer->vao);
+      glBindVertexArray(E.buffer_renderer->vao);
       glDrawArrays(GL_TRIANGLES, 0, (int32_t) E.verticesCount);
    }
 
    /* note: not sure if this should be done after each buffer is rendered, or after all of them
     * are rendered. for now we just do it here since we only have a single buffer. */
-   SwapGLBuffers();
+   swap_buffers();
 }
 
-struct GlyphInfo *_glyphInfo = NULL;
+struct glyph_info *_glyphInfo = NULL;
 
-void LayoutBuffer()
+void buffer_layout()
 {
-   if (!E.lineShader || !E.text || !E.window)
+   if (!E.text_shader || !E.text || !E.window)
       return;
 
-   float lineHeight = FontMgrGetDefaultFontLineHeight();
-   float fontScale = FontMgrGetDefaultFontScale();
+   float lineHeight = font_manager_get_default_font_line_height();
+   float fontScale = font_manager_get_default_font_scale();
 
-   struct Rectangle bounds = GetWindowBounds();
-   for (uint32_t visLineIdx = 0; visLineIdx < LINES; ++visLineIdx)
+   struct rectangle bounds = window_get_bounds();
+   for (uint32_t visual_line_index = 0; visual_line_index < LINES; ++visual_line_index)
    {
-      if (E.layoutMap[visLineIdx].layouted)
+      if (E.layout_map[visual_line_index].layouted)
          continue;
 
       /**!
@@ -459,58 +459,58 @@ void LayoutBuffer()
        * points * scale = pixels
        * pixels / scale = points
        */
-      vec2s linePos = { .x = 0, .y = ((float) bounds.h - ((float) (visLineIdx + 1) * lineHeight)) / fontScale };
+      vec2s linePos = { .x = 0, .y = ((float) bounds.h - ((float) (visual_line_index + 1) * lineHeight)) / fontScale };
 
-      struct Font *font = FontMgrGetDefaultFont();
+      struct font *font = font_manager_get_default_font();
       hb_buffer_t *buffer = hb_buffer_create();
 
-      struct StringView view = TextGetLineUTF8AtOffset(E.text, E.layoutMap[visLineIdx].textLineIdx, E.columnOffset);
+      struct string_view view = text_get_line_utf8_at_offset(E.text, E.layout_map[visual_line_index].text_line_index, E.column_offset);
       hb_buffer_add_utf8(buffer, view.data, (int32_t) view.count, 0, -1);
       hb_buffer_set_direction(buffer, HB_DIRECTION_LTR);
       hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
-      hb_shape(font->hbFont, buffer, NULL, 0);
+      hb_shape(font->hb_font, buffer, NULL, 0);
 
       uint32_t hbGlyphCount = 0;
       hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
 
-      _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct GlyphInfo));
+      _glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct glyph_info));
       if (_glyphInfo)
-         memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct GlyphInfo));
+         memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct glyph_info));
 
-      uint32_t glyphCount = hbGlyphCount < CHARS ? hbGlyphCount : CHARS;
+      uint32_t glyph_count = hbGlyphCount < CHARS ? hbGlyphCount : CHARS;
 
-      for (uint32_t glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
+      for (uint32_t glyphIdx = 0; glyphIdx < glyph_count; ++glyphIdx)
       {
          hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
-         FontMgrCacheGlyphInfo(font, glyphIndex);
-         _glyphInfo[glyphIdx] = font->glyphCache[glyphIndex];
+         font_manager_cache_glyph_info(font, glyphIndex);
+         _glyphInfo[glyphIdx] = font->glyph_cache[glyphIndex];
       }
 
       hb_buffer_destroy(buffer);
 
-      struct Point glyphPosition = {
+      struct point glyph_position = {
          .x = linePos.x,
          .y = linePos.y,
       };
 
       /* we loop over the available slots */
-      for (uint32_t glyphIdx = 0; glyphIdx < glyphCount; ++glyphIdx)
+      for (uint32_t glyph_idx = 0; glyph_idx < glyph_count; ++glyph_idx)
       {
          [[maybe_unused]] bool hasCursor;
-         struct GlyphInfo *glyphInfo = &_glyphInfo[glyphIdx];
+         struct glyph_info *glyph_info = &_glyphInfo[glyph_idx];
 
-         glyphPosition.x += glyphInfo->extents.xMin;
-         glyphPosition.y += 0;
+         glyph_position.x += glyph_info->extents.min_x;
+         glyph_position.y += 0;
 
-         struct GlyphVertex glyphQuadCorners[4];
+         struct glyph_vertex glyph_quad_corners[4];
 
          uint32_t visualColumn = 0;
-         if (E.cursorColumn - E.columnOffset >= CHARS)
+         if (E.cursor_column - E.column_offset >= CHARS)
             visualColumn = CHARS - 1;
-         else if (E.cursorColumn < E.columnOffset)
+         else if (E.cursor_column < E.column_offset)
             visualColumn = 0;
          else
-            visualColumn = E.cursorColumn - E.columnOffset;
+            visualColumn = E.cursor_column - E.column_offset;
 
          /* LOG_INFO(
              "hasCursor: %i, E.cursorLine (%i) == E.layoutMap[visLineIdx].textLineIdx (%i) && visualColumn (%i) == glyphIdx (%i)\n",
@@ -521,68 +521,68 @@ void LayoutBuffer()
              glyphIdx
          ) */
 
-         uint32_t lineOffset = visLineIdx * CHARS * VERTICES;
-         for (int cornerIdx = 0; cornerIdx < 4; cornerIdx++)
+         uint32_t line_offset = visual_line_index * CHARS * VERTICES;
+         for (int corner_idx = 0; corner_idx < 4; corner_idx++)
          {
-            int32_t cx = (cornerIdx >> 1) & 1;
-            int32_t cy = cornerIdx & 1;
-            double ex = (1 - cx) * glyphInfo->extents.xMin + cx * glyphInfo->extents.xMax;
-            double ey = (1 - cy) * glyphInfo->extents.yMin + cy * glyphInfo->extents.yMax;
+            int32_t cx = (corner_idx >> 1) & 1;
+            int32_t cy = corner_idx & 1;
+            double ex = (1 - cx) * glyph_info->extents.min_x + cx * glyph_info->extents.max_x;
+            double ey = (1 - cy) * glyph_info->extents.min_y + cy * glyph_info->extents.max_y;
 
-            glyphQuadCorners[cornerIdx] = (struct GlyphVertex) {
-               .x = (float) glyphPosition.x,
-               .y = (float) glyphPosition.y,
+            glyph_quad_corners[corner_idx] = (struct glyph_vertex) {
+               .x = (float) glyph_position.x,
+               .y = (float) glyph_position.y,
                .tx = (float) ex,
                .ty = (float) ey,
                .nx = cx ? 1.f : -1.f,
                .ny = cy ? -1.f : 1.f,
-               .emPerPos = 1.0,
-               .atlasOffset = glyphInfo->atlasOffset / TEXEL_SIZE,
-               .fgColor = (vec4s) { { ColorRGBAHex(0X839496FF) } },
-               .bgColor = (vec4s) { { ColorRGBAHex(0X000000FF) } },
-               .hasCursor = (E.cursorLine == E.layoutMap[visLineIdx].textLineIdx && visualColumn == glyphIdx),
+               .epp = 1.0,
+               .atlas_offset = glyph_info->atlas_offset / TEXEL_SIZE,
+               .fg_color = (vec4s) { { color_rgba_hex(0X839496FF) } },
+               .bg_color = (vec4s) { { color_rgba_hex(0X000000FF) } },
+               .has_cursor = (E.cursor_line == E.layout_map[visual_line_index].text_line_index && visualColumn == glyph_idx),
             };
          }
 
-         uint32_t glyphOffset = glyphIdx * VERTICES;
-         uint32_t glyphQuadOffset = lineOffset + glyphOffset;
-         E.vertices[glyphQuadOffset + 0] = glyphQuadCorners[0];
-         E.vertices[glyphQuadOffset + 1] = glyphQuadCorners[1];
-         E.vertices[glyphQuadOffset + 2] = glyphQuadCorners[2];
-         E.vertices[glyphQuadOffset + 3] = glyphQuadCorners[1];
-         E.vertices[glyphQuadOffset + 4] = glyphQuadCorners[2];
-         E.vertices[glyphQuadOffset + 5] = glyphQuadCorners[3];
+         uint32_t glyph_offset = glyph_idx * VERTICES;
+         uint32_t glyph_quad_offset = line_offset + glyph_offset;
+         E.vertices[glyph_quad_offset + 0] = glyph_quad_corners[0];
+         E.vertices[glyph_quad_offset + 1] = glyph_quad_corners[1];
+         E.vertices[glyph_quad_offset + 2] = glyph_quad_corners[2];
+         E.vertices[glyph_quad_offset + 3] = glyph_quad_corners[1];
+         E.vertices[glyph_quad_offset + 4] = glyph_quad_corners[2];
+         E.vertices[glyph_quad_offset + 5] = glyph_quad_corners[3];
 
          /* note: todo: this currently assumes the layout to be horizontal, fine assumption
           * when starting out, but later we would also want to cater for the vertical
           * writing styles. */
-         glyphPosition.x += glyphInfo->extents.xMax;
+         glyph_position.x += glyph_info->extents.max_x;
       }
 
       /* this would do for now */
-      if (glyphCount < CHARS)
+      if (glyph_count < CHARS)
       {
-         uint32_t lineOffset = (visLineIdx * CHARS * VERTICES);
-         for (uint32_t glyphIdx = glyphCount; glyphIdx < CHARS; ++glyphIdx)
+         uint32_t line_offset = (visual_line_index * CHARS * VERTICES);
+         for (uint32_t glyph_idx = glyph_count; glyph_idx < CHARS; ++glyph_idx)
          {
-            uint32_t glyphOffset = glyphIdx * VERTICES;
-            uint32_t glyphQuadOffset = lineOffset + glyphOffset;
+            uint32_t glyph_offset = glyph_idx * VERTICES;
+            uint32_t glyph_quad_offset = line_offset + glyph_offset;
 
-            E.vertices[glyphQuadOffset + 0] = (struct GlyphVertex) { 0 };
-            E.vertices[glyphQuadOffset + 1] = (struct GlyphVertex) { 0 };
-            E.vertices[glyphQuadOffset + 2] = (struct GlyphVertex) { 0 };
-            E.vertices[glyphQuadOffset + 3] = (struct GlyphVertex) { 0 };
-            E.vertices[glyphQuadOffset + 4] = (struct GlyphVertex) { 0 };
-            E.vertices[glyphQuadOffset + 5] = (struct GlyphVertex) { 0 };
+            E.vertices[glyph_quad_offset + 0] = (struct glyph_vertex) { 0 };
+            E.vertices[glyph_quad_offset + 1] = (struct glyph_vertex) { 0 };
+            E.vertices[glyph_quad_offset + 2] = (struct glyph_vertex) { 0 };
+            E.vertices[glyph_quad_offset + 3] = (struct glyph_vertex) { 0 };
+            E.vertices[glyph_quad_offset + 4] = (struct glyph_vertex) { 0 };
+            E.vertices[glyph_quad_offset + 5] = (struct glyph_vertex) { 0 };
          }
       }
 
-      E.layoutMap[visLineIdx].layouted = true;
-      E.layoutMap[visLineIdx].uploaded = false;
+      E.layout_map[visual_line_index].layouted = true;
+      E.layout_map[visual_line_index].uploaded = false;
    }
 }
 
-bool CreateGLFWwindow(struct GLFWwindowOptions opts)
+bool window_create(struct window_options opts)
 {
    if (!glfwInit())
       return false;
@@ -653,10 +653,10 @@ bool CreateGLFWwindow(struct GLFWwindowOptions opts)
    glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
    glLineWidth(2);
 
-   if (opts.curPosFn) glfwSetCursorPosCallback(window, opts.curPosFn);
-   if (opts.scrollFn) glfwSetScrollCallback(window, opts.scrollFn);
-   if (opts.fbResizeFn) glfwSetFramebufferSizeCallback(window, opts.fbResizeFn);
-   if (opts.keyFn) glfwSetKeyCallback(window, opts.keyFn);
+   if (opts.cursor_position_callback) glfwSetCursorPosCallback(window, opts.cursor_position_callback);
+   if (opts.scroll_callback) glfwSetScrollCallback(window, opts.scroll_callback);
+   if (opts.framebuffer_resize_callback) glfwSetFramebufferSizeCallback(window, opts.framebuffer_resize_callback);
+   if (opts.key_callback) glfwSetKeyCallback(window, opts.key_callback);
 
    if (!window)
       return false;
@@ -665,23 +665,23 @@ bool CreateGLFWwindow(struct GLFWwindowOptions opts)
    return true;
 }
 
-struct Rectangle GetWindowBounds()
+struct rectangle window_get_bounds()
 {
    if (!E.window)
-      return (struct Rectangle) {};
+      return (struct rectangle) {};
 
-   int32_t windowWidth, windowHeight;
-   glfwGetWindowSize(E.window, &windowWidth, &windowHeight);
+   int32_t width, height;
+   glfwGetWindowSize(E.window, &width, &height);
 
-   return (struct Rectangle) {
+   return (struct rectangle) {
       .x = 0,
       .y = 0,
-      .w = windowWidth,
-      .h = windowHeight,
+      .w = width,
+      .h = height,
    };
 }
 
-void SwapGLBuffers()
+void swap_buffers()
 {
    glfwSwapBuffers(E.window);
 }
@@ -707,35 +707,35 @@ static bool _msIsDarkMode()
 }
 #endif
 
-void fbResizeFn(GLFWwindow *window, int32_t width, int32_t height)
+void window_frame_buffer_resize_callback(GLFWwindow *window, int32_t width, int32_t height)
 {
    (void) window;
    glViewport(0, 0, width, height);
 }
 
-void scrollFn(GLFWwindow *window, double x, double y)
+void window_scroll_callback(GLFWwindow *window, double x, double y)
 {
    (void) window;
    (void) x;
    (void) y;
 }
 
-void curPosFn(GLFWwindow *window, double x, double y)
+void window_cursor_position_callback(GLFWwindow *window, double x, double y)
 {
    (void) window;
    (void) x;
    (void) y;
 }
 
-void keyFn(GLFWwindow *window, int key, int scancode, int action, int mods)
+void window_key_callback(GLFWwindow *window, int key, int scancode, int action, int mods)
 {
    (void) scancode;
-   [[maybe_unused]] struct Editor *editor = glfwGetWindowUserPointer(window);
+   [[maybe_unused]] struct editor *editor = glfwGetWindowUserPointer(window);
 
    bool shiftQPress = (mods & GLFW_MOD_SHIFT) && (key == GLFW_KEY_Q) && (action == GLFW_PRESS);
    if (shiftQPress)
       glfwSetWindowShouldClose(window, GLFW_TRUE);
 
    if (action == GLFW_PRESS || action == GLFW_REPEAT)
-      Update(KEY_PRESS, (union UpdateState) { .glfwKey = key });
+      editor_update(KEY_PRESS, (union editor_update_state) { .glfw_key = key });
 }
