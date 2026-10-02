@@ -12,10 +12,12 @@ add_library(module::platform ALIAS platform)
 target_compile_definitions(platform PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
 
 target_link_libraries(platform PUBLIC
+   module::utils
+
    stb
    glad
    glfw
-   module::utils
+   $<$<BOOL:${WIN32}>:dwmapi>
 )
 
 target_include_directories(platform PUBLIC

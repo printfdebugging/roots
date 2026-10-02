@@ -11,19 +11,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifdef _WIN32
-#define GLFW_EXPOSE_NATIVE_WIN32
-#include <dwmapi.h>
-#include "GLFW/glfw3native.h"
-#endif
-
 static struct editor E = { 0 };
 
 void _glfwErrFn(int code, const char *description);
-
-#ifdef _WIN32
-static bool _msIsDarkMode();
-#endif
 
 bool editor_run() {
 	const char *path = SOURCE_DIR "source/editor.c";
@@ -518,20 +508,6 @@ void buffer_layout() {
 void _glfwErrFn(int code, const char *description) {
 	fprintf(stderr, "_glfwErrFun: code: %i, msg: %s\n", code, description);
 }
-
-#ifdef _WIN32
-static bool _msIsDarkMode() {
-	HINSTANCE uxThemeLib = LoadLibraryExW(L"uxtheme.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
-	if (!uxThemeLib) {
-		fprintf(stderr, "failed to open uxtheme.dll\n");
-		return true; /* default to dark mode */
-	}
-
-	bool useDarkMode = GetProcAddress(uxThemeLib, MAKEINTRESOURCEA(132))();
-	FreeLibrary(uxThemeLib);
-	return useDarkMode;
-}
-#endif
 
 void window_frame_buffer_resize_callback(GLFWwindow *window, int32_t width, int32_t height) {
 	(void) window;

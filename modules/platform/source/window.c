@@ -3,6 +3,16 @@
 
 #include "stb_image.h"
 
+#ifdef _WIN32
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <dwmapi.h>
+#include "GLFW/glfw3native.h"
+#endif
+
+#ifdef _WIN32
+static bool _ms_is_dark_mode();
+#endif
+
 GLFWwindow *window_create(struct window_options opts) {
 	if (!glfwInit())
 		return NULL;
@@ -60,7 +70,7 @@ GLFWwindow *window_create(struct window_options opts) {
 
 #ifdef _WIN32
 	HWND hwnd = glfwGetWin32Window(window);
-	DWORD value = _msIsDarkMode();
+	DWORD value = _ms_is_dark_mode();
 	DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &value, sizeof(value));
 #endif
 
@@ -99,3 +109,17 @@ struct rectangle window_get_bounds(GLFWwindow *window) {
 void window_swap_buffers(GLFWwindow *window) {
 	glfwSwapBuffers(window);
 }
+
+#ifdef _WIN32
+static bool _ms_is_dark_mode() {
+	HINSTANCE ux_theme_lib = LoadLibraryExW(L"uxtheme.dll", NULL, LOAD_LIBRARY_SEARCH_SYSTEM32);
+	if (!ux_theme_lib) {
+		fprintf(stderr, "failed to open uxtheme.dll\n");
+		return true; /* default to dark mode */
+	}
+
+	bool use_dark_mode = GetProcAddress(ux_theme_lib, MAKEINTRESOURCEA(132))();
+	FreeLibrary(ux_theme_lib);
+	return use_dark_mode;
+}
+#endif
