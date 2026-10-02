@@ -40,13 +40,13 @@ target_include_directories(text-editor PUBLIC include)
 target_link_libraries(text-editor PRIVATE
    module::utils
    module::font-manager
+   module::unicode
 
    glfw
    glad
    cglm
    stb
    lua::lua
-   unicode
    tree-sitter
    tree-sitter-c
    tree-sitter-lua

@@ -15,11 +15,12 @@ target_include_directories(font-manager PUBLIC
 
 target_link_libraries(font-manager PUBLIC
    module::utils
+   module::unicode
+
    harfbuzz-gpu
    harfbuzz
    glad
    cglm
-   unicode
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

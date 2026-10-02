@@ -10,6 +10,7 @@ include(GNUInstallDirs)
 set(CMAKE_C_STANDARD 23)
 
 add_library(unicode source/unicode.c)
+add_library(module::unicode ALIAS unicode)
 target_compile_options(unicode PRIVATE -fPIC)
 
 target_include_directories(unicode PUBLIC
@@ -35,7 +36,7 @@ install(
 
 install(
    EXPORT unicodeConfig
-   NAMESPACE unicode::
+   NAMESPACE module::
    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/unicode
 )
 
