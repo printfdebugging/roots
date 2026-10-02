@@ -552,7 +552,6 @@ void window_cursor_position_callback(GLFWwindow *window, double x, double y) {
 
 void window_key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 	(void) scancode;
-	[[maybe_unused]] struct editor *editor = glfwGetWindowUserPointer(window);
 
 	bool shiftQPress = (mods & GLFW_MOD_SHIFT) && (key == GLFW_KEY_Q) && (action == GLFW_PRESS);
 	if (shiftQPress)
