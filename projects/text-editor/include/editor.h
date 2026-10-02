@@ -54,22 +54,9 @@ struct editor {
 	struct text_shader *text_shader; /* shared among Buffer objects */
 
 	struct glyph_vertex *vertices;
-	/* this is fixed by the constants above */
 	uint32_t vertices_count;
 	struct text_layout_map layout_map[LINES];
 
-	/*
-	 * This is a baton which the update -> layout -> upload stages
-	 * pass to each other to signal if things changed and whether
-	 * they need to do something about it.
-	 *
-	 * The idea is that each stage just checks "do i need to do anything"
-	 * and only when the answer is "yes", should they go out and look
-	 * into the layoutMap about what changed.
-	 *
-	 * - todo: add LayoutType - CURSOR_MOVE, SCROLL, RESIZE..
-	 * - todo: add UploadType - MORPH, BUFFER_SUBDATA
-	 */
 	struct
 	{
 		bool updated;
@@ -119,19 +106,13 @@ struct text_shader_uniform_locations {
 	int32_t stem_darkening;
 };
 
-/**!
- * A Line shader is shared between various line renderers. This
- * does not contain any state, but allows one to quickly set
- * the state using `TextShaderUniforms` and draw/redraw a line..
- */
 struct text_shader {
 	uint32_t hb_shader_program;
 	struct text_shader_uniform_locations uniform_locations;
 };
 
-/* for now BufferRender and LineLayout don't know about each other, that's fine. */
 struct buffer_renderer {
-	/**!
+	/*
 	 * Uniforms of the line, like the position from where we start
 	 * drawing, the MVP matrix, the scale, gpu atlas, so on..
 	 */
@@ -141,8 +122,10 @@ struct buffer_renderer {
 	uint32_t vao;
 	uint32_t vbo;
 
-	/* note: this is inconsiquencial in layouting, considering that we
-	 * are going for a fixed buffer approach for now */
+	/*
+	 * note: This is inconsiquencial in layouting, considering
+	 * that we are going for a fixed buffer approach for now
+	 */
 	uint32_t count;
 	bool uploaded;
 };
