@@ -211,7 +211,6 @@ void buffer_renderer_init(struct buffer_renderer *renderer, struct text_shader *
 void buffer_renderer_deinit(struct buffer_renderer *renderer);
 void buffer_render();
 
-bool file_open(const char *filePath); /* note: remove me */
 void EditorOpenFile(const char *path);
 
 void text_shader_create(struct text_shader *shader);

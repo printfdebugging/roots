@@ -30,8 +30,8 @@ bool editor_run() {
 
 	if (!E.initialized)
 		perror("E not initialized\n");
-	if (!file_open(path))
-		perror("Failed to load Text file\n");
+	if (!(E.text = text_load_from_file(path)))
+		return false;
 
 	editor_update(EDITOR_STARTUP, (union editor_update_state) {});
 
@@ -337,18 +337,6 @@ void editor_layout() {
 		E.layout_map_state.layouted = true;
 		E.layout_map_state.uploaded = false;
 	}
-}
-
-/**!
- * Loads the text file from `filePath` into a `Text` object,
- * and returns an index to it, or `INVALID_ID` on error.
- */
-bool file_open(const char *filePath) {
-	if (!filePath)
-		return false;
-	if (!(E.text = text_load_from_file(filePath)))
-		return false;
-	return true;
 }
 
 /* warn: todo: add cleanup at some later stage when it works */
