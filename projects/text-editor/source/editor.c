@@ -90,14 +90,14 @@ bool editor_init() {
 	if (!(E.buffer_renderer = calloc(1, sizeof(struct buffer_renderer))))
 		return false;
 
-	E.verticesCount = CHARS * LINES * VERTICES;
-	if (!(E.vertices = calloc(E.verticesCount, VERTEX_SIZE)))
+	E.vertices_count = CHARS * LINES * VERTICES;
+	if (!(E.vertices = calloc(E.vertices_count, VERTEX_SIZE)))
 		return false;
 
 	font_manager_init(E.font_file_path);
 	text_shader_create(E.text_shader);
 	buffer_renderer_init(E.buffer_renderer, E.text_shader);
-	glBufferData(GL_ARRAY_BUFFER, E.verticesCount * VERTEX_SIZE, NULL, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, E.vertices_count * VERTEX_SIZE, NULL, GL_STATIC_DRAW);
 
 	for (uint32_t idx = 0; idx < LINES; ++idx)
 		E.layout_map[idx].text_line_index = idx;
@@ -142,7 +142,7 @@ void editor_upload_to_gpu() {
 }
 
 void buffer_upload_to_gpu() {
-	if (E.verticesCount == 0)
+	if (E.vertices_count == 0)
 		return;
 
 	glBindVertexArray(E.buffer_renderer->vao);
@@ -370,7 +370,7 @@ void buffer_render() {
 
 	if (E.buffer_renderer->uploaded) {
 		glBindVertexArray(E.buffer_renderer->vao);
-		glDrawArrays(GL_TRIANGLES, 0, (int32_t) E.verticesCount);
+		glDrawArrays(GL_TRIANGLES, 0, (int32_t) E.vertices_count);
 	}
 
 	/* note: not sure if this should be done after each buffer is rendered, or after all of them

@@ -55,7 +55,7 @@ struct editor {
 
 	struct glyph_vertex *vertices;
 	/* this is fixed by the constants above */
-	uint32_t verticesCount;
+	uint32_t vertices_count;
 	struct text_layout_map layout_map[LINES];
 
 	/*
