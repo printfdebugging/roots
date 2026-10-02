@@ -238,11 +238,13 @@ void editor_render();
 
 void buffer_layout();
 void buffer_upload_to_gpu();
+void buffer_renderer_init(struct buffer_renderer *renderer, struct text_shader *shader);
+void buffer_renderer_deinit(struct buffer_renderer *renderer);
 void buffer_render();
 
 bool window_create(struct window_options opts);
 struct rectangle window_get_bounds();
-void swap_buffers();
+void window_swap_buffers();
 bool file_open(const char *filePath);
 void EditorOpenFile(const char *path);
 
@@ -254,9 +256,5 @@ void window_scroll_callback(GLFWwindow *window, double x, double y);
 void window_frame_buffer_resize_callback(GLFWwindow *window, int32_t width, int32_t height);
 void window_cursor_position_callback(GLFWwindow *window, double x, double y);
 void window_key_callback(GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods);
-
-/* renderer.c */
-void buffer_renderer_init(struct buffer_renderer *renderer, struct text_shader *shader);
-void buffer_renderer_deinit(struct buffer_renderer *renderer);
 
 #endif
