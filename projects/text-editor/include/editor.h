@@ -27,39 +27,11 @@
 #define CARRIAGE_RETURN 0x0d
 
 /**!
- * Opaque `Text` type. There would be a few implementations in the backend,
- * a `GapBuffer` implementation, a `Rope` implementation, and the user would
+ * Opaque `text` type. There would be a few implementations in the backend,
+ * a `gap_buffer` implementation, a `rope` implementation, and the user would
  * be able to choose which implementation they want to use.
  */
 struct text;
-
-/**!
- * @brief Usually it's said that buffers are shared between frames, but the
- * sharing is in terms of attributes, like two buffers might share a frame,
- * or two buffers might not share a frame but share the text they are showing.
- *
- * This does not mean that they are the same buffers. They can have different
- * cursor positions, different state that they are rendering, different visibility.
- * So they are not at all the same thing. Don't tell the user about this ;).
- */
-
-/*
- * struct Buffer
- * {
- *    int32_t winId;
- *    int32_t txtId;
- * };
- */
-
-/* this is layout's job not vislinerenderer's
- * so first step is to split line renderers from layouting :) again*/
-//};
-
-/**!
- * Font manager is a subsystem we request for the font objects.
- * This way, we don't have to manage the lifetime of these objects. And
- * since these objects are shared, so is the glyphCache.
- */
 
 /* layout space constants */
 #define CHARS 60
