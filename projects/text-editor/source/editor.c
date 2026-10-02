@@ -339,13 +339,6 @@ void editor_layout() {
 	}
 }
 
-/* warn: todo: add cleanup at some later stage when it works */
-/* returns a buffer id.. todo: write nicely later, let's first make it work */
-void EditorOpenFile(const char *path) {
-	(void) path;
-	/* todo: */
-}
-
 /* todo: remove editor from here */
 void buffer_render() {
 	struct glyph_atlas *atlas = font_manager_get_atlas();

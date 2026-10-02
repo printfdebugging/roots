@@ -211,8 +211,6 @@ void buffer_renderer_init(struct buffer_renderer *renderer, struct text_shader *
 void buffer_renderer_deinit(struct buffer_renderer *renderer);
 void buffer_render();
 
-void EditorOpenFile(const char *path);
-
 void text_shader_create(struct text_shader *shader);
 void text_shader_destroy(struct text_shader *shader);
 void text_shader_upload_uniforms(struct text_shader *shader, struct text_shader_uniforms *uniforms);
