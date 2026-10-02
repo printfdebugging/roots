@@ -5,6 +5,7 @@
 
 #include "font-manager/font-manager.h"
 #include "unicode/unicode.h"
+#include "utils/containers.h"
 
 #include "GLFW/glfw3.h"
 #include "cglm/struct.h"
@@ -24,23 +25,6 @@
 #define NEWLINE 0x0a
 #define HORIZONTAL_TAB 0x09
 #define CARRIAGE_RETURN 0x0d
-
-struct point {
-	double x;
-	double y;
-};
-
-/**!
- * @brief Integers are used intentionally here. We won't be doing floating
- * point32_t anything when it comes to layouting etc. We just don't want that
- * hassle. So we would do all the layouting in screen space coordinates.
- */
-struct rectangle {
-	int64_t x;
-	int64_t y;
-	int64_t w;
-	int64_t h;
-};
 
 /**!
  * Opaque `Text` type. There would be a few implementations in the backend,
