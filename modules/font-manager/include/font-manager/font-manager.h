@@ -38,10 +38,8 @@ struct glyph_atlas {
 	uint32_t capacity_bytes;
 
 	/**!
-	 * note: This doesn't start at 0, but at `TEXEL_SIZE`. Empty glyphs
-	 * don't have any glyph data, so their `glyph_info.atlas_offset` is set
-	 * to 0, and if we start at 0 here, that would then use the first uploaded
-	 * glyph for the spaces..
+	 * Starts at `TEXEL_SIZE`, the first slot (8 bytes) is reserved
+	 * for the empty glyphs which are skipped in the fragment shader.
 	 */
 	uint32_t cursor_offset_bytes;
 };
@@ -58,15 +56,13 @@ struct glyph_info {
 struct font {
 	char *font_path;
 
-	/* font objects & the encoder */
 	hb_face_t *hb_face;
 	hb_font_t *hb_font;
 	hb_gpu_draw_t *hb_draw;
 
-	/* font metrics */
-	int32_t hb_ascent;
-	int32_t hb_descent;
-	int32_t hb_max_height;
+	int32_t ascent;
+	int32_t descent;
+	int32_t max_height;
 
 	struct glyph_info *glyph_cache;
 };
@@ -117,9 +113,5 @@ void font_deinit(struct font *font);
 
 void _font_manager_atlas_init();
 void _font_manager_atlas_deinit();
-
-// void _linePrintChars();
-// void _lineSubstituteNewlines();
-// void _lineSubstituteTabs();
 
 #endif

@@ -62,8 +62,8 @@ void font_manager_cache_glyph_info(struct font *font, uint32_t glyphidx) {
 	*glyph = (struct glyph_info) {
 		.extents.min_x = 0,
 		.extents.max_x = hb_font_get_glyph_h_advance(font->hb_font, glyphidx),
-		.extents.min_y = font->hb_descent,
-		.extents.max_y = font->hb_ascent,
+		.extents.min_y = font->descent,
+		.extents.max_y = font->ascent,
 		.advance = hb_font_get_glyph_h_advance(font->hb_font, glyphidx),
 		.upem = y_scale,
 		.empty = (blob_length == 0),
@@ -123,7 +123,7 @@ float font_manager_get_default_font_line_height() {
 	if (!fm.initialized)
 		return 0;
 
-	float line_height = (float) fm.editor_font->hb_ascent - (float) fm.editor_font->hb_descent;
+	float line_height = (float) fm.editor_font->ascent - (float) fm.editor_font->descent;
 	return line_height * font_manager_get_default_font_scale();
 }
 
@@ -150,9 +150,9 @@ void font_init(struct font *font, const char *filepath) {
 	const hb_ot_metrics_tag_t ASCENT_HHEA = HB_TAG('H', 'a', 's', 'c');
 	const hb_ot_metrics_tag_t DESCENT_HHEA = HB_TAG('H', 'd', 's', 'c');
 
-	hb_ot_metrics_get_position(font->hb_font, ASCENT_HHEA, &font->hb_ascent);
-	hb_ot_metrics_get_position(font->hb_font, DESCENT_HHEA, &font->hb_descent);
-	hb_ot_metrics_get_position(font->hb_font, HB_OT_METRICS_TAG_CAP_HEIGHT, &font->hb_max_height);
+	hb_ot_metrics_get_position(font->hb_font, ASCENT_HHEA, &font->ascent);
+	hb_ot_metrics_get_position(font->hb_font, DESCENT_HHEA, &font->descent);
+	hb_ot_metrics_get_position(font->hb_font, HB_OT_METRICS_TAG_CAP_HEIGHT, &font->max_height);
 }
 
 void font_deinit(struct font *font) {
