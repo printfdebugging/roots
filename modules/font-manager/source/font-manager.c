@@ -22,7 +22,7 @@ void font_manager_init(char *editor_font_path) {
 	fm.initialized = true;
 
 	_font_manager_atlas_init();
-	fm.editor_font_path = string_duplicate(editor_font_path);
+	fm.default_font_path = string_duplicate(editor_font_path);
 	fm.editor_font = font_manager_get_font(editor_font_path);
 }
 
@@ -34,7 +34,7 @@ void font_manager_deinit() {
 		font_deinit(&fm.font[idx]);
 
 	free(fm.font);
-	free((void *) fm.editor_font_path);
+	free((void *) fm.default_font_path);
 
 	_font_manager_atlas_deinit();
 	fm.initialized = false;

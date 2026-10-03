@@ -78,7 +78,7 @@ struct font_manager {
 	/**!
 	 * Path the default editor font.
 	 */
-	const char *editor_font_path;
+	const char *default_font_path;
 
 	/**!
 	 * The default font of the editor. Every rune is first shaped
