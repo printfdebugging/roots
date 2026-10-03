@@ -39,5 +39,6 @@ add_subdirectory(modules/utils)
 add_subdirectory(modules/unicode)
 add_subdirectory(modules/font-manager)
 add_subdirectory(modules/platform)
+add_subdirectory(modules/toolkit)
 
 add_subdirectory(projects/text-editor)
