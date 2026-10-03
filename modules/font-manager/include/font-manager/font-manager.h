@@ -20,15 +20,6 @@ struct glyph_vertex {
 	float epp;
 	uint32_t atlas_offset;
 	uint32_t has_cursor;
-
-	/*
-	todo:
-		vec4 textPos;
-			[0] = textId
-			[1] = line
-			[2] = byteOffset
-	*/
-
 	vec4s fg_color;
 	vec4s bg_color;
 };
@@ -48,7 +39,7 @@ struct glyph_atlas {
 
 	/**!
 	 * note: This doesn't start at 0, but at `TEXEL_SIZE`. Empty glyphs
-	 * don't have any glyph data, so their `GlyphInfo.atlasOffset` is set
+	 * don't have any glyph data, so their `glyph_info.atlas_offset` is set
 	 * to 0, and if we start at 0 here, that would then use the first uploaded
 	 * glyph for the spaces..
 	 */
@@ -97,7 +88,7 @@ struct font_manager {
 	struct font *editor_font;
 
 	/**!
-	 * OpenGL textures with the glyph data. `GlyphInfo.atlasOffset` is an
+	 * OpenGL textures with the glyph data. `glyph_info.atlas_offset` is an
 	 * offset into this texture. We only cache the glyphs being used, so
 	 * even if we are using a few fonts, it should be fine for the most part.
 	 */
@@ -106,8 +97,6 @@ struct font_manager {
 	bool initialized;
 };
 
-/* fontmanager.c */
-/* note: todo: this should take font_manager_options */
 void font_manager_init(char *editor_font_path);
 void font_manager_deinit();
 void font_manager_cache_glyph_info(struct font *font, uint32_t glyphidx);
