@@ -52,6 +52,7 @@ struct editor {
 	struct GLFWwindow *window;
 	struct buffer_renderer *buffer_renderer;
 	struct text_shader *shared_text_shader;
+	struct compute_shader *shared_compute_shader;
 
 	struct glyph_vertex *vertices;
 	uint32_t vertices_count;
@@ -111,6 +112,10 @@ struct text_shader {
 	struct text_shader_uniform_locations uniform_locations;
 };
 
+struct compute_shader {
+	uint32_t program;
+};
+
 struct buffer_renderer {
 	/*
 	 * Uniforms of the line, like the position from where we start
@@ -162,5 +167,8 @@ void buffer_render();
 void text_shader_create(struct text_shader *shader);
 void text_shader_destroy(struct text_shader *shader);
 void text_shader_upload_uniforms(struct text_shader *shader, struct text_shader_uniforms *uniforms);
+
+void compute_shader_create(struct compute_shader *shader);
+void compute_shader_destroy(struct compute_shader *shader);
 
 #endif

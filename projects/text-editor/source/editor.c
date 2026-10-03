@@ -69,6 +69,8 @@ bool editor_init() {
 
 	if (!(E.shared_text_shader = calloc(1, sizeof(struct text_shader))))
 		return false;
+	if (!(E.shared_compute_shader = calloc(1, sizeof(struct compute_shader))))
+		return false;
 	if (!(E.buffer_renderer = calloc(1, sizeof(struct buffer_renderer))))
 		return false;
 
@@ -82,6 +84,8 @@ bool editor_init() {
 	});
 
 	text_shader_create(E.shared_text_shader);
+	compute_shader_create(E.shared_compute_shader);
+
 	buffer_renderer_init(E.buffer_renderer, E.shared_text_shader);
 	glBufferData(GL_ARRAY_BUFFER, E.vertices_count * VERTEX_SIZE, NULL, GL_STATIC_DRAW);
 
@@ -100,6 +104,7 @@ void editor_calculate_frame_time() {
 
 bool editor_deinit() {
 	text_shader_destroy(E.shared_text_shader);
+	compute_shader_destroy(E.shared_compute_shader);
 	buffer_renderer_deinit(E.buffer_renderer);
 	font_manager_deinit();
 

@@ -129,6 +129,10 @@ void text_shader_destroy(struct text_shader *shader) {
 	glDeleteProgram(shader->program);
 }
 
+void compute_shader_destroy(struct compute_shader *shader) {
+	glDeleteProgram(shader->program);
+}
+
 void text_shader_upload_uniforms(struct text_shader *shader, struct text_shader_uniforms *uniforms) {
 	uint32_t program = shader->program;
 	_renderer_use_shader_program(program);
@@ -144,7 +148,7 @@ void text_shader_upload_uniforms(struct text_shader *shader, struct text_shader_
 }
 
 static uint32_t _create_text_shader() {
-	const char *shader_version = "#version 330 core\n";
+	const char *shader_version = "#version 460 core\n";
 	const char *shader_preamble = "#define HB_GPU_DEMO_DRAW\n";
 	const char *vertex_main = string_read_file_contents(ASSETS_DIR "shaders/harfbuzz.vert");
 	const char *fragment_main = string_read_file_contents(ASSETS_DIR "shaders/harfbuzz.frag");
@@ -193,6 +197,35 @@ static uint32_t _create_text_shader() {
 	free((void *) fragment_main);
 
 	return program;
+}
+
+void compute_shader_create(struct compute_shader *shader) {
+	const char *shader_main = NULL;
+	uint32_t compute_shader = 0;
+	uint32_t program = 0;
+
+	const char *shader_version = "#version 460 core\n";
+	shader_main = string_read_file_contents(ASSETS_DIR "shaders/compute.glsl");
+	const char *shader_source[] = { shader_version, shader_main };
+
+	compute_shader = glCreateShader(GL_COMPUTE_SHADER);
+	glShaderSource(compute_shader, array_size(shader_source), shader_source, NULL);
+	glCompileShader(compute_shader);
+	if (!shader_get_compile_status(compute_shader))
+		goto error;
+
+	program = glCreateProgram();
+	glAttachShader(program, compute_shader);
+	glLinkProgram(program);
+	if (!shader_get_link_status(program))
+		goto error;
+
+	shader->program = program;
+	return;
+error:
+	free((void *) shader_main);
+	glDeleteShader(compute_shader);
+	glDeleteProgram(program);
 }
 
 static void _renderer_use_shader_program(uint32_t program) {
