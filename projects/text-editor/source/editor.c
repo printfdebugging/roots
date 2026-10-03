@@ -169,9 +169,9 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 			E.cursor_column = 0;
 			E.cursor_line = 0;
 
-			for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx) {
-				E.layout_map[lineIdx] = (struct text_layout_map) {
-					.text_line_index = lineIdx,
+			for (uint32_t line_index = 0; line_index < LINES; ++line_index) {
+				E.layout_map[line_index] = (struct text_layout_map) {
+					.text_line_index = line_index,
 					.layouted = false,
 					.uploaded = false,
 				};
@@ -370,8 +370,8 @@ void buffer_layout() {
 	if (!E.shared_text_shader || !E.text || !E.window)
 		return;
 
-	float lineHeight = font_manager_get_default_font_line_height();
-	float fontScale = font_manager_get_default_font_scale();
+	float line_height = font_manager_get_default_font_line_height();
+	float font_scale = font_manager_get_default_font_scale();
 
 	struct rectangle bounds = window_get_bounds(E.window);
 	for (uint32_t visual_line_index = 0; visual_line_index < LINES; ++visual_line_index) {
@@ -383,7 +383,10 @@ void buffer_layout() {
 		 * points * scale = pixels
 		 * pixels / scale = points
 		 */
-		vec2s linePos = { .x = 0, .y = ((float) bounds.h - ((float) (visual_line_index + 1) * lineHeight)) / fontScale };
+		vec2s line_position = {
+			.x = 0,
+			.y = ((float) bounds.h - ((float) (visual_line_index + 1) * line_height)) / font_scale,
+		};
 
 		struct font *font = font_manager_get_default_font();
 		hb_buffer_t *buffer = hb_buffer_create();
@@ -394,17 +397,17 @@ void buffer_layout() {
 		hb_buffer_set_language(buffer, hb_language_from_string("en", -1));
 		hb_shape(font->hb_font, buffer, NULL, 0);
 
-		uint32_t hbGlyphCount = 0;
-		hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
+		uint32_t hb_glyph_count = 0;
+		hb_glyph_info_t *hb_glyph_info = hb_buffer_get_glyph_infos(buffer, &hb_glyph_count);
 
-		_glyph_info = realloc(_glyph_info, hbGlyphCount * sizeof(struct glyph_info));
+		_glyph_info = realloc(_glyph_info, hb_glyph_count * sizeof(struct glyph_info));
 		if (_glyph_info)
-			memset(_glyph_info, 0, hbGlyphCount * sizeof(struct glyph_info));
+			memset(_glyph_info, 0, hb_glyph_count * sizeof(struct glyph_info));
 
-		uint32_t glyph_count = hbGlyphCount < CHARS ? hbGlyphCount : CHARS;
+		uint32_t glyph_count = hb_glyph_count < CHARS ? hb_glyph_count : CHARS;
 
 		for (uint32_t idx = 0; idx < glyph_count; ++idx) {
-			hb_codepoint_t glyph_index = glyphInfos[idx].codepoint;
+			hb_codepoint_t glyph_index = hb_glyph_info[idx].codepoint;
 			font_manager_cache_glyph_info(font, glyph_index);
 			_glyph_info[idx] = font->glyph_cache[glyph_index];
 		}
@@ -412,8 +415,8 @@ void buffer_layout() {
 		hb_buffer_destroy(buffer);
 
 		struct point glyph_position = {
-			.x = linePos.x,
-			.y = linePos.y,
+			.x = line_position.x,
+			.y = line_position.y,
 		};
 
 		/* we loop over the available slots */

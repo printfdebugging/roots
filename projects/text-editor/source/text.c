@@ -132,8 +132,8 @@ struct string_view text_get_line_utf8_at_offset(struct text *text, uint32_t line
 }
 
 void text_destroy(struct text *text) {
-	for (uint32_t lineIdx = 0; lineIdx < text->line_count; ++lineIdx)
-		free(text->lines[lineIdx].data);
+	for (uint32_t idx = 0; idx < text->line_count; ++idx)
+		free(text->lines[idx].data);
 	free(text->lines);
 	free(text->file_path);
 }

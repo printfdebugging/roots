@@ -33,20 +33,20 @@ GLFWwindow *window_create(struct window_options opts) {
 	glfwWindowHint(GLFW_CONTEXT_DEBUG, GLFW_TRUE);
 #endif
 
-	const int32_t windowWidth = opts.width ? opts.width : 1600;
-	const int32_t windowHeight = opts.height ? opts.height : 800;
-	const char *windowTitle = opts.title ? opts.title : "GLFWwindow";
+	const int32_t width = opts.width ? opts.width : 1600;
+	const int32_t height = opts.height ? opts.height : 800;
+	const char *title = opts.title ? opts.title : "GLFWwindow";
 
-	GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowTitle, NULL, opts.shared_context_window);
+	GLFWwindow *window = glfwCreateWindow(width, height, title, NULL, opts.shared_context_window);
 	if (!window)
 		return NULL;
 
-	const int32_t maxWidth = 2230;
-	const int32_t maxHeight = 1420;
-	const int32_t minWidth = 800;
-	const int32_t minHeight = 600;
+	const int32_t max_width = 2230;
+	const int32_t max_height = 1420;
+	const int32_t min_width = 800;
+	const int32_t min_height = 600;
 
-	glfwSetWindowSizeLimits(window, minWidth, minHeight, maxWidth, maxHeight);
+	glfwSetWindowSizeLimits(window, min_width, min_height, max_width, max_height);
 	glfwMakeContextCurrent(window);
 	gladLoadGL((GLADloadfunc) glfwGetProcAddress);
 	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
@@ -54,17 +54,17 @@ GLFWwindow *window_create(struct window_options opts) {
 
 	if (opts.icon) {
 #ifndef __APPLE__
-		GLFWimage img;
-		int chanCount;
-		img.pixels = stbi_load(opts.icon, &img.width, &img.height, &chanCount, 0);
+		GLFWimage image;
+		int channels;
+		image.pixels = stbi_load(opts.icon, &image.width, &image.height, &channels, 0);
 
-		if (!img.pixels) {
+		if (!image.pixels) {
 			glfwDestroyWindow(window);
 			return NULL;
 		}
 
-		glfwSetWindowIcon(window, 1, &img);
-		free(img.pixels);
+		glfwSetWindowIcon(window, 1, &image);
+		free(image.pixels);
 #endif
 	}
 

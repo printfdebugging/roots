@@ -137,15 +137,15 @@ void font_init(struct font *font, const char *filepath) {
 	font->font_path = string_duplicate(filepath);
 	font->glyph_cache = calloc(U16_MAX, sizeof(struct glyph_info));
 
-	hb_blob_t *hbBlob = NULL;
-	if (!(hbBlob = hb_blob_create_from_file(font->font_path)) ||
-		 !(font->hb_face = hb_face_create(hbBlob, 0)) ||
+	hb_blob_t *blob = NULL;
+	if (!(blob = hb_blob_create_from_file(font->font_path)) ||
+		 !(font->hb_face = hb_face_create(blob, 0)) ||
 		 !(font->hb_font = hb_font_create(font->hb_face)) ||
 		 !(font->hb_draw = hb_gpu_draw_create_or_fail())) {
 		perror("failed to initialize harfbuzz");
 	}
 
-	hb_blob_destroy(hbBlob);
+	hb_blob_destroy(blob);
 
 	const hb_ot_metrics_tag_t ASCENT_HHEA = HB_TAG('H', 'a', 's', 'c');
 	const hb_ot_metrics_tag_t DESCENT_HHEA = HB_TAG('H', 'd', 's', 'c');
