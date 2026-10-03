@@ -51,7 +51,7 @@ struct editor {
 	struct text *text;
 	struct GLFWwindow *window;
 	struct buffer_renderer *buffer_renderer;
-	struct text_shader *text_shader; /* shared among Buffer objects */
+	struct text_shader *shared_text_shader;
 
 	struct glyph_vertex *vertices;
 	uint32_t vertices_count;

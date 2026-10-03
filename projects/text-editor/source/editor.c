@@ -75,7 +75,7 @@ bool editor_init() {
 
 	glfwSetErrorCallback(_glfwErrFn);
 
-	if (!(E.text_shader = calloc(1, sizeof(struct text_shader))))
+	if (!(E.shared_text_shader = calloc(1, sizeof(struct text_shader))))
 		return false;
 	if (!(E.buffer_renderer = calloc(1, sizeof(struct buffer_renderer))))
 		return false;
@@ -89,8 +89,8 @@ bool editor_init() {
 		.default_font_size = (uint32_t) E.font_size,
 	});
 
-	text_shader_create(E.text_shader);
-	buffer_renderer_init(E.buffer_renderer, E.text_shader);
+	text_shader_create(E.shared_text_shader);
+	buffer_renderer_init(E.buffer_renderer, E.shared_text_shader);
 	glBufferData(GL_ARRAY_BUFFER, E.vertices_count * VERTEX_SIZE, NULL, GL_STATIC_DRAW);
 
 	for (uint32_t idx = 0; idx < LINES; ++idx)
@@ -107,14 +107,14 @@ void editor_calculate_frame_time() {
 }
 
 bool editor_deinit() {
-	text_shader_destroy(E.text_shader);
+	text_shader_destroy(E.shared_text_shader);
 	buffer_renderer_deinit(E.buffer_renderer);
 	font_manager_deinit();
 
 	text_destroy(E.text);
 	free(E.text);
 
-	free(E.text_shader);
+	free(E.shared_text_shader);
 	free(E.font_file_path);
 	free(E.vertices);
 
@@ -360,7 +360,7 @@ void buffer_render() {
 		.stem_darkening = false,
 	};
 
-	text_shader_upload_uniforms(E.text_shader, &E.buffer_renderer->uniforms);
+	text_shader_upload_uniforms(E.shared_text_shader, &E.buffer_renderer->uniforms);
 
 	if (E.buffer_renderer->uploaded) {
 		glBindVertexArray(E.buffer_renderer->vao);
@@ -375,7 +375,7 @@ void buffer_render() {
 struct glyph_info *_glyphInfo = NULL;
 
 void buffer_layout() {
-	if (!E.text_shader || !E.text || !E.window)
+	if (!E.shared_text_shader || !E.text || !E.window)
 		return;
 
 	float lineHeight = font_manager_get_default_font_line_height();
