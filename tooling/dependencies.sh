@@ -24,37 +24,37 @@ MSYS2_PACKAGES=(
 )
 
 ARCH_PACKAGES=(
-   cmake 
-   make 
-   ninja 
-   clang 
-   gdb 
-   ccache 
-   vulkan-devel 
-   libasan 
+   cmake
+   make
+   ninja
+   clang
+   gdb
+   ccache
+   vulkan-devel
+   libasan
    git
 )
 
 BREW_PACKAGES=(
-   cmake 
-   ninja 
-   llvm 
-   ccache 
-   git 
-   vulkan-headers 
-   vulkan-loader 
+   cmake
+   ninja
+   llvm
+   ccache
+   git
+   vulkan-headers
+   vulkan-loader
    molten-vk
 )
 
-function windowsDeps() {
+function windows_dependencies() {
    winget install --exact --accept-package-agreements --accept-source-agreements "${WINGET_PACKAGES[@]}"
    powershell.exe -NoProfile -Command "if (\$env:Path -notlike '*${CLANG64_BIN}*') { [Environment]::SetEnvironmentVariable('Path', [Environment]::GetEnvironmentVariable('Path', 'User') + ';${CLANG64_BIN}', 'User') }"
    MSYSTEM=CLANG64 "${MSYS2_BASH}" -lc "pacman -Syy --noconfirm ${MSYS2_PACKAGES[*]}"
 }
 
-function archlinuxDeps() { sudo pacman -S --needed --noconfirm "${ARCH_PACKAGES[@]}"; }
+function archlinux_dependencies() { sudo pacman -S --needed --noconfirm "${ARCH_PACKAGES[@]}"; }
 
-function brewDeps() {
+function brew_dependencies() {
    if ! command -v brew >/dev/null; then
       /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
       eval "$(/opt/homebrew/bin/brew shellenv 2>/dev/null || /usr/local/bin/brew shellenv)"
@@ -62,24 +62,24 @@ function brewDeps() {
    brew install "${BREW_PACKAGES[@]}"
 }
 
-function linuxDeps() {
+function linux_dependencies() {
    local distribution
    distribution="$(. /etc/os-release && echo "${ID}${ID_LIKE:+ ${ID_LIKE}}")"
    case "${distribution}" in
-      *arch*) archlinuxDeps ;;
-      *)
-         echo "no package list for ${distribution}, add one next to archlinuxDeps" >&2
-         exit 1
-         ;;
+   *arch*) archlinux_dependencies ;;
+   *)
+      echo "no package list for ${distribution}, add one next to archlinux_dependencies" >&2
+      exit 1
+      ;;
    esac
 }
 
 case "$(uname -s)" in
-   Linux) linuxDeps ;;
-   Darwin) brewDeps ;;
-   MINGW* | MSYS* | CYGWIN*) windowsDeps ;;
-   *)
-      echo "unsupported platform: $(uname -s)" >&2
-      exit 1
-      ;;
+Linux) linux_dependencies ;;
+Darwin) brew_dependencies ;;
+MINGW* | MSYS* | CYGWIN*) windows_dependencies ;;
+*)
+   echo "unsupported platform: $(uname -s)" >&2
+   exit 1
+   ;;
 esac
