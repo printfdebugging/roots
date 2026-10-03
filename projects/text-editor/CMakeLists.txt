@@ -49,8 +49,6 @@ target_link_libraries(text-editor PRIVATE
 	tree-sitter
 	tree-sitter-c
 	tree-sitter-lua
-
-	$<$<BOOL:${WIN32}>:dwmapi>
 )
 
 install(
