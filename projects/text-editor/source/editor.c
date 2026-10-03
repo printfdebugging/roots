@@ -61,11 +61,6 @@ bool editor_init() {
 		.visible = true,
 		.icon = DEFAULT_WINDOW_ICON,
 		.shared_context_window = NULL,
-		.framebuffer_resize_callback = window_frame_buffer_resize_callback,
-		.key_callback = window_key_callback,
-		.scroll_callback = window_scroll_callback,
-		.cursor_position_callback = window_cursor_position_callback,
-		.error_callback = window_error_callback,
 	};
 
 	E.window = window_create(opts);
@@ -510,7 +505,7 @@ void window_error_callback(int code, const char *description) {
 	fprintf(stderr, "window_error_callback: code: %i, msg: %s\n", code, description);
 }
 
-void window_frame_buffer_resize_callback(GLFWwindow *window, int32_t width, int32_t height) {
+void window_framebuffer_resize_callback(GLFWwindow *window, int32_t width, int32_t height) {
 	(void) window;
 	glViewport(0, 0, width, height);
 }

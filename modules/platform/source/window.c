@@ -80,11 +80,11 @@ GLFWwindow *window_create(struct window_options opts) {
 	glBlendFunc(GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
 	glLineWidth(2);
 
-	if (opts.cursor_position_callback) glfwSetCursorPosCallback(window, opts.cursor_position_callback);
-	if (opts.scroll_callback) glfwSetScrollCallback(window, opts.scroll_callback);
-	if (opts.framebuffer_resize_callback) glfwSetFramebufferSizeCallback(window, opts.framebuffer_resize_callback);
-	if (opts.key_callback) glfwSetKeyCallback(window, opts.key_callback);
-	if (opts.error_callback) glfwSetErrorCallback(opts.error_callback);
+	glfwSetCursorPosCallback(window, window_cursor_position_callback);
+	glfwSetScrollCallback(window, window_scroll_callback);
+	glfwSetFramebufferSizeCallback(window, window_framebuffer_resize_callback);
+	glfwSetKeyCallback(window, window_key_callback);
+	glfwSetErrorCallback(window_error_callback);
 
 	if (!window)
 		return NULL;
