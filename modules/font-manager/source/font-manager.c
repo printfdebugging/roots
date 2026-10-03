@@ -18,11 +18,13 @@ void font_manager_init(struct font_manager_options opts) {
 	if (fm.initialized)
 		return;
 
-	/* `fontManagerGetFont` checks this and returns early if false (default) */
+	/* `font_manager_get_font` checks this and returns early if false (default) */
 	fm.initialized = true;
 
 	_font_manager_atlas_init();
 	fm.default_font_path = string_duplicate(opts.default_font_path);
+	fm.default_font_size = opts.default_font_size;
+
 	fm.editor_font = font_manager_get_font(opts.default_font_path);
 }
 
@@ -112,10 +114,9 @@ float font_manager_get_default_font_scale() {
 	if (!fm.initialized)
 		return 0;
 
-	int32_t xScale, yScale;
-	hb_font_get_scale(fm.editor_font->hb_font, &xScale, &yScale);
-	/* note: todo: temporarily setting this to this default value */
-	return 30 / (float) yScale;
+	int32_t x_scale, y_scale;
+	hb_font_get_scale(fm.editor_font->hb_font, &x_scale, &y_scale);
+	return (float) fm.default_font_size / (float) y_scale;
 }
 
 float font_manager_get_default_font_line_height() {

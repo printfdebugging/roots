@@ -86,6 +86,7 @@ bool editor_init() {
 
 	font_manager_init((struct font_manager_options) {
 		.default_font_path = E.font_file_path,
+		.default_font_size = (uint32_t) E.font_size,
 	});
 
 	text_shader_create(E.text_shader);
