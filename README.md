@@ -14,11 +14,6 @@ make debug
 - Open VSCode ('ms-vscode.cmake-tools', 'ms-vscode.cpptools' etc extensions, see [extensions.json](./config/vscode/.vscode/extensions.json))
 - Put a breakpoint & Press `<SHIFT-F5>`
 
-## Coding Style
-- Don't rely on the default values, always assign a default value whenever you can, like in the struct initializer lists, or to local variables.
-- Don't prefix the function names unnecessarily, use `openFile` instead of `editorOpenFile`. For subsystems, use minimal prefixes, `fmInit` instead of `fontManagerInit`.
-
-
 ## LLM Policy
 
 > [!NOTE]
