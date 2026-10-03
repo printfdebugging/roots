@@ -33,7 +33,7 @@ licenses:
 	done
 
 package: clean release licenses
-	cmake --install build/Release --prefix install --component dist
+	cmake --install build/Release --prefix install
 	tar -czvf roots.tar.gz -C install .
 
 perf: debug

@@ -43,27 +43,24 @@ target_link_libraries(text-editor PRIVATE
 	module::unicode
 	module::platform
 
-	glfw
-	glad
-	cglm
-	stb
 	lua::lua
+	libuv::libuv
+
 	tree-sitter
 	tree-sitter-c
 	tree-sitter-lua
-	libuv::libuv
+
 	$<$<BOOL:${WIN32}>:dwmapi>
 )
 
 install(
 	DIRECTORY assets/
 	DESTINATION ${CMAKE_INSTALL_DATADIR}/roots
-	COMPONENT dist
 )
 
 install(
 	TARGETS text-editor
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT dev
-	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR} COMPONENT dev
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} COMPONENT dist
+	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
