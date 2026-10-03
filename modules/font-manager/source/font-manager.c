@@ -48,16 +48,16 @@ void font_manager_cache_glyph_info(struct font *font, uint32_t glyphidx) {
 
 	struct glyph_info *glyph = &font->glyph_cache[glyphidx];
 
-	int32_t xScale, yScale;
-	hb_font_get_scale(font->hb_font, &xScale, &yScale);
+	int32_t x_scale, y_scale;
+	hb_font_get_scale(font->hb_font, &x_scale, &y_scale);
 	hb_gpu_draw_clear(font->hb_draw);
 	hb_gpu_draw_glyph(font->hb_draw, font->hb_font, glyphidx);
 
-	hb_glyph_extents_t hbGlyphExtents = {};
-	hb_blob_t *hbBlob = NULL;
+	hb_glyph_extents_t glyph_extents = {};
+	hb_blob_t *blob = NULL;
 
-	hbBlob = hb_gpu_draw_encode(font->hb_draw, &hbGlyphExtents);
-	uint32_t hbBlobLength = hbBlob ? hb_blob_get_length(hbBlob) : 0;
+	blob = hb_gpu_draw_encode(font->hb_draw, &glyph_extents);
+	uint32_t blob_length = blob ? hb_blob_get_length(blob) : 0;
 
 	*glyph = (struct glyph_info) {
 		.extents.min_x = 0,
@@ -65,21 +65,21 @@ void font_manager_cache_glyph_info(struct font *font, uint32_t glyphidx) {
 		.extents.min_y = font->hb_descent,
 		.extents.max_y = font->hb_ascent,
 		.advance = hb_font_get_glyph_h_advance(font->hb_font, glyphidx),
-		.upem = yScale,
-		.empty = (hbBlobLength == 0),
+		.upem = y_scale,
+		.empty = (blob_length == 0),
 		.cached = true,
 	};
 
 	/* upload glyph data to glyph atlas */
-	struct glyph_atlas *glyphAtlas = font_manager_get_atlas();
+	struct glyph_atlas *atlas = font_manager_get_atlas();
 	if (!glyph->empty) {
-		const char *hbGlyphData = hb_blob_get_data(hbBlob, NULL);
-		glBindBuffer(GL_TEXTURE_BUFFER, glyphAtlas->texture_buffer_object);
-		glBufferSubData(GL_TEXTURE_BUFFER, glyphAtlas->cursor_offset_bytes, hbBlobLength, hbGlyphData);
-		glyph->atlas_offset = glyphAtlas->cursor_offset_bytes;
-		glyphAtlas->cursor_offset_bytes += hbBlobLength;
+		const char *glyph_data = hb_blob_get_data(blob, NULL);
+		glBindBuffer(GL_TEXTURE_BUFFER, atlas->texture_buffer_object);
+		glBufferSubData(GL_TEXTURE_BUFFER, atlas->cursor_offset_bytes, blob_length, glyph_data);
+		glyph->atlas_offset = atlas->cursor_offset_bytes;
+		atlas->cursor_offset_bytes += blob_length;
 
-		hb_gpu_draw_recycle_blob(font->hb_draw, hbBlob);
+		hb_gpu_draw_recycle_blob(font->hb_draw, blob);
 	}
 }
 
@@ -181,7 +181,7 @@ void _font_manager_atlas_init() {
 }
 
 void _font_manager_atlas_deinit() {
-	struct glyph_atlas *glyphAtlas = &fm.atlas;
-	glDeleteBuffers(1, &glyphAtlas->texture_buffer_object);
-	glDeleteTextures(1, &glyphAtlas->texture);
+	struct glyph_atlas *atlas = &fm.atlas;
+	glDeleteBuffers(1, &atlas->texture_buffer_object);
+	glDeleteTextures(1, &atlas->texture);
 }
