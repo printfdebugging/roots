@@ -137,9 +137,9 @@ void buffer_upload_to_gpu() {
 	for (uint32_t idx = 0; idx < LINES; ++idx) {
 		if (E.layout_map[idx].layouted && !E.layout_map[idx].uploaded) {
 			uint32_t offset = CHARS * VERTICES * idx;
-			uint32_t byteOffset = offset * VERTEX_SIZE;
+			uint32_t byte_offset = offset * VERTEX_SIZE;
 			uint32_t count = CHARS * VERTICES * VERTEX_SIZE;
-			glBufferSubData(GL_ARRAY_BUFFER, byteOffset, count, E.vertices + offset);
+			glBufferSubData(GL_ARRAY_BUFFER, byte_offset, count, E.vertices + offset);
 			E.layout_map[idx].uploaded = true;
 		}
 	}
@@ -188,8 +188,8 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 				case GLFW_KEY_DOWN: {
 					LOG_EVENT("update: GLFW_KEY_DOWN\n");
 
-					bool alreadyOnTheLastLine = E.cursor_line == line_count - 1;
-					if (alreadyOnTheLastLine)
+					bool on_last_line = E.cursor_line == line_count - 1;
+					if (on_last_line)
 						break;
 
 					E.cursor_line += 1;
@@ -205,24 +205,24 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 					LOG_EVENT("update: GLFW_KEY_UP\n");
 
 					/* already on the first line */
-					bool alreadyOnTheFirstLine = E.cursor_line == 0;
-					if (alreadyOnTheFirstLine)
+					bool on_first_line = E.cursor_line == 0;
+					if (on_first_line)
 						break;
 
 					E.cursor_line -= 1;
 
 					/* dup */
-					uint32_t lineLen = text_get_line_length(E.text, E.cursor_line);
-					if (lineLen < E.cursor_column)
-						E.cursor_column = lineLen - 1;
+					uint32_t line_length = text_get_line_length(E.text, E.cursor_line);
+					if (line_length < E.cursor_column)
+						E.cursor_column = line_length - 1;
 
 					break;
 				}
 				case GLFW_KEY_LEFT: {
 					LOG_EVENT("update: GLFW_KEY_LEFT\n");
 
-					bool alreadyOnTheFirstColumn = E.cursor_column == 0;
-					if (alreadyOnTheFirstColumn)
+					bool on_first_column = E.cursor_column == 0;
+					if (on_first_column)
 						break;
 
 					E.cursor_column -= 1;
@@ -232,8 +232,8 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 				case GLFW_KEY_RIGHT: {
 					LOG_EVENT("update: GLFW_KEY_RIGHT\n");
 
-					uint32_t lineLen = text_get_line_length(E.text, E.cursor_line);
-					if (E.cursor_column < lineLen - 1)
+					uint32_t line_length = text_get_line_length(E.text, E.cursor_line);
+					if (E.cursor_column < line_length - 1)
 						E.cursor_column += 1;
 
 					break;
@@ -263,18 +263,18 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 	if (E.cursor_line != old_cursor_line) {
 		if (E.line_offset + LINES <= E.cursor_line) {
 			LOG_INFO("E.line_offset (%i) + LINES (%i) <= E.cursor_line (%i)\n", E.line_offset, LINES, E.cursor_line);
-			for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx) {
+			for (uint32_t lineidx = 0; lineidx < LINES; ++lineidx) {
 				/* todo: note: this should be shifting rather than just blind increment */
-				E.layout_map[lineIdx].layouted = false;
-				E.layout_map[lineIdx].text_line_index += 1;
+				E.layout_map[lineidx].layouted = false;
+				E.layout_map[lineidx].text_line_index += 1;
 			}
 			E.line_offset++;
 		} else if (E.cursor_line < E.line_offset) {
 			LOG_INFO("E.cursor_line (%i) < E.line_offset (%i)\n", E.cursor_line, E.line_offset);
-			for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx) {
+			for (uint32_t lineidx = 0; lineidx < LINES; ++lineidx) {
 				/* todo: note: this should be shifting rather than just blind increment */
-				E.layout_map[lineIdx].layouted = false;
-				E.layout_map[lineIdx].text_line_index -= 1;
+				E.layout_map[lineidx].layouted = false;
+				E.layout_map[lineidx].text_line_index -= 1;
 			}
 			E.line_offset--;
 		} else {
@@ -292,22 +292,22 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 
 	if (E.cursor_column != old_cursor_column) {
 		LOG_INFO("E.cursor_column (%i) != old_cursor_column (%i)\n", E.cursor_column, old_cursor_column);
-		if (E.column_offset + CHARS <= E.cursor_column) /* cursor move right */
-		{
+		if (E.column_offset + CHARS <= E.cursor_column) {
+			/* cursor move right */
 			LOG_INFO("E.column_offset (%i) + CHARS (%i) < E.cursor_column (%i)\n", E.column_offset, CHARS, E.cursor_column)
 			for (uint32_t lineidx = 0; lineidx < LINES; ++lineidx)
 				E.layout_map[lineidx].layouted = false;
 
 			uint32_t last_visible_column_index = E.column_offset + CHARS - 1;
 			E.column_offset += (E.cursor_column - last_visible_column_index);
-		} else if (E.cursor_column < E.column_offset) /* cursor move left */
-		{
+		} else if (E.cursor_column < E.column_offset) {
+			/* cursor move left */
 			LOG_INFO("E.cursor_column (%i) < E.column_offset (%i)\n", E.cursor_column, E.column_offset)
 			for (uint32_t lineidx = 0; lineidx < LINES; ++lineidx)
 				E.layout_map[lineidx].layouted = false;
 			E.column_offset -= (E.column_offset - E.cursor_column);
-		} else /* moved over visible columns */
-		{
+		} else {
+			/* moved over visible columns */
 			LOG_INFO("E.layout_map[E.cursor_line(%i) - E.line_offset (%i)].layouted (%i) = false;\n", E.cursor_line, E.line_offset, E.layout_map[E.cursor_line - E.line_offset].layouted);
 			E.layout_map[E.cursor_line - E.line_offset].layouted = false;
 		}
@@ -523,8 +523,8 @@ void window_cursor_position_callback(GLFWwindow *window, double x, double y) {
 void window_key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 	(void) scancode;
 
-	bool shiftQPress = (mods & GLFW_MOD_SHIFT) && (key == GLFW_KEY_Q) && (action == GLFW_PRESS);
-	if (shiftQPress)
+	bool quit_sequence_pressed = (mods & GLFW_MOD_SHIFT) && (key == GLFW_KEY_Q) && (action == GLFW_PRESS);
+	if (quit_sequence_pressed)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 
 	if (action == GLFW_PRESS || action == GLFW_REPEAT)
