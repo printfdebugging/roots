@@ -84,7 +84,10 @@ bool editor_init() {
 	if (!(E.vertices = calloc(E.vertices_count, VERTEX_SIZE)))
 		return false;
 
-	font_manager_init(E.font_file_path);
+	font_manager_init((struct font_manager_options) {
+		.default_font_path = E.font_file_path,
+	});
+
 	text_shader_create(E.text_shader);
 	buffer_renderer_init(E.buffer_renderer, E.text_shader);
 	glBufferData(GL_ARRAY_BUFFER, E.vertices_count * VERTEX_SIZE, NULL, GL_STATIC_DRAW);

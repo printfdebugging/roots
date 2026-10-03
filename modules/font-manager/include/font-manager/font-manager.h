@@ -71,6 +71,10 @@ struct font {
 	struct glyph_info *glyph_cache;
 };
 
+struct font_manager_options {
+	const char *default_font_path;
+};
+
 struct font_manager {
 	struct font *font;
 	uint32_t font_count;
@@ -97,7 +101,7 @@ struct font_manager {
 	bool initialized;
 };
 
-void font_manager_init(char *editor_font_path);
+void font_manager_init(struct font_manager_options opts);
 void font_manager_deinit();
 void font_manager_cache_glyph_info(struct font *font, uint32_t glyphidx);
 struct glyph_atlas *font_manager_get_atlas();

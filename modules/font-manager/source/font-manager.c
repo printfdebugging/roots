@@ -14,7 +14,7 @@ static struct font_manager fm = { 0 };
  * and manages shared objects.. So the OpenGL function pointers should be
  * loaded before this function is called. That's done by GLFW.
  */
-void font_manager_init(char *editor_font_path) {
+void font_manager_init(struct font_manager_options opts) {
 	if (fm.initialized)
 		return;
 
@@ -22,8 +22,8 @@ void font_manager_init(char *editor_font_path) {
 	fm.initialized = true;
 
 	_font_manager_atlas_init();
-	fm.default_font_path = string_duplicate(editor_font_path);
-	fm.editor_font = font_manager_get_font(editor_font_path);
+	fm.default_font_path = string_duplicate(opts.default_font_path);
+	fm.editor_font = font_manager_get_font(opts.default_font_path);
 }
 
 void font_manager_deinit() {
