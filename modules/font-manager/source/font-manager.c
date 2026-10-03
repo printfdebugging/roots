@@ -122,8 +122,8 @@ float font_manager_get_default_font_line_height() {
 	if (!fm.initialized)
 		return 0;
 
-	float lineHeight = (float) fm.editor_font->hb_ascent - (float) fm.editor_font->hb_descent;
-	return lineHeight * font_manager_get_default_font_scale();
+	float line_height = (float) fm.editor_font->hb_ascent - (float) fm.editor_font->hb_descent;
+	return line_height * font_manager_get_default_font_scale();
 }
 
 struct font *font_manager_get_font_with_rune(uint32_t codepoint) {
