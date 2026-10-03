@@ -148,7 +148,7 @@ void buffer_upload_to_gpu() {
 }
 
 /*
- * This should prepare the layoutMap such that
+ * This should prepare the layout_map such that
  * layout can just be sure that that's up to date and just loop over
  * it and either relayout or skip.
  *
@@ -262,7 +262,7 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 
 	if (E.cursor_line != old_cursor_line) {
 		if (E.line_offset + LINES <= E.cursor_line) {
-			LOG_INFO("E.lineOffset (%i) + LINES (%i) <= E.cursorLine (%i)\n", E.lineOffset, LINES, E.cursorLine);
+			LOG_INFO("E.line_offset (%i) + LINES (%i) <= E.cursor_line (%i)\n", E.line_offset, LINES, E.cursor_line);
 			for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx) {
 				/* todo: note: this should be shifting rather than just blind increment */
 				E.layout_map[lineIdx].layouted = false;
@@ -270,7 +270,7 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 			}
 			E.line_offset++;
 		} else if (E.cursor_line < E.line_offset) {
-			LOG_INFO("E.cursorLine (%i) < E.lineOffset (%i)\n", E.cursorLine, E.lineOffset);
+			LOG_INFO("E.cursor_line (%i) < E.line_offset (%i)\n", E.cursor_line, E.line_offset);
 			for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx) {
 				/* todo: note: this should be shifting rather than just blind increment */
 				E.layout_map[lineIdx].layouted = false;
@@ -278,7 +278,7 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 			}
 			E.line_offset--;
 		} else {
-			LOG_INFO("E.layoutMap[E.cursorLine (%i) - E.lineOffset (%i)].layouted (%i) = false;\n", E.cursorLine, E.lineOffset, E.layoutMap[E.cursorLine - E.lineOffset].layouted);
+			LOG_INFO("E.layout_map[E.cursor_line (%i) - E.line_offset (%i)].layouted (%i) = false;\n", E.cursor_line, E.line_offset, E.layout_map[E.cursor_line - E.line_offset].layouted);
 			E.layout_map[old_cursor_line - E.line_offset].layouted = false;
 			E.layout_map[E.cursor_line - E.line_offset].layouted = false;
 		}
@@ -291,24 +291,24 @@ void editor_update(enum editor_update_event event, union editor_update_state sta
 	}
 
 	if (E.cursor_column != old_cursor_column) {
-		LOG_INFO("E.cursorColumn (%i) != oldCurCol (%i)\n", E.cursorColumn, oldCurCol);
+		LOG_INFO("E.cursor_column (%i) != old_cursor_column (%i)\n", E.cursor_column, old_cursor_column);
 		if (E.column_offset + CHARS <= E.cursor_column) /* cursor move right */
 		{
-			LOG_INFO("E.columnOffset (%i) + CHARS (%i) < E.cursorColumn (%i)\n", E.columnOffset, CHARS, E.cursorColumn)
-			for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
-				E.layout_map[lineIdx].layouted = false;
+			LOG_INFO("E.column_offset (%i) + CHARS (%i) < E.cursor_column (%i)\n", E.column_offset, CHARS, E.cursor_column)
+			for (uint32_t lineidx = 0; lineidx < LINES; ++lineidx)
+				E.layout_map[lineidx].layouted = false;
 
-			uint32_t lastVisColIdx = E.column_offset + CHARS - 1;
-			E.column_offset += (E.cursor_column - lastVisColIdx);
+			uint32_t last_visible_column_index = E.column_offset + CHARS - 1;
+			E.column_offset += (E.cursor_column - last_visible_column_index);
 		} else if (E.cursor_column < E.column_offset) /* cursor move left */
 		{
-			LOG_INFO("E.cursorColumn (%i) < E.columnOffset (%i)\n", E.cursorColumn, E.columnOffset)
-			for (uint32_t lineIdx = 0; lineIdx < LINES; ++lineIdx)
-				E.layout_map[lineIdx].layouted = false;
+			LOG_INFO("E.cursor_column (%i) < E.column_offset (%i)\n", E.cursor_column, E.column_offset)
+			for (uint32_t lineidx = 0; lineidx < LINES; ++lineidx)
+				E.layout_map[lineidx].layouted = false;
 			E.column_offset -= (E.column_offset - E.cursor_column);
 		} else /* moved over visible columns */
 		{
-			LOG_INFO("E.layoutMap[E.cursorLine (%i) - E.lineOffset (%i)].layouted (%i) = false;\n", E.cursorLine, E.lineOffset, E.layoutMap[E.cursorLine - E.lineOffset].layouted);
+			LOG_INFO("E.layout_map[E.cursor_line(%i) - E.line_offset (%i)].layouted (%i) = false;\n", E.cursor_line, E.line_offset, E.layout_map[E.cursor_line - E.line_offset].layouted);
 			E.layout_map[E.cursor_line - E.line_offset].layouted = false;
 		}
 
@@ -364,7 +364,7 @@ void buffer_render() {
 	window_swap_buffers(E.window);
 }
 
-struct glyph_info *_glyphInfo = NULL;
+struct glyph_info *_glyph_info = NULL;
 
 void buffer_layout() {
 	if (!E.shared_text_shader || !E.text || !E.window)
@@ -397,16 +397,16 @@ void buffer_layout() {
 		uint32_t hbGlyphCount = 0;
 		hb_glyph_info_t *glyphInfos = hb_buffer_get_glyph_infos(buffer, &hbGlyphCount);
 
-		_glyphInfo = realloc(_glyphInfo, hbGlyphCount * sizeof(struct glyph_info));
-		if (_glyphInfo)
-			memset(_glyphInfo, 0, hbGlyphCount * sizeof(struct glyph_info));
+		_glyph_info = realloc(_glyph_info, hbGlyphCount * sizeof(struct glyph_info));
+		if (_glyph_info)
+			memset(_glyph_info, 0, hbGlyphCount * sizeof(struct glyph_info));
 
 		uint32_t glyph_count = hbGlyphCount < CHARS ? hbGlyphCount : CHARS;
 
-		for (uint32_t glyphIdx = 0; glyphIdx < glyph_count; ++glyphIdx) {
-			hb_codepoint_t glyphIndex = glyphInfos[glyphIdx].codepoint;
-			font_manager_cache_glyph_info(font, glyphIndex);
-			_glyphInfo[glyphIdx] = font->glyph_cache[glyphIndex];
+		for (uint32_t idx = 0; idx < glyph_count; ++idx) {
+			hb_codepoint_t glyph_index = glyphInfos[idx].codepoint;
+			font_manager_cache_glyph_info(font, glyph_index);
+			_glyph_info[idx] = font->glyph_cache[glyph_index];
 		}
 
 		hb_buffer_destroy(buffer);
@@ -417,31 +417,29 @@ void buffer_layout() {
 		};
 
 		/* we loop over the available slots */
-		for (uint32_t glyph_idx = 0; glyph_idx < glyph_count; ++glyph_idx) {
-			[[maybe_unused]] bool hasCursor;
-			struct glyph_info *glyph_info = &_glyphInfo[glyph_idx];
-
+		for (uint32_t idx = 0; idx < glyph_count; ++idx) {
+			struct glyph_info *glyph_info = &_glyph_info[idx];
 			glyph_position.x += glyph_info->extents.min_x;
 			glyph_position.y += 0;
 
 			struct glyph_vertex glyph_quad_corners[4];
 
-			uint32_t visualColumn = 0;
+			uint32_t visual_column = 0;
 			if (E.cursor_column - E.column_offset >= CHARS)
-				visualColumn = CHARS - 1;
+				visual_column = CHARS - 1;
 			else if (E.cursor_column < E.column_offset)
-				visualColumn = 0;
+				visual_column = 0;
 			else
-				visualColumn = E.cursor_column - E.column_offset;
+				visual_column = E.cursor_column - E.column_offset;
 
-			/* LOG_INFO(
-				 "hasCursor: %i, E.cursorLine (%i) == E.layoutMap[visLineIdx].textLineIdx (%i) && visualColumn (%i) == glyphIdx (%i)\n",
-				 (E.cursorLine == E.layoutMap[visLineIdx].textLineIdx && visualColumn == glyphIdx),
-				 E.cursorLine,
-				 E.layoutMap[visLineIdx].textLineIdx,
-				 visualColumn,
-				 glyphIdx
-			) */
+			LOG_INFO(
+				 "hasCursor: %i, E.cursor_line (%i) == E.layout_map[visual_line_index].text_line_index (%i) && visualColumn (%i) == idx (%i)\n",
+				 (E.cursor_line == E.layout_map[visual_line_index].text_line_index && visual_column == idx),
+				 E.cursor_line,
+				 E.layout_map[visual_line_index].text_line_index,
+				 visual_column,
+				 idx
+			)
 
 			uint32_t line_offset = visual_line_index * CHARS * VERTICES;
 			for (int corner_idx = 0; corner_idx < 4; corner_idx++) {
@@ -461,11 +459,11 @@ void buffer_layout() {
 					.atlas_offset = glyph_info->atlas_offset / TEXEL_SIZE,
 					.fg_color = (vec4s) { { color_rgba_hex(0X839496FF) } },
 					.bg_color = (vec4s) { { color_rgba_hex(0X000000FF) } },
-					.has_cursor = (E.cursor_line == E.layout_map[visual_line_index].text_line_index && visualColumn == glyph_idx),
+					.has_cursor = (E.cursor_line == E.layout_map[visual_line_index].text_line_index && visual_column == idx),
 				};
 			}
 
-			uint32_t glyph_offset = glyph_idx * VERTICES;
+			uint32_t glyph_offset = idx * VERTICES;
 			uint32_t glyph_quad_offset = line_offset + glyph_offset;
 			E.vertices[glyph_quad_offset + 0] = glyph_quad_corners[0];
 			E.vertices[glyph_quad_offset + 1] = glyph_quad_corners[1];
