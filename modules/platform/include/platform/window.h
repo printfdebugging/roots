@@ -20,6 +20,7 @@ struct window_options {
 	const char *title;
 	const char *icon;
 	GLFWwindow *shared_context_window;
+	struct window_userdata *user_data;
 };
 
 GLFWwindow *window_create(struct window_options opts);
