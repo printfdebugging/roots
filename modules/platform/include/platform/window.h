@@ -25,6 +25,7 @@ struct window_options {
 	GLFWscrollfun scroll_callback;
 	GLFWcursorposfun cursor_position_callback;
 	GLFWkeyfun key_callback;
+	GLFWerrorfun error_callback;
 };
 
 GLFWwindow *window_create(struct window_options opts);
@@ -45,5 +46,6 @@ void window_scroll_callback(GLFWwindow *window, double x, double y);
 void window_frame_buffer_resize_callback(GLFWwindow *window, int32_t width, int32_t height);
 void window_cursor_position_callback(GLFWwindow *window, double x, double y);
 void window_key_callback(GLFWwindow *window, int32_t key, int32_t scancode, int32_t action, int32_t mods);
+void window_error_callback(int code, const char *description);
 
 #endif

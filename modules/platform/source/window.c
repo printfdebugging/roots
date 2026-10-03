@@ -84,6 +84,7 @@ GLFWwindow *window_create(struct window_options opts) {
 	if (opts.scroll_callback) glfwSetScrollCallback(window, opts.scroll_callback);
 	if (opts.framebuffer_resize_callback) glfwSetFramebufferSizeCallback(window, opts.framebuffer_resize_callback);
 	if (opts.key_callback) glfwSetKeyCallback(window, opts.key_callback);
+	if (opts.error_callback) glfwSetErrorCallback(opts.error_callback);
 
 	if (!window)
 		return NULL;

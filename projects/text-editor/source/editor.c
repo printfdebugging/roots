@@ -13,8 +13,6 @@
 
 static struct editor E = { 0 };
 
-void _glfwErrFn(int code, const char *description);
-
 bool editor_run() {
 	const char *path = SOURCE_DIR "source/editor.c";
 
@@ -67,13 +65,12 @@ bool editor_init() {
 		.key_callback = window_key_callback,
 		.scroll_callback = window_scroll_callback,
 		.cursor_position_callback = window_cursor_position_callback,
+		.error_callback = window_error_callback,
 	};
 
 	E.window = window_create(opts);
 	if (!E.window)
 		perror("failed to create a window");
-
-	glfwSetErrorCallback(_glfwErrFn);
 
 	if (!(E.shared_text_shader = calloc(1, sizeof(struct text_shader))))
 		return false;
@@ -509,8 +506,8 @@ void buffer_layout() {
 	}
 }
 
-void _glfwErrFn(int code, const char *description) {
-	fprintf(stderr, "_glfwErrFun: code: %i, msg: %s\n", code, description);
+void window_error_callback(int code, const char *description) {
+	fprintf(stderr, "window_error_callback: code: %i, msg: %s\n", code, description);
 }
 
 void window_frame_buffer_resize_callback(GLFWwindow *window, int32_t width, int32_t height) {
