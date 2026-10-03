@@ -107,7 +107,7 @@ struct text_shader_uniform_locations {
 };
 
 struct text_shader {
-	uint32_t hb_shader_program;
+	uint32_t program;
 	struct text_shader_uniform_locations uniform_locations;
 };
 

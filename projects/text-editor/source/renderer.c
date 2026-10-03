@@ -44,7 +44,7 @@ void buffer_renderer_init(struct buffer_renderer *renderer, struct text_shader *
 
 	/* set attribute locations */
 
-	uint32_t program = shader->hb_shader_program;
+	uint32_t program = shader->program;
 	int32_t attribute_location = -1;
 	int32_t glyph_quad_object_stride = sizeof(struct glyph_vertex);
 
@@ -98,7 +98,7 @@ void buffer_renderer_deinit(struct buffer_renderer *renderer) {
 }
 
 void text_shader_create(struct text_shader *shader) {
-	shader->hb_shader_program = _create_text_shader();
+	shader->program = _create_text_shader();
 	shader->uniform_locations = (struct text_shader_uniform_locations) {
 		.mvp = -1,
 		.viewport = -1,
@@ -110,7 +110,7 @@ void text_shader_create(struct text_shader *shader) {
 		.stem_darkening = -1,
 	};
 
-	uint32_t program = shader->hb_shader_program;
+	uint32_t program = shader->program;
 	_renderer_use_shader_program(program);
 
 	shader->uniform_locations = (struct text_shader_uniform_locations) {
@@ -126,11 +126,11 @@ void text_shader_create(struct text_shader *shader) {
 }
 
 void text_shader_destroy(struct text_shader *shader) {
-	glDeleteProgram(shader->hb_shader_program);
+	glDeleteProgram(shader->program);
 }
 
 void text_shader_upload_uniforms(struct text_shader *shader, struct text_shader_uniforms *uniforms) {
-	uint32_t program = shader->hb_shader_program;
+	uint32_t program = shader->program;
 	_renderer_use_shader_program(program);
 
 	struct text_shader_uniform_locations *locations = &shader->uniform_locations;
@@ -144,53 +144,53 @@ void text_shader_upload_uniforms(struct text_shader *shader, struct text_shader_
 }
 
 static uint32_t _create_text_shader() {
-	const char *hb_shader_version = "#version 330 core\n";
-	const char *hb_shader_preamble = "#define HB_GPU_DEMO_DRAW\n";
-	const char *hb_vertex_main = string_read_file_contents(ASSETS_DIR "shaders/harfbuzz.vert");
-	const char *hb_fragment_main = string_read_file_contents(ASSETS_DIR "shaders/harfbuzz.frag");
+	const char *shader_version = "#version 330 core\n";
+	const char *shader_preamble = "#define HB_GPU_DEMO_DRAW\n";
+	const char *vertex_main = string_read_file_contents(ASSETS_DIR "shaders/harfbuzz.vert");
+	const char *fragment_main = string_read_file_contents(ASSETS_DIR "shaders/harfbuzz.frag");
 
-	uint32_t hb_vertex_shader;
-	uint32_t hb_fragment_shader;
+	uint32_t vertex_shader;
+	uint32_t fragment_shader;
 
-	const char *hb_vertex_shader_source[] = {
-		hb_shader_version,
-		hb_shader_preamble,
+	const char *vertex_shader_source[] = {
+		shader_version,
+		shader_preamble,
 		hb_gpu_shader_source(HB_GPU_SHADER_STAGE_VERTEX, HB_GPU_SHADER_LANG_GLSL),
 		hb_gpu_draw_shader_source(HB_GPU_SHADER_STAGE_VERTEX, HB_GPU_SHADER_LANG_GLSL),
-		hb_vertex_main,
+		vertex_main,
 	};
 
-	const char *hb_fragment_shader_source[] = {
-		hb_shader_version,
-		hb_shader_preamble,
+	const char *fragment_sahder_source[] = {
+		shader_version,
+		shader_preamble,
 		hb_gpu_shader_source(HB_GPU_SHADER_STAGE_FRAGMENT, HB_GPU_SHADER_LANG_GLSL),
 		hb_gpu_draw_shader_source(HB_GPU_SHADER_STAGE_FRAGMENT, HB_GPU_SHADER_LANG_GLSL),
-		hb_fragment_main,
+		fragment_main,
 	};
 
-	hb_vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(hb_vertex_shader, array_size(hb_vertex_shader_source), hb_vertex_shader_source, NULL);
-	glCompileShader(hb_vertex_shader);
-	if (!shader_get_compile_status(hb_vertex_shader))
+	vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertex_shader, array_size(vertex_shader_source), vertex_shader_source, NULL);
+	glCompileShader(vertex_shader);
+	if (!shader_get_compile_status(vertex_shader))
 		perror("vertex shader compilation failed");
 
-	hb_fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(hb_fragment_shader, array_size(hb_fragment_shader_source), hb_fragment_shader_source, NULL);
-	glCompileShader(hb_fragment_shader);
-	if (!shader_get_compile_status(hb_fragment_shader))
+	fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragment_shader, array_size(fragment_sahder_source), fragment_sahder_source, NULL);
+	glCompileShader(fragment_shader);
+	if (!shader_get_compile_status(fragment_shader))
 		perror("fragment shader compilation failed");
 
 	uint32_t program = glCreateProgram();
-	glAttachShader(program, hb_vertex_shader);
-	glAttachShader(program, hb_fragment_shader);
+	glAttachShader(program, vertex_shader);
+	glAttachShader(program, fragment_shader);
 	glLinkProgram(program);
 	if (!shader_get_link_status(program))
 		perror("failed to link shader program");
 
-	glDeleteShader(hb_vertex_shader);
-	glDeleteShader(hb_fragment_shader);
-	free((void *) hb_vertex_main);
-	free((void *) hb_fragment_main);
+	glDeleteShader(vertex_shader);
+	glDeleteShader(fragment_shader);
+	free((void *) vertex_main);
+	free((void *) fragment_main);
 
 	return program;
 }
