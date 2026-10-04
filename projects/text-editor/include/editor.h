@@ -6,7 +6,7 @@
 #include "font-manager/font-manager.h"
 #include "unicode/unicode.h"
 #include "utils/containers.h"
-#include "platform/logging.h"
+#include "utils/logging.h"
 
 #include "GLFW/glfw3.h"
 #include "cglm/struct.h"
