@@ -44,3 +44,4 @@ add_subdirectory(modules/toolkit)
 add_subdirectory(modules/scene)
 
 add_subdirectory(projects/text-editor)
+add_subdirectory(projects/model-viewer)

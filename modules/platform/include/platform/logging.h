@@ -2,6 +2,10 @@
 #define PLATFORM_LOGGING_H
 
 #ifdef LOGGING
+#include <stdio.h>
+#endif
+
+#ifdef LOGGING
 #define LOG_INFO(...) fprintf(stderr, __VA_ARGS__);
 #define LOG_EVENT(...) fprintf(stderr, __VA_ARGS__);
 #else
