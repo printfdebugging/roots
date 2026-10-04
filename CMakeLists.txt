@@ -1,14 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 project(editor)
 
-include(GNUInstallDirs)
-include(cmake/UnitTestHelper.cmake)
-include(cmake/TreeSitterParsers.cmake)
-
-set(GRAPHVIZ_EXTERNAL_LIBS FALSE)
-# only dependencies between libraries
-set(GRAPHVIZ_EXECUTABLES FALSE)
-
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
@@ -28,6 +20,9 @@ set(CLANGD_DIAGNOSTICS_UNUSED_INCLUDES None)
 set(CLANGD_COMPILE_COMMANDS_FILE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/clangd.in ${CMAKE_CURRENT_SOURCE_DIR}/.clangd @ONLY)
 
+include(GNUInstallDirs)
+include(cmake/TreeSitterParsers.cmake)
+
 add_subdirectory(vendor/glfw)
 add_subdirectory(vendor/harfbuzz)
 add_subdirectory(vendor/glad)
@@ -40,7 +35,9 @@ add_subdirectory(vendor/tree-sitter)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-c)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-lua)
 
-add_subdirectory(engine)
+enable_testing()
+include(cmake/UnitTestHelper.cmake)
 
+add_subdirectory(engine)
 add_subdirectory(projects/text-editor)
 add_subdirectory(projects/model-viewer)

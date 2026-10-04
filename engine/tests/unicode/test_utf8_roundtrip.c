@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "unicode/unicode.h"
+#include "engine/unicode/unicode.h"
 
 struct utf8_roundtrip {
 	uint8_t *utf8;
@@ -84,7 +84,7 @@ static struct utf8_roundtrip data[] = {
 	},
 };
 
-int test_utf8_roundtrip(int argc, char *argv[]) {
+int unicode_test_utf8_roundtrip(int argc, char *argv[]) {
 	uint32_t data_length = sizeof(data) / sizeof(struct utf8_roundtrip);
 	uint32_t dataidx = 0;
 	uint32_t *runes = NULL;
@@ -152,11 +152,11 @@ failure:
 	free(bytes);
 
 	const char *format_string =
-	    "{"
-	    "	.utf8 = (uint8_t *) \"%s\",\n"
-	    "	.bytelen = %i,\n"
-	    "	.runelen = %i,\n"
-	    "},\n";
+		 "{"
+		 "	.utf8 = (uint8_t *) \"%s\",\n"
+		 "	.bytelen = %i,\n"
+		 "	.runelen = %i,\n"
+		 "},\n";
 
 	fprintf(stderr, format_string, data[dataidx].utf8, data[dataidx].bytelen, data[dataidx].runelen);
 

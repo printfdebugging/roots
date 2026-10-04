@@ -1,12 +1,10 @@
 # source: https://github.com/nitrix/nui/blob/master/CMakeLists.txt
 function(enable_unit_testing LIB)
-	enable_testing()
-
-	file(GLOB testfiles_fullpath "${CMAKE_CURRENT_SOURCE_DIR}/tests/*.c")
+	file(GLOB testfiles_fullpath "${CMAKE_CURRENT_LIST_DIR}/tests/**/*.c")
 	SET(testfiles_relative)
 
 	foreach(name ${testfiles_fullpath})
-		string(REPLACE "${CMAKE_CURRENT_SOURCE_DIR}/tests/" "" name ${name})
+		string(REPLACE "${CMAKE_CURRENT_LIST_DIR}/tests/" "" name ${name})
 		SET(testfiles_relative ${testfiles_relative} ${name})
 	endforeach()
 
@@ -16,6 +14,7 @@ function(enable_unit_testing LIB)
 
 	foreach(name ${testfiles_relative})
 		string(REPLACE ".c" "" name ${name})
-		add_test(NAME ${name} COMMAND test_runner ${name} WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+		add_test(NAME ${name} COMMAND test_runner ${name} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/tests)
 	endforeach()
+	add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND} -V DEPENDS test_runner)
 endfunction()

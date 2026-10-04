@@ -2,12 +2,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "unicode/unicode.h"
+#include "engine/unicode/unicode.h"
 
 static uint8_t *utf8_invalid_byte_sequences[] = {
 	/** @note Proudly stolen from Go source ;) */
-	(uint8_t *) "\xed\xa0\x80\x80",	 // surrogate min
-	(uint8_t *) "\xed\xbf\xbf\x80",	 // surrogate max
+	(uint8_t *) "\xed\xa0\x80\x80",	// surrogate min
+	(uint8_t *) "\xed\xbf\xbf\x80",	// surrogate max
 
 	// xx
 	(uint8_t *) "\x91\x80\x80\x80",
@@ -116,7 +116,7 @@ static uint8_t *utf8_invalid_byte_sequences[] = {
 	(uint8_t *) "\xf0\x93\x83",  //  { "\xf0\x93\x83\x92", "𓃒" }
 };
 
-int test_utf8_invalid_byte_sequences(int argc, char *argv[]) {
+int unicode_test_utf8_invalid_byte_sequences(int argc, char *argv[]) {
 	uint32_t data_length = sizeof(utf8_invalid_byte_sequences) / sizeof(struct uint8_t *);
 	for (uint32_t dataidx = 0; dataidx < data_length; ++dataidx) {
 		uint8_t *bytes = utf8_invalid_byte_sequences[dataidx];

@@ -7,15 +7,19 @@ set(CMAKE_C_STANDARD 23)
 
 
 add_library(engine
-	source/allocators/arena.c
-	source/allocators/pool.c
 	source/font-manager/font-manager.c
-	source/platform/window.c
 	source/toolkit/toolkit.c
 	source/types/containers.c
 	source/unicode/unicode.c
+
+	source/allocators/arena.c
+	source/allocators/pool.c
+
 	source/utils/shader.c
 	source/utils/string.c
+
+	source/platform/window.c
+	source/platform/memory.c
 )
 
 add_library(roots::engine ALIAS engine)
@@ -68,3 +72,5 @@ install(
 	NAMESPACE roots::
 	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/engine
 )
+
+enable_unit_testing(roots::engine)

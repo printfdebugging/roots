@@ -16,6 +16,9 @@ release:
 		-DCMAKE_INSTALL_PREFIX=install \
 		-B build/Release && cmake --build build/Release
 
+check: debug
+	cmake --build build/Debug -t check
+
 install: debug
 	cmake --install build/Debug --prefix install 
 	cmake --install build/Debug --prefix install
