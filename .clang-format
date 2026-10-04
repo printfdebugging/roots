@@ -22,7 +22,7 @@ TabWidth: 3
 IndentWidth: 3
 BracedInitializerIndentWidth: 3
 UseTab: Always
-IndentPPDirectives: None
+IndentPPDirectives: Leave
 AlignArrayOfStructures: None
 AlwaysBreakBeforeMultilineStrings: false
 AllowShortLoopsOnASingleLine: true
