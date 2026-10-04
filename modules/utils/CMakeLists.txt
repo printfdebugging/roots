@@ -7,6 +7,8 @@ set(CMAKE_C_STANDARD 23)
 add_library(utils
 	source/string.c
 	source/shader.c
+	source/allocators/arena.c
+	source/allocators/pool.c
 )
 
 add_library(module::utils ALIAS utils)
