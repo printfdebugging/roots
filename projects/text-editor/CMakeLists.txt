@@ -38,14 +38,9 @@ target_compile_definitions(text-editor PRIVATE
 target_include_directories(text-editor PUBLIC include)
 
 target_link_libraries(text-editor PRIVATE
-	module::utils
-	module::font-manager
-	module::unicode
-	module::platform
-
+	roots::engine
 	lua::lua
 	libuv::libuv
-
 	tree-sitter
 	tree-sitter-c
 	tree-sitter-lua

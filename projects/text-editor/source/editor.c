@@ -1,8 +1,8 @@
 #include "editor.h"
 
-#include "utils/macros.h"
-#include "utils/constants.h"
-#include "platform/window.h"
+#include "engine/utils/macros.h"
+#include "engine/utils/constants.h"
+#include "engine/platform/window.h"
 
 #include "glad/glad.h"
 #include "stb_image.h"

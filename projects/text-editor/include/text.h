@@ -1,7 +1,7 @@
 #ifndef TEXT_H
 #define TEXT_H
 
-#include "utils/string.h"
+#include "engine/utils/string.h"
 
 #include <stdint.h>
 

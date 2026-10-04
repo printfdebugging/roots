@@ -5,6 +5,10 @@ include(GNUInstallDirs)
 include(cmake/UnitTestHelper.cmake)
 include(cmake/TreeSitterParsers.cmake)
 
+set(GRAPHVIZ_EXTERNAL_LIBS FALSE)
+# only dependencies between libraries
+set(GRAPHVIZ_EXECUTABLES FALSE)
+
 set(BUILD_SHARED_LIBS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_COLOR_DIAGNOSTICS ON)
@@ -36,13 +40,7 @@ add_subdirectory(vendor/tree-sitter)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-c)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-lua)
 
-add_subdirectory(modules/types)
-add_subdirectory(modules/utils)
-add_subdirectory(modules/unicode)
-add_subdirectory(modules/font-manager)
-add_subdirectory(modules/platform)
-add_subdirectory(modules/toolkit)
-add_subdirectory(modules/scene)
+add_subdirectory(engine)
 
 add_subdirectory(projects/text-editor)
 add_subdirectory(projects/model-viewer)

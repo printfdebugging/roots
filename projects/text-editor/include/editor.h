@@ -3,10 +3,10 @@
 
 #include "text.h"
 
-#include "font-manager/font-manager.h"
-#include "unicode/unicode.h"
-#include "types/containers.h"
-#include "utils/logging.h"
+#include "engine/utils/logging.h"
+#include "engine/unicode/unicode.h"
+#include "engine/types/containers.h"
+#include "engine/font-manager/font-manager.h"
 
 #include "GLFW/glfw3.h"
 #include "cglm/struct.h"

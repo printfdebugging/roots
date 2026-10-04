@@ -36,8 +36,7 @@ target_compile_definitions(model-viewer PRIVATE
 target_include_directories(model-viewer PUBLIC include)
 
 target_link_libraries(model-viewer PRIVATE
-	module::platform
-	module::utils
+	roots::engine
 )
 
 install(

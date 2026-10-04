@@ -1,8 +1,8 @@
 #include "editor.h"
 
-#include "utils/macros.h"
-#include "utils/string.h"
-#include "utils/shader.h"
+#include "engine/utils/macros.h"
+#include "engine/utils/string.h"
+#include "engine/utils/shader.h"
 
 #include "glad/glad.h"
 

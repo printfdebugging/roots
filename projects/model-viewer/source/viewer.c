@@ -1,7 +1,7 @@
 #include "viewer.h"
 
 #define LOGGING
-#include "utils/logging.h"
+#include "engine/utils/logging.h"
 
 bool viewer_init() {
 	LOG_INFO("Hello world from the viewer\n")
