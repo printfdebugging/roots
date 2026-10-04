@@ -36,6 +36,7 @@ add_subdirectory(vendor/tree-sitter)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-c)
 add_tree_sitter_parser(vendor/tree-sitter-parsers/tree-sitter-lua)
 
+add_subdirectory(modules/types)
 add_subdirectory(modules/utils)
 add_subdirectory(modules/unicode)
 add_subdirectory(modules/font-manager)

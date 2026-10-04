@@ -37,6 +37,7 @@ target_include_directories(model-viewer PUBLIC include)
 
 target_link_libraries(model-viewer PRIVATE
 	module::platform
+	module::utils
 )
 
 install(

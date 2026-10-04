@@ -1,33 +1,25 @@
 cmake_minimum_required(VERSION 4.0)
-project(platform)
+project(types)
 
 include(GNUInstallDirs)
 set(CMAKE_C_STANDARD 23)
 
-add_library(platform
-	source/window.c
+add_library(types
+	source/containers.c
 )
 
-add_library(module::platform ALIAS platform)
-target_compile_definitions(platform PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
+add_library(module::types ALIAS types)
+target_compile_definitions(types PRIVATE "$<$<CONFIG:Debug>:DEBUG>")
+target_link_libraries(types PUBLIC glad)
 
-target_link_libraries(platform PUBLIC
-	module::types
-
-	stb
-	glad
-	glfw
-	$<$<BOOL:${WIN32}>:dwmapi>
-)
-
-target_include_directories(platform PUBLIC
+target_include_directories(types PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
 	$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-	target_compile_options(platform PRIVATE
+	target_compile_options(types PRIVATE
 		-Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wcast-align
 		-Wstrict-prototypes -Wwrite-strings -Wswitch-enum -Wconversion -Wunreachable-code
 		-Wpedantic -Wno-override-init -Werror=return-type -Wno-double-promotion
@@ -35,25 +27,25 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 		$<$<NOT:$<PLATFORM_ID:Windows>>:-fsanitize=undefined,address>
 	)
 
-	target_link_options(platform PUBLIC
+	target_link_options(types PUBLIC
 		$<$<NOT:$<PLATFORM_ID:Windows>>:-fsanitize=undefined,address>
 	)
 endif()
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/platform.pc.in ${CMAKE_CURRENT_BINARY_DIR}/platform.pc @ONLY)
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/platform.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
-install(DIRECTORY include/platform DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/types.pc.in ${CMAKE_CURRENT_BINARY_DIR}/types.pc @ONLY)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/types.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(DIRECTORY include/types DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 install(
-	TARGETS platform
-	EXPORT platformConfig
+	TARGETS types
+	EXPORT typesConfig
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 install(
-	EXPORT platformConfig
+	EXPORT typesConfig
 	NAMESPACE module::
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/platform
+	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/types
 )
