@@ -29,3 +29,6 @@
 [submodule "vendor/tree-sitter-parsers/tree-sitter-lua"]
 	path = vendor/tree-sitter-parsers/tree-sitter-lua
 	url = https://github.com/tree-sitter-grammars/tree-sitter-lua
+[submodule "vendor/cgltf"]
+	path = vendor/cgltf
+	url = https://github.com/printfdebugging/cgltf
