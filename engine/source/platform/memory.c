@@ -1,4 +1,5 @@
 #include "engine/platform/memory.h"
+#include "engine/utils/logging.h"
 
 #if defined(__USE_POSIX)
 #include <sys/mman.h>
@@ -11,8 +12,11 @@
 #if defined(__USE_POSIX)
 void *platform_reserve_memory(uint64_t size) {
 	void *chunk = mmap(0, size, PROT_NONE, MAP_ANONYMOUS | MAP_PRIVATE, -1, 0);
-	if (chunk == MAP_FAILED)
+	if (chunk == MAP_FAILED) {
+		LOG_ERROR("Failed to mmap chunk of size %li\n", size)
 		return NULL;
+	}
+
 	return chunk;
 }
 
